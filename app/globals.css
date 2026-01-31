@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Premium Dark Theme */
+  --bg-primary: #050505;
+  /* Deep rich black */
+  --bg-secondary: #0a0a0a;
+  --bg-tertiary: #121212;
+
+  /* Dark Maroon Palette */
+  --accent-primary: #991b1b;
+  /* Red-800 (Maroon) */
+  --accent-secondary: #7f1d1d;
+  /* Red-900 */
+  --accent-tertiary: #450a0a;
+  /* Red-950 */
+  --accent-highlight: #b91c1c;
+  /* Red-700 - used sparingly for hovers */
+
+  /* Text */
+  --text-primary: #f5f5f5;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #525252;
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  scroll-behavior: smooth;
+  font-size: 16px;
+  /* Back to standard readable size */
+}
+
+/* Utilities */
+.container-wide {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.glass-panel {
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-subtle);
+}
+
+.text-gradient-maroon {
+  background: linear-gradient(135deg, #fca5a5 0%, #b91c1c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Specific Component Styles */
+.btn-primary {
+  background-color: var(--accent-primary);
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-highlight);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--text-secondary);
+  background: var(--bg-secondary);
+}
+
+/* FAQ Details */
+details>summary {
+  list-style: none;
+}
+
+details>summary::-webkit-details-marker {
+  display: none;
+}
