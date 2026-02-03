@@ -31,64 +31,68 @@ The interviewer wants to understand how you'd design a distributed rate limiter 
             step_number: 1,
             step_name: "Requirements Clarification",
             time_allocation: "5 min",
-            description: "Before diving into solutions, clarify the requirements and constraints. The right design depends heavily on acceptable tradeoffs.",
-            pause_prompt: "What clarifying questions would you ask the interviewer?",
+            description: "You know the scale (5M RPS) and latency target (<5ms). But production systems have nuances not in the initial brief. Principal engineers probe for hidden requirements and tradeoffs that fundamentally change the design.",
+            pause_prompt: "What deeper questions would you ask beyond the stated requirements?",
             comparison_table: {
-                criterion: "Requirements Gathering",
-                interviewer_question: "How would you approach understanding the requirements for this system?",
+                criterion: "Probing for Hidden Requirements",
+                interviewer_question: "Given these requirements, what else would you need to know before designing?",
                 responses: [
                     {
                         level: "bad" as const,
                         icon: "❌",
-                        response: "I'd use Redis with a Lua script to implement rate limiting. We'd store counters in Redis with TTL and increment them on each request. If the counter exceeds the limit, we reject the request.",
-                        why_this_level: "Jumps directly to implementation without understanding requirements or constraints.",
+                        response: "The requirements seem clear. I'd use Redis with a Lua script to implement rate limiting. We'd store counters in Redis with TTL and increment them on each request. If the counter exceeds the limit, we reject the request.",
+                        why_this_level: "Accepts requirements at face value and jumps directly to implementation.",
                         red_flags: [
-                            "No clarifying questions asked",
+                            "Doesn't probe for hidden requirements or edge cases",
                             "Assumes synchronous Redis calls at 5M RPS is viable",
-                            "Doesn't consider latency requirements"
+                            "Misses critical tradeoffs that affect architecture"
                         ]
                     },
                     {
                         level: "good" as const,
                         icon: "✓",
-                        response: "Before designing, I'd want to understand: What's the acceptable latency overhead? Is some over-limiting acceptable during bursts? What are the SLAs for different customer tiers? How do we handle rate limiter failures?",
-                        why_this_level: "Asks good clarifying questions but doesn't deeply explore the tradeoffs.",
+                        response: "Given the 5M RPS and <5ms latency targets, I'd want to clarify: Is some over-limiting acceptable during traffic bursts? What are the SLAs for different customer tiers? How should we handle rate limiter failures—fail open or closed?",
+                        why_this_level: "Asks relevant clarifying questions but doesn't deeply explore how answers change the design.",
                         strengths: [
-                            "Identifies need for clarification",
-                            "Considers failure modes",
-                            "Thinks about SLAs"
+                            "Acknowledges stated requirements",
+                            "Identifies failure mode question",
+                            "Thinks about tiered SLAs"
                         ],
-                        what_is_missing: "Doesn't quantify the accuracy vs latency tradeoff or discuss how different answers would change the design."
+                        what_is_missing: "Doesn't quantify the accuracy vs latency tradeoff or explain how different answers lead to different architectures."
                     },
                     {
                         level: "best" as const,
                         icon: "⭐",
-                        response: `**Key Question:** Is it acceptable to have 5-10% over-limit during traffic bursts, or do we need strict enforcement? This fundamentally changes the design.
+                        response: `Given the stated requirements, the **critical hidden question** is: Is it acceptable to have 5-10% over-limit during traffic bursts, or do we need strict enforcement?
 
-If strict enforcement is required, we need synchronous coordination (higher latency). If some tolerance is acceptable, we can use local enforcement with periodic sync (near-zero latency).
+This fundamentally changes the architecture:
+- **Strict enforcement** → synchronous coordination (uses some of that 5ms budget)
+- **Tolerance acceptable** → local enforcement with periodic sync (near-zero latency)
 
-I'd also clarify:
-- **Failure mode preference**: Fail open (allow traffic) or fail closed (block traffic)?
-- **Multi-tenancy**: Are enterprise customers willing to pay for dedicated capacity?
-- **Burst handling**: Should we allow temporary bursts with "credit" systems?`,
-                        why_this_level: "Explicitly connects requirements to design decisions and quantifies tradeoffs.",
+I'd also probe:
+- **Failure mode preference**: Fail open (risk backend overload) or fail closed (risk blocking legitimate users)?
+- **Tier isolation**: Do enterprise customers need guaranteed capacity separate from others?
+- **Burst handling**: Should we allow temporary bursts with "credit" systems, or hard cutoffs?
+
+Each answer narrows down the solution space significantly.`,
+                        why_this_level: "Identifies the key hidden tradeoff and explicitly connects each question to architectural decisions.",
                         strengths: [
-                            "Quantifies the accuracy vs latency tradeoff",
-                            "Explains how different answers change the design",
-                            "Considers business context (enterprise tiers)"
+                            "Identifies the critical hidden requirement (accuracy tolerance)",
+                            "Shows how each answer changes the design",
+                            "Considers business context (enterprise isolation)"
                         ],
                         principal_engineer_signals: [
-                            "Thinks about how requirements map to architecture",
-                            "Considers business implications of technical decisions",
-                            "Provides concrete numbers for tradeoffs"
+                            "Looks beyond stated requirements for hidden constraints",
+                            "Connects questions to architectural implications",
+                            "Prioritizes questions by impact on design"
                         ]
                     }
                 ]
             },
             key_takeaways: [
-                "Always clarify requirements before proposing solutions",
-                "Quantify tradeoffs with concrete numbers when possible",
-                "Connect technical decisions to business impact"
+                "Stated requirements are never complete—probe for hidden constraints",
+                "The best clarifying questions reveal tradeoffs that change the architecture",
+                "Explain how different answers would lead to different designs"
             ]
         },
         {

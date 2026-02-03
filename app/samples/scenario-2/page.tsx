@@ -84,9 +84,9 @@ Let me break down the problems:
 
 3. **Teams stepping on toes** → This is an organizational problem. Conway's Law works both ways—we can enforce boundaries in code first.
 
-4. **Database bottleneck** → *This* is the one legitimate scaling concern. But we should identify *which* tables need splitting, not split everything.
+4. **Database bottleneck on write-heavy features** → *This* is the one legitimate scaling concern that microservices could help. But we should identify *which* features/tables are write-heavy, then extract only those.
 
-**My recommendation**: Adopt an evolutionary architecture. Let's get quick wins first (CI/CD), then make targeted extractions.`,
+**My recommendation**: Adopt an evolutionary architecture. Let's get quick wins first (parallelize tests, improve deploy pipeline), then make targeted extractions for the actual bottlenecks.`,
                         why_this_level: "Systematically analyzes each problem and connects technical decisions to business outcomes.",
                         strengths: [
                             "Focuses on the goal (velocity), not the solution (microservices)",
@@ -149,40 +149,45 @@ This de-risks the migration while preserving the option to extract later.`,
                             "Pilot approach reduces risk",
                             "Recognizes value of preserving options"
                         ],
-                        what_is_missing: "How do you migrate data? What's the rollback plan? How do you handle the transition period?"
+                        what_is_missing: "How do you migrate data? What's the rollback plan? How does service choice connect to the stated database bottleneck?"
                     },
                     {
                         level: "best" as const,
                         icon: "⭐",
                         response: `I'd use the **Strangler Fig Pattern** for safe, incremental migration:
 
-**Phase 1: Stabilize (Weeks 1-4)**
-- Fix CI/CD to drop build times from 45m to 10m—immediate velocity win
+**Phase 1: Stabilize & Observe (Month 1)**
+- Parallelize test suite to drop test times from 45m to ~10m—immediate velocity win
+- Implement basic observability: distributed tracing, centralized logging (prerequisite for debugging extracted services)
 - Identify module boundaries in code using static analysis
 - Stop allowing new cross-module database joins
 
 **Phase 2: Extract First Service (Months 2-4)**
-- Pick the most decoupled, high-churn context (likely Notifications or Billing)
+- Analyze which features cause the write-heavy database bottleneck
+- Pick the service that: (a) has independent scaling needs, (b) different deployment cadence, OR (c) high team coordination overhead
+- For example, if Reporting has heavy writes and needs to scale reads independently → good candidate
 - Build an **Anti-Corruption Layer** in the monolith—all calls go through an interface
 - **Dual-write strategy**: Write to both old tables and new service, read from old
 - Backfill historical data to new service
 - Switch reads to new service, verify consistency
 - Remove dual-writes, deprecate old code
 
-**Phase 3: Team Alignment (Ongoing)**
+**Phase 3: Team Alignment (Months 5-6)**
 - Align teams to service boundaries (Conway's Law)
 - Each team owns their service AND its deployment pipeline
+- Buffer time for learning and unexpected issues
 
 **Decision Criteria for Future Extractions:**
 Only extract if:
-1. It needs to scale independently
+1. It needs to scale independently (e.g., write-heavy bottleneck)
 2. It has a different deployment lifecycle
 3. Team communication overhead exceeds coding time`,
-                        why_this_level: "Comprehensive strategy with specific phases, data migration approach, and decision framework.",
+                        why_this_level: "Comprehensive strategy with specific phases, data migration approach, and decision framework that connects to stated problems.",
                         strengths: [
                             "Strangler Fig pattern for safe migration",
-                            "Specific phases with timelines",
-                            "Dual-write strategy for data safety",
+                            "Specific phases with consistent timelines (6 months total)",
+                            "Includes observability as prerequisite before extraction",
+                            "Connects service selection to the database bottleneck problem",
                             "Clear criteria for when to stop extracting"
                         ],
                         principal_engineer_signals: [
@@ -196,7 +201,8 @@ Only extract if:
             key_takeaways: [
                 "Use the Strangler Fig pattern for incremental migration—never do big bang rewrites",
                 "Data migration is the hardest part—plan for dual-writes and verification",
-                "Provide decision criteria for when to stop, not just when to start"
+                "Connect service extraction choices to the actual bottlenecks identified",
+                "Establish observability before extraction—you can't debug what you can't see"
             ]
         },
         {
@@ -329,14 +335,14 @@ This is significant investment, which is why I'd start with just one extracted s
 1. **Reframe the commitment**: Propose to the board: "We're modernizing our architecture to support 10x growth." This is true and doesn't lock us into a specific implementation.
 
 2. **Deliver visible wins**: In 6 months, we can absolutely have:
-   - Modular architecture with enforced boundaries
-   - 1-2 extracted services (Notifications, maybe Billing)
-   - 5x faster CI/CD
-   - Clear roadmap for future extractions
+   - Month 1: 5x faster test suite, basic observability in place
+   - Months 2-4: 1-2 extracted services (targeting the write-heavy bottleneck)
+   - Months 5-6: Team alignment, buffer for learning, clear roadmap
+   - Modular architecture with enforced boundaries throughout
 
-3. **Manage expectations**: Explain to the CTO that extracting all 6 services in 6 months would likely *decrease* velocity due to the learning curve.
+3. **Manage expectations**: Explain to the CTO that extracting all 6 services in 6 months would likely *decrease* velocity due to the learning curve and operational complexity.
 
-4. **Align incentives**: Show how the incremental approach actually gets to the same destination with lower risk.
+4. **Align incentives**: Show how the incremental approach actually gets to the same destination with lower risk—and the observability we build first will help us debug issues faster.
 
 If the CTO still insists on all 6 services, I'd document my concerns, propose a phased approach within the 6-month window, and ensure we have rollback plans for each extraction.`,
                         why_this_level: "Finds a path that satisfies business constraints while managing technical risk.",
@@ -379,8 +385,9 @@ If the CTO still insists on all 6 services, I'd document my concerns, propose a 
         what_made_responses_best_level: [
             "Questioning whether microservices solve the actual problems",
             "Proposing evolutionary architecture instead of big bang",
+            "Connecting service extraction choices to stated bottlenecks (write-heavy DB)",
+            "Establishing observability as a prerequisite for extraction",
             "Providing decision frameworks for when to extract",
-            "Considering organizational readiness alongside technical readiness",
             "Navigating leadership constraints constructively"
         ]
     },

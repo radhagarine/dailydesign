@@ -4,7 +4,7 @@ const scenarioData = {
     metadata: {
         difficulty: "Principal",
         estimated_time_minutes: 45,
-        topics: ["Incident Response", "Database Performance", "Query Optimization", "Production Debugging", "Postgres Internals"],
+        topics: ["Incident Response", "Database Performance", "Query Optimization", "Lock Contention", "Connection Pool Management", "Production Debugging", "Postgres Internals"],
         generated_date: "2026-01-17"
     },
     problem: {
@@ -14,21 +14,23 @@ const scenarioData = {
 
 **The Situation:**
 - A critical API endpoint (/api/transactions) suddenly started experiencing severe performance degradation
-- P95 latency went from 200ms to 8 seconds over the course of 2 hours
-- The endpoint serves transaction history for mobile and web clients
+- P95 latency went from 200ms to 8 seconds, degrading gradually over 2 hours as the connection pool saturated
+- The endpoint serves transaction history for mobile and web clients (queries by user_id with optional category filters)
 - Traffic volume is normal (no spike detected)
 - The degradation started after a routine deployment
-- The on-call team rolled back the deployment, but performance didn't improve
-- Database CPU is at 40% (normal), application servers at 60% (normal)
-- No errors in logs, just slow responses
+- The on-call team rolled back the **application code**, but the database migration was NOT rolled back (the new index remains)
+- Database CPU is at 40% (normal), but **I/O wait is elevated at 35%** and **active connections are at 95% of pool capacity**
+- No errors in logs, just slow responses (requests are queuing, not failing)
 
 **The deployment that was rolled back included:**
-- A new feature to show transaction categories
-- A bug fix for date filtering
-- A dependency update (Rails 6.1 → 7.0)
-- Database migration to add an index on transaction_category
+- A new feature to filter/display transactions by category (adds a WHERE clause on transaction_category)
+- A bug fix for date filtering (changed date range query logic)
+- A dependency update (Rails 6.1 → 7.0) - a major version upgrade
+- Database migration to add an index on transaction_category (on a 2TB+ transactions table)
 
-The team is stuck. They've rolled back, but the problem persists. Users are complaining, and the business is losing money.`,
+**Critical Detail:** The index creation on the 2TB table took 45 minutes to complete during the deployment window. The new feature's queries use this index via the category filter.
+
+The team is stuck. They've rolled back the code, but the problem persists. Users are complaining, and the business is losing money.`,
         pause_prompt: "The key clue here is that the rollback didn't fix the issue. What does this tell you about where to look?"
     },
     framework_steps: [
@@ -116,8 +118,8 @@ Then I'd start systematic debugging based on the clues. The fact that rollback d
             step_number: 2,
             step_name: "Root Cause Investigation",
             time_allocation: "20 min",
-            description: "Use the available clues to form and test hypotheses about the root cause.",
-            pause_prompt: "The rollback didn't fix it. What does this tell you about where to look?",
+            description: "Use the available clues to form and test hypotheses about the root cause. Multiple factors could be at play—systematically investigate each.",
+            pause_prompt: "The code rollback didn't fix it, but the database migration wasn't rolled back. What are your hypotheses?",
             comparison_table: {
                 criterion: "Debugging Approach",
                 interviewer_question: "What's your hypothesis for why the rollback didn't fix the performance issue?",
@@ -130,181 +132,217 @@ Then I'd start systematic debugging based on the clues. The fact that rollback d
 If that's fine, I'd check for N+1 queries or inefficient loops. I'd also check if there's a memory leak causing garbage collection pressure.
 
 I'd also look at external dependencies—maybe a third-party API is slow.`,
-                        why_this_level: "Ignores the key clue and suggests checking things that don't explain the symptoms.",
+                        why_this_level: "Ignores the key clues and suggests checking things that don't explain the symptoms.",
                         red_flags: [
-                            "Doesn't engage with the 'rollback failed' clue",
+                            "Doesn't engage with the 'code rollback but not migration' clue",
                             "Checking N+1 queries makes no sense if we're running old code",
-                            "No hypothesis formation, just a checklist",
+                            "Ignores the elevated I/O wait and connection pool saturation",
                             "Random guessing instead of deduction"
                         ]
                     },
                     {
                         level: "good" as const,
                         icon: "✓",
-                        response: `The key clue is that rollback didn't fix it. This tells me the root cause is **persistent state**, not code.
+                        response: `The key clue is that code rollback didn't fix it, but the migration wasn't rolled back. This tells me the root cause is **persistent state**, not application code.
 
 **My Hypothesis:**
-The database migration added an index, which triggered Postgres to update table statistics. This may have caused the query planner to choose a different (worse) execution plan. Rolling back the code doesn't reset these statistics.
+The database migration added an index on a 2TB table, which triggered Postgres to update table statistics. This may have caused the query planner to choose a different (worse) execution plan. Rolling back the code doesn't reset these statistics or remove the index.
 
 **Validation:**
 - Run \`EXPLAIN ANALYZE\` on the slow query
 - Check if it's doing a sequential scan instead of index scan
 - Check \`pg_stat_user_tables\` for last analyze time`,
-                        why_this_level: "Good hypothesis formation but missing remediation strategy and validation approach.",
+                        why_this_level: "Good hypothesis formation but missing investigation of other deployment components.",
                         strengths: [
-                            "Correctly interprets the 'rollback failed' clue",
+                            "Correctly interprets the 'code rollback but migration stayed' clue",
                             "Understands database statistics and query planner",
                             "Forms a specific, testable hypothesis"
                         ],
-                        what_is_missing: "What's the fix if hypothesis is correct? How do we validate the fix safely?"
+                        what_is_missing: "Doesn't investigate Rails 7.0 upgrade impact, date filtering bug fix, or check for lock contention. Doesn't explain the connection pool saturation."
                     },
                     {
                         level: "best" as const,
                         icon: "⭐",
-                        response: `**Key Observation:** Rollback failed + database migration involved.
+                        response: `**Key Observations:**
+- Code rolled back, but **migration wasn't** (index still exists)
+- I/O wait elevated (35%) + connection pool at 95% = queries are waiting, not working
+- Gradual 2-hour degradation suggests cascading effect (not instant breakage)
 
-**Hypothesis:** The migration to add an index triggered a statistics update or plan cache invalidation. Postgres is now choosing a suboptimal query plan (likely a sequential scan or nested loop where it used to do an index scan or hash join). Rolling back the code doesn't roll back:
-- Table statistics
-- The new index (if it wasn't dropped in rollback)
-- Query plan cache state
+**Multiple Hypotheses to Investigate:**
 
-**Validation Approach:**
+**Hypothesis 1: Lock Contention from Index Creation**
+The 45-minute index creation on a 2TB table may have created lock queue buildup. Even after completion, accumulated waiting queries can cascade.
 
-1. **Capture the current plan:**
+**Check:**
+\`\`\`sql
+SELECT pid, state, wait_event_type, wait_event, query
+FROM pg_stat_activity WHERE state != 'idle';
+
+SELECT blocked.pid, blocked.query, blocking.pid, blocking.query
+FROM pg_locks blocked_locks
+JOIN pg_stat_activity blocked ON blocked.pid = blocked_locks.pid
+JOIN pg_locks blocking_locks ON blocking_locks.locktype = blocked_locks.locktype
+JOIN pg_stat_activity blocking ON blocking.pid = blocking_locks.pid
+WHERE NOT blocked_locks.granted;
+\`\`\`
+
+**Hypothesis 2: Query Plan Regression**
+The new index may have poisoned the query planner. With stale statistics on a new index, Postgres might estimate wrong row counts.
+
+**Check:**
 \`\`\`sql
 EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
-SELECT * FROM transactions WHERE user_id = 123 ...
+SELECT * FROM transactions WHERE user_id = 123 AND transaction_category = 'groceries';
 \`\`\`
+Look for: actual vs estimated rows mismatch, sequential scans on large tables.
 
-2. **Compare to expected:**
-- Is it using the expected index?
-- Are there any sequential scans on large tables?
-- What's the actual vs. estimated row count? (Huge mismatch = stale stats)
+**Hypothesis 3: Rails 7.0 Query Generation Change**
+Rails 7.0 is a major upgrade. Even with code rollback, if configuration or middleware changed, query generation might differ. **But wait—if we rolled back, we should be on Rails 6.1 again.** Verify with \`Rails.version\` in console.
 
-3. **Check statistics freshness:**
-\`\`\`sql
-SELECT relname, last_analyze, last_autoanalyze
-FROM pg_stat_user_tables
-WHERE relname = 'transactions';
-\`\`\`
+**Hypothesis 4: Date Filtering Bug Fix Side Effects**
+The "bug fix" might have changed query patterns. **But this was rolled back.** Still worth checking if cached query plans from the new code persist.
 
-**Likely Fix:**
-If statistics are stale: \`ANALYZE transactions;\`
-If the new index is poisoning plans: Consider dropping it and re-adding with proper CONCURRENTLY option.
+**Most Likely Scenario:**
+The elevated I/O wait + connection pool saturation points to **lock contention cascading into connection exhaustion**. The index creation locked tables, queries queued up, connection pool filled, and even after index creation finished, the backlog persisted.
 
-**Validation Before Applying:**
-Test the ANALYZE on a read replica first, verify the plan improves, then apply to primary.`,
-                        why_this_level: "Complete diagnosis with specific queries, expected outcomes, and safe validation approach.",
+**Remediation Order:**
+1. First: Check \`pg_stat_activity\` for blocked queries
+2. If locks found: Identify and terminate blocking sessions carefully
+3. If no locks: Run \`ANALYZE transactions;\` to refresh statistics
+4. Monitor connection pool—may need to bounce app servers to clear stale connections`,
+                        why_this_level: "Systematically investigates all deployment components, connects symptoms (I/O wait, connection pool) to hypotheses, and provides prioritized remediation.",
                         strengths: [
-                            "Detailed hypothesis with specific mechanism",
-                            "Exact SQL queries to validate",
-                            "Knows what 'good' looks like in the output",
-                            "Safe validation approach (test on replica first)"
+                            "Investigates ALL deployment components, not just the index",
+                            "Connects I/O wait and connection pool to lock contention hypothesis",
+                            "Explains the gradual 2-hour degradation mechanism",
+                            "Provides prioritized remediation steps"
                         ],
                         principal_engineer_signals: [
-                            "Deep database internals knowledge",
-                            "Thinks about validation and rollback",
-                            "Provides copy-paste ready queries"
+                            "Considers multiple hypotheses before fixing",
+                            "Explains WHY symptoms match the hypothesis",
+                            "Addresses Rails upgrade even if unlikely",
+                            "Understands cascading failure patterns"
                         ]
                     }
                 ]
             },
             key_takeaways: [
-                "If rollback doesn't fix it, it's state (DB/cache/config), not code",
-                "Postgres query planners are sensitive to statistics changes",
-                "Always validate fixes safely before applying to production"
+                "If code rollback doesn't fix it, investigate persistent state (DB, cache, config)",
+                "Connection pool saturation + I/O wait often indicates lock contention",
+                "Investigate ALL changes in a deployment, not just the obvious ones",
+                "Gradual degradation suggests cascading effects, not instant breakage"
             ]
         },
         {
             step_number: 3,
             step_name: "Resolution & Prevention",
             time_allocation: "15 min",
-            description: "Apply the fix safely and establish measures to prevent recurrence.",
-            pause_prompt: "How do you prevent this class of issue from happening again?",
+            description: "Apply the appropriate fix based on diagnosis and establish measures to prevent recurrence.",
+            pause_prompt: "Based on your diagnosis, what's the fix? And how do you prevent this class of issue?",
             comparison_table: {
                 criterion: "Prevention Strategy",
-                interviewer_question: "The ANALYZE fixed the issue. How do we prevent this from happening again?",
+                interviewer_question: "You've identified the root cause. How do we fix it and prevent it from happening again?",
                 responses: [
                     {
                         level: "bad" as const,
                         icon: "❌",
                         response: "We should add better monitoring to catch this sooner. I'd set up alerts for P95 latency so we know when things are slow.",
-                        why_this_level: "Only addresses detection, not prevention. Doesn't fix the root cause.",
+                        why_this_level: "Only addresses detection, not prevention. Doesn't provide a fix.",
                         red_flags: [
                             "Monitoring is reactive, not preventive",
-                            "Doesn't address the migration process",
+                            "Doesn't actually fix the current issue",
                             "Will have the same issue next time"
                         ]
                     },
                     {
                         level: "good" as const,
                         icon: "✓",
-                        response: `We should update our migration process:
+                        response: `**Immediate Fix:**
+Run \`ANALYZE transactions;\` to refresh statistics, then monitor for improvement.
 
+**Prevention:**
 1. **Run ANALYZE after index creation** on large tables
 2. **Test migrations on production-sized data** in staging
 3. **Add monitoring** for query plan changes or latency spikes
 4. **Document this incident** so future engineers know the pattern`,
-                        why_this_level: "Good process improvements but missing proactive detection and broader thinking.",
+                        why_this_level: "Provides a fix but assumes statistics was the root cause. Missing practical constraints.",
                         strengths: [
+                            "Has an immediate fix",
                             "Addresses the migration process",
-                            "Mentions testing with production-sized data",
                             "Documents for future reference"
                         ],
-                        what_is_missing: "How do we catch this before it hits production? What about query plan regression testing?"
+                        what_is_missing: "Doesn't address if lock contention was the cause. 'Test on production-sized data' is impractical with 2TB—needs more nuance."
                     },
                     {
                         level: "best" as const,
                         icon: "⭐",
-                        response: `**Immediate Process Changes:**
+                        response: `**Resolution Depends on Diagnosis:**
 
-1. **Migration Checklist Update:**
-   - For any migration touching large tables (>1M rows), require explicit ANALYZE step
-   - Add to PR template: "Does this migration need ANALYZE? [Yes/No/NA]"
+**Path A: If Lock Contention (connection pool saturated, queries blocked):**
+1. Identify blocking sessions: \`SELECT * FROM pg_stat_activity WHERE wait_event_type = 'Lock'\`
+2. Terminate long-running blocking queries carefully (check they're safe to kill)
+3. Bounce app servers to clear stale connections from the pool
+4. Monitor connection pool recovery
 
-2. **Canary Deployments for Migrations:**
-   - Run migrations against a replica first
-   - Compare query plans before/after for critical queries
-   - Alert if plan changes (seq scan → index scan is fine, reverse is not)
+**Path B: If Query Plan Regression (bad statistics, wrong index choice):**
+1. Run \`ANALYZE transactions;\` to refresh statistics
+2. Verify plan improvement with EXPLAIN ANALYZE
+3. If the new index is causing bad plans, consider: \`DROP INDEX idx_transaction_category;\`
+4. Re-create with \`CREATE INDEX CONCURRENTLY\` during low-traffic window
 
-**Observability Improvements:**
+**Prevention Strategy:**
 
-3. **Query Plan Monitoring:**
-   - Track \`pg_stat_statements\` for top queries
-   - Alert on significant changes in mean_time or rows_processed
-   - Dashboard showing "query plan fingerprints" for critical endpoints
+1. **Migration Safety for Large Tables (>100M rows):**
+   - Always use \`CREATE INDEX CONCURRENTLY\` (avoids blocking writes)
+   - Run ANALYZE immediately after index creation
+   - Include these in migration checklist—PR cannot merge without answering
 
-4. **Latency Attribution:**
-   - Add tracing that shows: "200ms in DB, 10ms in app, 5ms in serialization"
-   - Would have immediately pointed to DB as the culprit
+2. **Connection Pool Monitoring:**
+   - Alert at 80% pool utilization, page at 95%
+   - This incident would have been caught 30 minutes earlier
+
+3. **Query Plan Regression Detection:**
+   - Use \`pg_stat_statements\` to track mean_exec_time for critical queries
+   - Alert if mean_exec_time increases >3x from baseline
+   - Consider tools like pganalyze or Datadog for automated plan tracking
+
+4. **Major Dependency Upgrades (Rails 6→7) Require:**
+   - Separate deployment from other changes
+   - Query audit: compare generated SQL before/after
+   - Don't bundle with migrations or feature changes
+
+5. **Realistic Testing (Acknowledging 2TB Constraint):**
+   - Full 2TB clone is expensive/slow, so use targeted approach:
+   - Clone the specific table to staging with representative data distribution
+   - Test critical query plans against the index
+   - Use \`EXPLAIN\` without \`ANALYZE\` to check plans without full execution
 
 **Post-Incident:**
-
-5. **Blameless Post-Mortem:**
-   - Timeline of events
-   - What went well (rollback was quick)
-   - What didn't go well (rollback didn't include ANALYZE)
-   - Action items with owners and due dates
-
-6. **Runbook Update:**
-   - Add "migration-related performance degradation" runbook
-   - Include the specific EXPLAIN queries we used today`,
-                        why_this_level: "Comprehensive prevention strategy addressing process, observability, and organizational learning.",
+- Blameless post-mortem with timeline
+- Update runbook: "Large table migration checklist"
+- Add connection pool dashboard to incident response screens`,
+                        why_this_level: "Provides two resolution paths based on diagnosis, acknowledges practical constraints, and gives actionable prevention.",
                         strengths: [
-                            "Proactive detection (canary migrations)",
-                            "Query plan monitoring as observability",
-                            "Blameless post-mortem process",
-                            "Runbook for future incidents"
+                            "Two resolution paths matching the two main hypotheses",
+                            "Acknowledges 2TB testing constraint with practical alternative",
+                            "Addresses connection pool monitoring (would have caught this earlier)",
+                            "Separates major dependency upgrades from other changes"
                         ],
                         principal_engineer_signals: [
-                            "Thinks about systemic prevention, not just this bug",
-                            "Builds organizational learning into the response",
-                            "Creates artifacts (runbooks, checklists) that scale"
+                            "Matches fix to diagnosis, not one-size-fits-all",
+                            "Acknowledges real-world constraints (2TB testing)",
+                            "Addresses multiple failure modes systematically",
+                            "Prevents future bundled high-risk deployments"
                         ]
                     }
                 ]
             },
             other_failure_scenarios: [
+                {
+                    scenario: "Lock contention cascade",
+                    impact: "Long-running queries block others, connection pool fills, gradual degradation over hours",
+                    mitigation: "Use CONCURRENTLY for indexes, monitor active connections, set statement_timeout"
+                },
                 {
                     scenario: "Index bloat after heavy deletes",
                     impact: "Index scans become slower than sequential scans",
@@ -312,14 +350,15 @@ Test the ANALYZE on a read replica first, verify the plan improves, then apply t
                 },
                 {
                     scenario: "Connection pool exhaustion",
-                    impact: "Requests queue waiting for connections, latency spikes",
-                    mitigation: "Monitor connection pool utilization, alert at 80%"
+                    impact: "Requests queue waiting for connections, latency spikes with normal CPU",
+                    mitigation: "Monitor connection pool utilization, alert at 80%, investigate I/O wait correlation"
                 }
             ],
             key_takeaways: [
-                "Prevention is better than detection—fix the process, not just the bug",
-                "Query plan monitoring is essential for database-heavy applications",
-                "Post-mortems should produce artifacts (runbooks, checklists) that scale"
+                "Match your fix to your diagnosis—don't apply generic solutions",
+                "Large table migrations need special handling (CONCURRENTLY, ANALYZE, monitoring)",
+                "Connection pool monitoring catches cascading failures earlier",
+                "Don't bundle major dependency upgrades with other risky changes"
             ]
         }
     ],
@@ -407,37 +446,39 @@ Update stakeholders: "We're now tracking two separate incidents. [Person A] is l
     summary: {
         critical_concepts_covered: [
             "Incident command structure",
-            "Postgres query planner and statistics",
-            "Hypothesis-driven debugging",
+            "Postgres query planner, statistics, and lock contention",
+            "Multi-hypothesis debugging (investigating all deployment components)",
             "Mitigation vs. debugging prioritization",
-            "Blameless post-mortems"
+            "Cascading failure patterns (locks → connection pool → latency)",
+            "Major dependency upgrade risks (Rails 6→7)"
         ],
         patterns_demonstrated: [
             "Incident Command System",
-            "Hypothesis-driven debugging",
-            "Query plan analysis",
-            "Canary deployments for migrations",
-            "Runbook-driven operations"
+            "Multi-hypothesis debugging with symptom correlation",
+            "Query plan analysis and lock investigation",
+            "Safe migration practices for large tables (CONCURRENTLY, ANALYZE)",
+            "Connection pool monitoring as early warning system"
         ],
         what_made_responses_best_level: [
             "Prioritizing user impact and mitigation over debugging",
-            "Using deductive reasoning from the 'rollback failed' clue",
-            "Deep knowledge of database internals",
-            "Establishing process improvements, not just fixes",
-            "Clear communication throughout the incident"
+            "Investigating ALL deployment components, not just the obvious one",
+            "Connecting symptoms (I/O wait, connection pool) to root cause hypotheses",
+            "Providing two resolution paths based on diagnosis",
+            "Acknowledging practical constraints (2TB testing challenge)"
         ]
     },
     reflection_prompts: {
         self_assessment: [
             "Did I prioritize mitigation before debugging?",
-            "Did I form a hypothesis based on the evidence before investigating?",
-            "Could I explain why rollback doesn't reset database statistics?",
-            "Did I think about preventing this class of issue, not just this specific bug?"
+            "Did I investigate ALL components of the deployment (feature, bug fix, Rails upgrade, migration)?",
+            "Could I explain why code rollback doesn't fix database state issues?",
+            "Did I connect the symptoms (I/O wait, connection pool) to my hypotheses?",
+            "Did I provide resolution paths for multiple possible root causes?"
         ],
         practice_next: [
-            "Design a query performance monitoring system",
-            "Design a database migration safety framework",
-            "Design an incident management system for a growing team"
+            "Design a query performance monitoring system with plan regression detection",
+            "Design a database migration safety framework for tables >100M rows",
+            "Design an incident management system that handles multiple simultaneous incidents"
         ]
     }
 };
