@@ -276,7 +276,7 @@ function AnswerLevelsSection({
     table: ComparisonTable;
     showResponses: boolean;
 }) {
-    const [expandedLevel, setExpandedLevel] = useState<string | null>('best');
+    const [expandedLevel, setExpandedLevel] = useState<string | null>(null);
 
     if (!showResponses) return null;
 
