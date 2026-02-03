@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { subscribers, emails, scenarios, generateScenarioSlug } from '@/lib/schema';
-import { generateDailyScenario } from '@/lib/ai';
+import { generateDailyScenario, InterviewScenario } from '@/lib/ai';
 import { sendEmail } from '@/lib/email';
 import { eq } from 'drizzle-orm';
 import { getDailyStrategy } from '@/lib/content-strategy';
 
-export const maxDuration = 60; // Allow longer timeout for generation and sending
+export const maxDuration = 120; // Allow longer timeout for comprehensive content generation
 
 // Get base URL for links
 function getBaseUrl(): string {
@@ -31,25 +31,20 @@ export async function GET(req: Request) {
 
     // 1. Determine Strategy (Theme & Problem Type)
     const strategy = getDailyStrategy(today);
-    console.log(`Using strategy: ${strategy.theme.title} / ${strategy.problemType}`);
+    console.log(`Using strategy: ${strategy.theme.title} / ${strategy.problemType} / ${strategy.focusArea}`);
 
     // 2. Generate Content
-    console.log('Generating scenario...');
+    console.log('Generating comprehensive scenario...');
     const scenario = await generateDailyScenario(strategy);
 
     // 3. Save scenario to database
-    const slug = generateScenarioSlug(scenario.title, today);
+    const slug = generateScenarioSlug(scenario.problem.title, today);
     console.log(`Saving scenario with slug: ${slug}`);
 
     await db.insert(scenarios).values({
       slug,
-      title: scenario.title,
-      difficulty: scenario.difficulty || 'Principal',
-      summary: scenario.summary,
-      context: scenario.context,
-      question: scenario.question,
-      answers: JSON.stringify(scenario.answers),
-      keyTakeaways: JSON.stringify(scenario.keyTakeaways),
+      title: scenario.problem.title,
+      content: JSON.stringify(scenario),
       theme: strategy.theme.id,
       problemType: strategy.problemType,
       focusArea: strategy.focusArea,
@@ -82,7 +77,7 @@ export async function GET(req: Request) {
 
       const res = await sendEmail({
         to: sub.email,
-        subject: `Daily Challenge: ${scenario.title}`,
+        subject: `Daily Challenge: ${scenario.problem.title}`,
         html: emailHtml
       });
       if (res.success) recipientCount++;
@@ -91,29 +86,36 @@ export async function GET(req: Request) {
 
     // 6. Log to DB
     await db.insert(emails).values({
-      subject: scenario.title,
+      subject: scenario.problem.title,
       body: JSON.stringify(scenario),
       recipientCount: recipientCount
     }).run();
 
     return NextResponse.json({
       success: true,
-      generated: scenario.title,
+      generated: scenario.problem.title,
       slug,
       sentTo: recipientCount,
+      stepsGenerated: scenario.framework_steps.length,
       results
     });
 
   } catch (error) {
     console.error('Cron job failed:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error', details: String(error) }, { status: 500 });
   }
 }
 
-function generateEmailHtml(scenario: any, scenarioUrl: string, unsubscribeUrl: string): string {
-  const badAnswer = scenario.answers.find((a: any) => a.type === 'bad');
-  const goodAnswer = scenario.answers.find((a: any) => a.type === 'good');
-  const bestAnswer = scenario.answers.find((a: any) => a.type === 'best');
+function generateEmailHtml(scenario: InterviewScenario, scenarioUrl: string, unsubscribeUrl: string): string {
+  // Get first step's responses for preview
+  const firstStep = scenario.framework_steps[0];
+  const responses = firstStep?.comparison_table?.responses || [];
+  const badResponse = responses.find(r => r.level === 'bad');
+  const goodResponse = responses.find(r => r.level === 'good');
+  const bestResponse = responses.find(r => r.level === 'best');
+
+  // Collect key takeaways from all steps
+  const allTakeaways = scenario.framework_steps.flatMap(step => step.key_takeaways).slice(0, 4);
 
   return `
     <!DOCTYPE html>
@@ -127,59 +129,77 @@ function generateEmailHtml(scenario: any, scenarioUrl: string, unsubscribeUrl: s
 
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 24px;">
-          <span style="display: inline-block; padding: 4px 12px; background-color: #7f1d1d; color: #fca5a5; border-radius: 4px; font-size: 12px; font-weight: 600;">DAILY CHALLENGE</span>
+          <span style="display: inline-block; padding: 4px 12px; background-color: #7f1d1d; color: #fca5a5; border-radius: 4px; font-size: 12px; font-weight: 600;">40-MINUTE INTERVIEW SIMULATION</span>
         </div>
 
-        <h1 style="color: #ffffff; font-size: 24px; margin-bottom: 8px; text-align: center;">${scenario.title}</h1>
-        <p style="color: #9ca3af; text-align: center; margin-bottom: 24px;">${scenario.summary}</p>
+        <h1 style="color: #ffffff; font-size: 24px; margin-bottom: 8px; text-align: center;">${scenario.problem.title}</h1>
+        <p style="color: #9ca3af; text-align: center; margin-bottom: 16px;">${scenario.problem.statement}</p>
+
+        <!-- Topics Tags -->
+        <div style="text-align: center; margin-bottom: 24px;">
+          ${scenario.metadata.topics.slice(0, 3).map(topic =>
+            `<span style="display: inline-block; padding: 2px 8px; background-color: #374151; color: #9ca3af; border-radius: 4px; font-size: 11px; margin: 2px;">${topic}</span>`
+          ).join('')}
+        </div>
 
         <!-- CTA Button -->
         <div style="text-align: center; margin-bottom: 32px;">
-          <a href="${scenarioUrl}" style="display: inline-block; padding: 12px 24px; background-color: #7f1d1d; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">View Full Scenario</a>
+          <a href="${scenarioUrl}" style="display: inline-block; padding: 14px 28px; background-color: #7f1d1d; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Start Interview Simulation</a>
         </div>
 
         <hr style="border: none; border-top: 1px solid #333; margin: 24px 0;" />
+
+        <!-- Framework Steps Preview -->
+        <h3 style="color: #ffffff; font-size: 16px; margin-bottom: 16px;">Today's Framework</h3>
+        <div style="background-color: #1f1f1f; border-radius: 6px; padding: 16px; margin-bottom: 24px;">
+          ${scenario.framework_steps.map((step, i) => `
+            <div style="display: flex; align-items: center; margin-bottom: ${i < scenario.framework_steps.length - 1 ? '12px' : '0'};">
+              <span style="display: inline-block; width: 24px; height: 24px; background-color: #7f1d1d; color: #fff; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; margin-right: 12px;">${step.step_number}</span>
+              <span style="color: #d1d5db; font-size: 14px;">${step.step_name}</span>
+              <span style="color: #6b7280; font-size: 12px; margin-left: auto;">${step.time_allocation}</span>
+            </div>
+          `).join('')}
+        </div>
 
         <!-- Context Preview -->
         <h3 style="color: #ffffff; font-size: 16px; margin-bottom: 12px;">The Situation</h3>
-        <div style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
-          ${scenario.context.replace(/\n/g, '<br/>').substring(0, 500)}${scenario.context.length > 500 ? '...' : ''}
-        </div>
-
-        <h3 style="color: #ffffff; font-size: 16px; margin-bottom: 12px;">The Question</h3>
-        <p style="color: #fca5a5; font-size: 16px; font-weight: 500; margin-bottom: 24px;">${scenario.question}</p>
+        <p style="color: #d1d5db; font-size: 14px; line-height: 1.6; margin-bottom: 24px;">
+          ${scenario.problem.context.substring(0, 300)}${scenario.problem.context.length > 300 ? '...' : ''}
+        </p>
 
         <hr style="border: none; border-top: 1px solid #333; margin: 24px 0;" />
 
-        <p style="color: #6b7280; font-size: 14px; text-align: center; margin-bottom: 24px;">
-          Take 10-15 minutes to think through your answer before viewing the analysis.
+        <p style="color: #fca5a5; font-size: 14px; text-align: center; margin-bottom: 24px; font-style: italic;">
+          ${scenario.problem.pause_prompt}
         </p>
 
-        <!-- Quick Preview of Answers -->
-        <div style="background-color: #1f1f1f; border-radius: 6px; padding: 16px; margin-bottom: 24px;">
-          <h4 style="color: #ef4444; font-size: 14px; margin: 0 0 8px 0;">Bad Answer Preview</h4>
-          <p style="color: #9ca3af; font-size: 13px; margin: 0;">${badAnswer?.content?.substring(0, 150) || ''}...</p>
+        <!-- Response Level Preview -->
+        <h3 style="color: #ffffff; font-size: 16px; margin-bottom: 16px;">What You'll Learn</h3>
+
+        <div style="background-color: #1f1f1f; border-radius: 6px; padding: 16px; margin-bottom: 12px; border-left: 3px solid #ef4444;">
+          <h4 style="color: #ef4444; font-size: 13px; margin: 0 0 8px 0;">❌ Bad Answer Pattern</h4>
+          <p style="color: #9ca3af; font-size: 13px; margin: 0;">${badResponse?.response?.substring(0, 120) || ''}...</p>
         </div>
 
-        <div style="background-color: #1f1f1f; border-radius: 6px; padding: 16px; margin-bottom: 24px;">
-          <h4 style="color: #3b82f6; font-size: 14px; margin: 0 0 8px 0;">Good Answer Preview</h4>
-          <p style="color: #9ca3af; font-size: 13px; margin: 0;">${goodAnswer?.content?.substring(0, 150) || ''}...</p>
+        <div style="background-color: #1f1f1f; border-radius: 6px; padding: 16px; margin-bottom: 12px; border-left: 3px solid #3b82f6;">
+          <h4 style="color: #3b82f6; font-size: 13px; margin: 0 0 8px 0;">✓ Good Answer Pattern</h4>
+          <p style="color: #9ca3af; font-size: 13px; margin: 0;">${goodResponse?.response?.substring(0, 120) || ''}...</p>
         </div>
 
-        <div style="background-color: #1f1f1f; border-radius: 6px; padding: 16px; margin-bottom: 24px;">
-          <h4 style="color: #22c55e; font-size: 14px; margin: 0 0 8px 0;">Best Answer Preview</h4>
-          <p style="color: #9ca3af; font-size: 13px; margin: 0;">${bestAnswer?.content?.substring(0, 150) || ''}...</p>
+        <div style="background-color: #1f1f1f; border-radius: 6px; padding: 16px; margin-bottom: 24px; border-left: 3px solid #22c55e;">
+          <h4 style="color: #22c55e; font-size: 13px; margin: 0 0 8px 0;">✓✓ Principal-Level Pattern</h4>
+          <p style="color: #9ca3af; font-size: 13px; margin: 0;">${bestResponse?.response?.substring(0, 120) || ''}...</p>
         </div>
 
         <!-- CTA Button -->
         <div style="text-align: center; margin-bottom: 24px;">
-          <a href="${scenarioUrl}" style="display: inline-block; padding: 12px 24px; background-color: #7f1d1d; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Read Full Analysis</a>
+          <a href="${scenarioUrl}" style="display: inline-block; padding: 14px 28px; background-color: #7f1d1d; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Start Full Simulation</a>
         </div>
 
-        <!-- Key Takeaways -->
+        <!-- Key Takeaways Preview -->
         <h3 style="color: #ffffff; font-size: 16px; margin-bottom: 12px;">Key Takeaways</h3>
-        <ul style="color: #d1d5db; font-size: 14px; line-height: 1.8; padding-left: 20px;">
-          ${scenario.keyTakeaways.slice(0, 3).map((k: string) => `<li>${k}</li>`).join('')}
+        <ul style="color: #d1d5db; font-size: 14px; line-height: 1.8; padding-left: 20px; margin: 0;">
+          ${allTakeaways.map((k: string) => `<li>${k}</li>`).join('')}
         </ul>
 
       </div>

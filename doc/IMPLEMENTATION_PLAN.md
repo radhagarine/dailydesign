@@ -235,3 +235,81 @@ lib/
 2. Deploy to Vercel and set environment variables
 3. Generate test scenarios to verify AI quality
 4. Add subscription gating for premium content (optional)
+
+---
+
+## Phase 6: Template.md Integration (Completed)
+
+### 6.1 Enhanced AI Prompt (lib/ai.ts)
+- [x] Replaced simple prompts with comprehensive template.md-based prompt
+- [x] Added TypeScript interfaces for new JSON schema:
+  - `InterviewScenario` - main scenario structure
+  - `FrameworkStep` - individual interview steps with comparison tables
+  - `ComparisonTable` - bad/good/best response comparisons
+  - `ComponentDecision` - architecture component decisions
+- [x] Increased `max_tokens` to 8000 for comprehensive content
+- [x] Enhanced validation with `validateScenarioStructure()`
+
+### 6.2 Simplified Database Schema (lib/schema.ts)
+- [x] Simplified scenarios table with single `content` JSON column
+- [x] Removed legacy columns (answers, keyTakeaways, context, question, etc.)
+- [x] Clean schema: `slug`, `title`, `content`, `theme`, `problemType`, `focusArea`, `generatedAt`
+
+### 6.3 InterviewScenario Component (components/InterviewScenario.tsx)
+- [x] Created comprehensive component for rendering full interview simulations
+- [x] Features:
+  - Progressive reveal: steps unlock one-by-one with "Reveal Analysis" buttons
+  - Comparison tables: bad/good/best responses with color-coded styling
+  - Calculations breakdown: storage, throughput, bandwidth metrics
+  - Architecture diagrams: text-based architecture descriptions
+  - Component decisions: individual technology choice comparisons
+  - Interview simulation: dynamic requirements adaptation section
+  - Summary & reflection: concepts, patterns, self-assessment prompts
+- [x] Progress bar showing completion status
+- [x] Time estimates per step
+
+### 6.4 Cron Job Updates (app/api/cron/daily-challenge/route.ts)
+- [x] Updated to generate comprehensive scenarios
+- [x] Stores full scenario as single `content` JSON
+- [x] Increased `maxDuration` to 120 seconds for longer generation
+- [x] Enhanced email template with:
+  - Framework steps preview
+  - Topics tags
+  - Response level previews
+
+### 6.5 Simplified Pages
+- [x] `/scenarios/[slug]/page.tsx` - Uses InterviewScenario component only
+- [x] `/archive/page.tsx` - Extracts summary from content JSON
+
+### New JSON Structure
+The content format follows this structure:
+```json
+{
+  "metadata": { "difficulty", "estimated_time_minutes", "topics", "generated_date" },
+  "problem": { "title", "statement", "context", "pause_prompt" },
+  "framework_steps": [
+    {
+      "step_number", "step_name", "time_allocation", "description",
+      "comparison_table": { "criterion", "responses": [bad, good, best] },
+      "interviewer_response": { "clarifications", "additional_context" },
+      "calculations_breakdown": { "storage", "throughput", "bandwidth" },
+      "key_takeaways": []
+    }
+  ],
+  "interview_simulation": {
+    "title", "description",
+    "scenario": { "interviewer_question", "comparison_table" },
+    "key_takeaways": []
+  },
+  "summary": { "critical_concepts_covered", "patterns_demonstrated", "what_made_responses_best_level" },
+  "reflection_prompts": { "self_assessment", "practice_next" }
+}
+```
+
+### Benefits of New Format
+1. **Structured Learning**: Step-by-step interview framework mirrors real interviews
+2. **Deeper Calibration**: Comparison tables at each step (not just overall)
+3. **Quantitative Focus**: Calculations breakdown with specific metrics
+4. **Adaptability Training**: Dynamic requirements section teaches flexibility
+5. **Self-Assessment**: Reflection prompts encourage active learning
+6. **Progressive Disclosure**: Users think before seeing answers at each step

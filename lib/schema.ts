@@ -44,14 +44,10 @@ export const scenarios = sqliteTable('scenarios', {
     id: integer('id').primaryKey(),
     slug: text('slug').notNull().unique(),
     title: text('title').notNull(),
-    difficulty: text('difficulty').default('Principal'),
-    summary: text('summary'),
-    context: text('context').notNull(),
-    question: text('question').notNull(),
-    // Store answers as JSON string
-    answers: text('answers').notNull(), // JSON array of { type, title, content, analysis }
-    keyTakeaways: text('key_takeaways').notNull(), // JSON array of strings
-    // Metadata
+    // Full scenario content as JSON (template.md format)
+    // Contains: metadata, problem, framework_steps, interview_simulation, summary, reflection_prompts
+    content: text('content').notNull(), // Full InterviewScenario JSON
+    // Metadata for querying/filtering
     theme: text('theme').notNull(),
     problemType: text('problem_type').notNull(), // 'SYSTEM_DESIGN' | 'TACTICAL'
     focusArea: text('focus_area'),
@@ -59,6 +55,7 @@ export const scenarios = sqliteTable('scenarios', {
 }, (table) => ({
     slugIdx: index('slug_idx').on(table.slug),
     generatedAtIdx: index('generated_at_idx').on(table.generatedAt),
+    themeIdx: index('theme_idx').on(table.theme),
 }));
 
 export const subscriptions = sqliteTable('subscriptions', {

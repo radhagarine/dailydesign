@@ -10,6 +10,8 @@ const config: Config = {
         extend: {
             colors: {
                 maroon: {
+                    300: '#fca5a5',
+                    400: '#f87171',
                     500: '#b91c1c',
                     600: '#991b1b', // Primary Maroon
                     700: '#7f1d1d',

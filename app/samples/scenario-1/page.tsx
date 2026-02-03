@@ -1,15 +1,16 @@
-import DesignProblem from '@/components/DesignProblem';
+import InterviewScenario from '@/components/InterviewScenario';
 
-export default function Scenario1() {
-    return (
-        <DesignProblem
-            id="scenario-1"
-            title="Designing a Distributed Rate Limiter"
-            category="System Design & Architecture"
-            difficulty="Senior"
-            estimatedTime="30 min"
-            summary="Design a scalable rate limiting system for a high-traffic API gateway handling 5 million requests per second."
-            context={`You're interviewing for a Principal Engineer role at a company that operates a high-traffic API gateway. The gateway currently handles 5 million requests per second across 200+ microservices.
+const scenarioData = {
+    metadata: {
+        difficulty: "Senior",
+        estimated_time_minutes: 30,
+        topics: ["Rate Limiting", "Distributed Systems", "High Availability", "Caching", "Consistency vs Availability"],
+        generated_date: "2026-01-15"
+    },
+    problem: {
+        title: "Designing a Distributed Rate Limiter",
+        statement: "Design a scalable rate limiting system for a high-traffic API gateway handling 5 million requests per second.",
+        context: `You're interviewing for a Principal Engineer role at a company that operates a high-traffic API gateway. The gateway currently handles 5 million requests per second across 200+ microservices.
 
 The current rate limiting solution is causing problems:
 - Rate limits are enforced per-instance, not globally
@@ -22,109 +23,126 @@ The interviewer wants to understand how you'd design a distributed rate limiter 
 - Provide accurate global rate limiting
 - Scale horizontally
 - Support multiple rate limiting strategies (fixed window, sliding window, token bucket)
-- Be operationally simple`}
-            question="How would you design a distributed rate limiter for this API gateway? Walk me through your approach, key design decisions, and tradeoffs."
-            guidingQuestions={[
-                "How do you handle the latency vs. accuracy tradeoff at 5M RPS?",
-                "What happens if your rate limiting service goes down?",
-                "How will you distribute quotas across gateway instances?",
-                "What data structure is most efficient for storing counters?",
-                "How will you handle 'thundering herd' issues when quotas reset?"
-            ]}
-            pitfalls={[
-                "Assuming a central Redis can handle 5M synchronous writes/sec",
-                "Forgetting about network latency overhead (round-trip time)",
-                "Ignoring failure modes (what if the rate limiter fails?)",
-                "Not clarifying acceptable accuracy loss (is 5% over-limit ok?)",
-                "Over-engineering with complex consensus algorithms (Paxos/Raft) for simple counting"
-            ]}
-            answers={[
-                {
-                    type: 'bad',
-                    title: 'Bad Answer (Weak Signal)',
-                    content: `I'd use Redis with a Lua script to implement rate limiting. We'd store counters in Redis with TTL and increment them on each request. If the counter exceeds the limit, we reject the request.
+- Be operationally simple`,
+        pause_prompt: "Before proceeding, take a moment to think about the core tradeoffs between accuracy and latency at this scale."
+    },
+    framework_steps: [
+        {
+            step_number: 1,
+            step_name: "Requirements Clarification",
+            time_allocation: "5 min",
+            description: "Before diving into solutions, clarify the requirements and constraints. The right design depends heavily on acceptable tradeoffs.",
+            pause_prompt: "What clarifying questions would you ask the interviewer?",
+            comparison_table: {
+                criterion: "Requirements Gathering",
+                interviewer_question: "How would you approach understanding the requirements for this system?",
+                responses: [
+                    {
+                        level: "bad" as const,
+                        icon: "❌",
+                        response: "I'd use Redis with a Lua script to implement rate limiting. We'd store counters in Redis with TTL and increment them on each request. If the counter exceeds the limit, we reject the request.",
+                        why_this_level: "Jumps directly to implementation without understanding requirements or constraints.",
+                        red_flags: [
+                            "No clarifying questions asked",
+                            "Assumes synchronous Redis calls at 5M RPS is viable",
+                            "Doesn't consider latency requirements"
+                        ]
+                    },
+                    {
+                        level: "good" as const,
+                        icon: "✓",
+                        response: "Before designing, I'd want to understand: What's the acceptable latency overhead? Is some over-limiting acceptable during bursts? What are the SLAs for different customer tiers? How do we handle rate limiter failures?",
+                        why_this_level: "Asks good clarifying questions but doesn't deeply explore the tradeoffs.",
+                        strengths: [
+                            "Identifies need for clarification",
+                            "Considers failure modes",
+                            "Thinks about SLAs"
+                        ],
+                        what_is_missing: "Doesn't quantify the accuracy vs latency tradeoff or discuss how different answers would change the design."
+                    },
+                    {
+                        level: "best" as const,
+                        icon: "⭐",
+                        response: `**Key Question:** Is it acceptable to have 5-10% over-limit during traffic bursts, or do we need strict enforcement? This fundamentally changes the design.
 
-For distributed rate limiting, we'd have all gateway instances connect to a Redis cluster. We'd use the token bucket algorithm because it's the most accurate.
+If strict enforcement is required, we need synchronous coordination (higher latency). If some tolerance is acceptable, we can use local enforcement with periodic sync (near-zero latency).
+
+I'd also clarify:
+- **Failure mode preference**: Fail open (allow traffic) or fail closed (block traffic)?
+- **Multi-tenancy**: Are enterprise customers willing to pay for dedicated capacity?
+- **Burst handling**: Should we allow temporary bursts with "credit" systems?`,
+                        why_this_level: "Explicitly connects requirements to design decisions and quantifies tradeoffs.",
+                        strengths: [
+                            "Quantifies the accuracy vs latency tradeoff",
+                            "Explains how different answers change the design",
+                            "Considers business context (enterprise tiers)"
+                        ],
+                        principal_engineer_signals: [
+                            "Thinks about how requirements map to architecture",
+                            "Considers business implications of technical decisions",
+                            "Provides concrete numbers for tradeoffs"
+                        ]
+                    }
+                ]
+            },
+            key_takeaways: [
+                "Always clarify requirements before proposing solutions",
+                "Quantify tradeoffs with concrete numbers when possible",
+                "Connect technical decisions to business impact"
+            ]
+        },
+        {
+            step_number: 2,
+            step_name: "High-Level Architecture",
+            time_allocation: "10 min",
+            description: "Design the core architecture that addresses the latency and scale requirements.",
+            pause_prompt: "How would you architect a system that adds near-zero latency while maintaining global accuracy?",
+            comparison_table: {
+                criterion: "Architecture Design",
+                interviewer_question: "Walk me through your high-level architecture.",
+                responses: [
+                    {
+                        level: "bad" as const,
+                        icon: "❌",
+                        response: `For distributed rate limiting, we'd have all gateway instances connect to a Redis cluster. We'd use the token bucket algorithm because it's the most accurate.
 
 To handle 5M RPS, we'd scale Redis horizontally by sharding based on user ID. We'd also add caching to reduce Redis load.`,
-                    diagram: `graph TD
-    Client[Client] --> Gateway[API Gateway]
-    Gateway -->|Sync Request| Redis[Redis Cluster]
-    Redis -->|Counter++| Redis
-    Redis -->|Current Count| Gateway
-    Gateway -->|Allow/Deny| Client
-    
-    style Redis fill:#ffcccc,stroke:#ff0000`,
-                    diagramTitle: "Synchronous Centralized Approach (Bottleneck)",
-                    analysis: `This answer shows shallow thinking and raises several red flags for interviewers:
+                        why_this_level: "Proposes a solution that won't meet the latency requirements at scale.",
+                        red_flags: [
+                            "Synchronous Redis calls add network RTT to every request",
+                            "Redis cluster at 5M writes/sec is extremely challenging",
+                            "Vague about how 'caching' helps with rate limiting",
+                            "Single point of failure"
+                        ]
+                    },
+                    {
+                        level: "good" as const,
+                        icon: "✓",
+                        response: `I'd propose a hybrid approach:
 
-**Missing Critical Analysis:**
-- No discussion of the fundamental tradeoff between accuracy and latency
-- Doesn't acknowledge that synchronous Redis calls at 5M RPS would add significant latency
-- No consideration of Redis as a single point of failure
-- Assumes sharding solves scale without analyzing the actual bottleneck
-
-**Premature Optimization:**
-- Jumps to token bucket without explaining why it's better for this use case
-- Suggests "caching" without specifying what to cache or how it helps
-
-**Lack of Production Awareness:**
-- Doesn't discuss monitoring, observability, or operational complexity
-- No mention of graceful degradation or failure modes
-- Ignores the "operationally simple" requirement`
-                },
-                {
-                    type: 'good',
-                    title: 'Good Answer (Senior Signal)',
-                    content: `The core challenge here is the tradeoff between accuracy and latency. At 5M RPS, we can't afford synchronous calls to a central store for every request.
-
-I'd propose a hybrid approach:
 1. **Local rate limiting** with in-memory counters on each gateway instance
-2. **Async synchronization** to a distributed store (Redis or similar) every 100-200ms
+2. **Async synchronization** to Redis every 100-200ms
 3. **Quota distribution** where each instance gets a portion of the global quota
 
-For the algorithm, I'd start with a sliding window counter because it balances accuracy and memory usage better than token bucket at this scale.
+For the algorithm, I'd use sliding window counters for balance between accuracy and memory.
 
-To handle the multi-tier requirement (per-user, per-API, per-tenant), I'd use a hierarchical key structure in Redis: \`ratelimit: { tenant }:{ user }: { api }: { window }\`.
-
-For failure handling, if Redis is unavailable, instances would fall back to local-only rate limiting with conservative limits to prevent abuse.`,
-                    diagram: `graph TD
-    Client[Client] --> Gateway[API Gateway]
-    subgraph Node [Gateway Instance]
-      Gateway --> LocalMem[Local Memory Counter]
-    end
-    LocalMem -.->|Async Sync 100ms| Redis[Redis Cluster]
-    Redis -.->|Update Quota| LocalMem
-    
-    style LocalMem fill:#fff4e6,stroke:#ff9900
-    style Redis fill:#e6f3ff,stroke:#0066cc`,
-                    diagramTitle: "Hybrid Async Approach",
-                    analysis: `This answer demonstrates solid senior-level thinking:
-
-**Strengths:**
-- Identifies the core latency vs. accuracy tradeoff
-- Proposes a practical hybrid approach that addresses the performance constraint
-- Considers failure modes and has a fallback strategy
-- Thinks about the data model (hierarchical keys)
-
-**Why It Falls Short for Principal:**
-- Doesn't deeply analyze the quota distribution problem (what if one instance gets all the traffic?)
-- The async sync approach could lead to over-limiting or under-limiting during traffic bursts
-- Doesn't discuss how to handle quota rebalancing when instances scale up/down
-- Missing discussion of observability and how to debug rate limiting issues in production`
-                },
-                {
-                    type: 'best',
-                    title: 'Best Answer (Principal Signal)',
-                    content: `Let me start by clarifying the requirements and constraints, because the right design depends heavily on the acceptable accuracy vs. latency tradeoff.
-
-**Key Question:** Is it acceptable to have 5-10% over-limit during traffic bursts, or do we need strict enforcement? This fundamentally changes the design.
-
-Assuming some tolerance for over-limit, I'd propose a **quota-based approach with local enforcement and periodic reconciliation**:
+For failure handling, if Redis is unavailable, instances fall back to local-only limiting with conservative limits.`,
+                        why_this_level: "Good practical approach but doesn't deeply analyze the quota distribution problem.",
+                        strengths: [
+                            "Hybrid approach addresses latency concerns",
+                            "Considers async synchronization",
+                            "Has a fallback strategy"
+                        ],
+                        what_is_missing: "Doesn't address: What if one instance gets all the traffic? How do quotas rebalance when instances scale?"
+                    },
+                    {
+                        level: "best" as const,
+                        icon: "⭐",
+                        response: `Assuming some tolerance for over-limit, I'd propose a **quota-based approach with local enforcement**:
 
 **Architecture:**
 1. **Quota Service**: Centralized service that allocates quotas to gateway instances
-2. **Local Enforcement**: Each gateway instance enforces limits using in-memory counters
+2. **Local Enforcement**: Each gateway enforces limits using in-memory counters
 3. **Periodic Sync**: Instances report usage and request new quotas every 1-5 seconds
 
 **Why This Works:**
@@ -137,66 +155,243 @@ Assuming some tolerance for over-limit, I'd propose a **quota-based approach wit
 - Each instance gets a quota slice (e.g., 1000 req/sec for a user with 10K limit across 10 instances)
 - Over-limiting is bounded: worst case is (num_instances × quota_slice) - global_limit
 - We can tune the sync interval: shorter = more accurate but more overhead`,
-                    diagram: `graph TD
-    Client[Client] --> Gateway[API Gateway]
-    
-    subgraph Instance [Gateway Instance]
-      Gateway --> Matcher[Local Rule Matcher]
-      Matcher --> Bucket[Token Bucket]
-    end
-    
-    Bucket -.->|Request Batch| QuotaSvc[Quota Service]
-    QuotaSvc -.->|Grant Tokens| Bucket
-    QuotaSvc --> Store[Redis State Store]
-    
-    style Instance fill:#ecfdf5,stroke:#10b981
-    style QuotaSvc fill:#f3e8ff,stroke:#7c3aed`,
-                    diagramTitle: "Quota Service Architecture (Best Tradeoff)",
-                    analysis: `This answer demonstrates principal-level thinking:
+                        why_this_level: "Provides a complete architecture with clear reasoning and bounded error analysis.",
+                        strengths: [
+                            "Zero latency on request path",
+                            "Clear explanation of why it works",
+                            "Quantified accuracy bounds",
+                            "Addresses operational simplicity"
+                        ],
+                        principal_engineer_signals: [
+                            "Thinks about worst-case bounds",
+                            "Considers operational complexity",
+                            "Explains tuning knobs for different tradeoffs"
+                        ]
+                    }
+                ]
+            },
+            key_takeaways: [
+                "At high scale, synchronous calls to shared state are often the bottleneck",
+                "Consider async approaches or local enforcement with periodic reconciliation",
+                "Always analyze the worst-case bounds of your approach"
+            ]
+        },
+        {
+            step_number: 3,
+            step_name: "Failure Modes & Operational Concerns",
+            time_allocation: "10 min",
+            description: "Production systems must handle failures gracefully. Discuss how your design degrades under various failure scenarios.",
+            pause_prompt: "What happens when components of your rate limiting system fail?",
+            comparison_table: {
+                criterion: "Failure Handling",
+                interviewer_question: "What happens if your quota service goes down? What about network partitions?",
+                responses: [
+                    {
+                        level: "bad" as const,
+                        icon: "❌",
+                        response: "If Redis goes down, we'd fail open and allow all traffic through. We'd set up monitoring to alert us when this happens so we can fix it quickly.",
+                        why_this_level: "Fails to consider the implications of failing open at scale.",
+                        red_flags: [
+                            "Failing open at 5M RPS could overwhelm downstream services",
+                            "Reactive approach (wait for alerts) is too slow",
+                            "No discussion of partial failures or degraded modes"
+                        ]
+                    },
+                    {
+                        level: "good" as const,
+                        icon: "✓",
+                        response: `I'd implement multiple layers of fallback:
 
-**Strategic Thinking:**
-- Starts by clarifying requirements rather than jumping to a solution
-- Explicitly states assumptions and their impact on design
-- Considers the business context (some over-limiting is acceptable)
+1. **Quota service down**: Use last-known quotas with a decay factor
+2. **Network partition**: Local instances continue with isolated quotas
+3. **Instance restart**: Bootstrap from quota service or use conservative defaults
 
-**System Design Excellence:**
-- Proposes a design that directly addresses the latency constraint (zero overhead on request path)
-- Explains the accuracy tradeoff with concrete bounds
-- Considers failure modes and graceful degradation
-- Thinks about horizontal scaling and operational simplicity
+We'd also have circuit breakers to prevent cascading failures.`,
+                        why_this_level: "Good fallback strategy but doesn't quantify the impact or discuss recovery.",
+                        strengths: [
+                            "Multiple fallback layers",
+                            "Considers network partitions",
+                            "Mentions circuit breakers"
+                        ],
+                        what_is_missing: "What's the impact on customers during degraded mode? How do we recover without causing spikes?"
+                    },
+                    {
+                        level: "best" as const,
+                        icon: "⭐",
+                        response: `**Failure Scenarios & Mitigations:**
 
-**Production Maturity:**
-- Discusses observability, debugging, and testing upfront
-- Includes a rollout strategy that de-risks the implementation`
+1. **Quota Service Down**
+   - Use cached quotas with TTL (e.g., 5 minutes)
+   - Apply a safety factor (80% of cached quota) to prevent over-allocation
+   - Alert on degraded mode, but don't page unless >10 min
+
+2. **Network Partition**
+   - Each partition operates independently with its allocated quotas
+   - On heal, reconcile usage asynchronously (no thundering herd)
+   - Accept temporary over-limit during partition (bounded by partition duration)
+
+3. **Traffic Shift (all traffic to one instance)**
+   - Implement quota stealing: instance can request emergency quota from neighbors
+   - Fallback: rate limit at instance level to protect downstream
+
+**Key Principle**: Prefer slightly over-limiting to catastrophic downstream failure. The cost of blocking a few extra requests is far less than overwhelming the backend.
+
+**Observability**:
+- Track quota utilization per instance
+- Alert on asymmetric distribution
+- Dashboard showing current mode (normal/degraded/emergency)`,
+                        why_this_level: "Comprehensive failure analysis with clear priorities and observability.",
+                        strengths: [
+                            "Specific mitigations for each failure mode",
+                            "Clear philosophy (prefer over-limit to backend failure)",
+                            "Includes observability requirements",
+                            "Considers recovery scenarios"
+                        ],
+                        principal_engineer_signals: [
+                            "Thinks about blast radius of failures",
+                            "Prioritizes based on business impact",
+                            "Builds in observability from the start"
+                        ]
+                    }
+                ]
+            },
+            other_failure_scenarios: [
+                {
+                    scenario: "Thundering herd on quota reset",
+                    impact: "Spike in traffic when quotas reset at window boundaries",
+                    mitigation: "Use sliding windows or jittered reset times per user"
+                },
+                {
+                    scenario: "Hot key (single user with massive traffic)",
+                    impact: "One user's traffic skews quota distribution",
+                    mitigation: "Detect hot keys and route to dedicated quota pool"
                 }
-            ]}
-            comparisonRows={[
-                { aspect: 'Latency Overhead', bad: 'High (Network RTT per request)', good: 'Low (Local lookup + Async sync)', best: 'Zero (Local enforcement)' },
-                { aspect: 'Accuracy', bad: 'High (Strict consistency)', good: 'Medium (Eventual consistency)', best: 'Tunable (Bounded error)' },
-                { aspect: 'Scalability', bad: 'Poor (Redis hotspot)', good: 'Better (Reduced write load)', best: 'Excellent (Horizontally scalable)' },
-                { aspect: 'Failure Handling', bad: 'SPOF (Fails open or closed)', good: 'Basic Fallback', best: 'Graceful Degradation (Last known quota)' },
-                { aspect: 'Operational Complexity', bad: 'Medium (Redis Cluster)', good: 'High (Sync logic complexity)', best: 'Medium (Stateless Service)' }
-            ]}
-            rubricItems={[
-                'Clarifies requirements and constraints before proposing a solution',
-                'Explicitly discusses latency vs. accuracy tradeoffs',
-                'Proposes a design that addresses the performance constraint',
-                'Considers failure modes and graceful degradation',
-                'Discusses observability and operational concerns upfront',
-                'Mentions testing and rollout strategy',
-                'Explains when to choose different approaches'
-            ]}
-            keyTakeaways={[
-                'Always clarify requirements and constraints before proposing a solution. The "right" design depends on acceptable tradeoffs.',
-                'At high scale, synchronous calls to shared state are often the bottleneck. Consider async approaches or local enforcement with periodic reconciliation.',
-                'Graceful degradation is critical for production systems. Design for failure modes, not just happy paths.',
-                'Operational simplicity is a feature, not an afterthought. Complex systems are harder to debug, monitor, and maintain.',
-                'Start simple and add complexity incrementally. Validate each layer before building the next one.'
-            ]}
-            relatedChallenges={[
-                { title: 'Designing a Distributed Counter', href: '/samples/scenario-2' },
-                { title: 'Architecting a Global Leaderboard', href: '/samples/scenario-3' }
-            ]}
+            ],
+            key_takeaways: [
+                "Design for graceful degradation, not just happy path",
+                "Quantify the impact of each failure mode",
+                "Build observability into the design from the start"
+            ]
+        }
+    ],
+    interview_simulation: {
+        title: "Curveball: Strict Consistency Requirement",
+        description: "The interviewer changes the requirements to test your adaptability.",
+        scenario: {
+            interviewer_question: "Actually, for our enterprise tier, we need strict rate limiting with zero over-limit tolerance. How would you modify your design?",
+            pause_prompt: "Think about how you'd adapt your architecture for strict consistency. What tradeoffs would you accept?",
+            comparison_table: {
+                criterion: "Adapting to New Requirements",
+                responses: [
+                    {
+                        level: "bad" as const,
+                        icon: "❌",
+                        response: "We'd just use Redis with synchronous calls for enterprise customers. The latency hit is acceptable for them since they're paying more.",
+                        why_this_level: "Doesn't quantify the latency impact or consider alternatives.",
+                        red_flags: [
+                            "Assumes enterprise customers accept higher latency without asking",
+                            "Synchronous Redis at scale is still problematic",
+                            "No discussion of how to isolate enterprise from regular traffic"
+                        ]
+                    },
+                    {
+                        level: "good" as const,
+                        icon: "✓",
+                        response: "For strict consistency, I'd use a two-tier approach: local pre-check with synchronous confirmation for requests near the limit. This minimizes sync calls while guaranteeing no over-limit.",
+                        why_this_level: "Good optimization but doesn't fully address the tradeoffs.",
+                        strengths: [
+                            "Hybrid approach reduces sync calls",
+                            "Focuses on edge cases (near limit)"
+                        ],
+                        what_is_missing: "How do you define 'near the limit'? What's the latency impact? How do you handle the transition?"
+                    },
+                    {
+                        level: "best" as const,
+                        icon: "⭐",
+                        response: `For strict enforcement, I'd recommend a **reservation-based model**:
+
+**How It Works:**
+1. Gateway reserves quota in batches (e.g., 100 requests)
+2. Local enforcement against reserved quota (fast path)
+3. When reservation depleted, synchronously request more
+4. If sync fails, reject the request (fail closed for enterprise)
+
+**Latency Analysis:**
+- 99% of requests: local check only (~0.1ms)
+- 1% of requests: sync reservation (~5-10ms)
+- Average overhead: ~0.15ms
+
+**Tradeoff**: We're trading some quota efficiency (unused reservations) for latency. For enterprise customers paying premium, this is acceptable.
+
+**Isolation**: Enterprise traffic goes through dedicated gateway instances with their own quota pools, preventing noisy neighbor issues.`,
+                        why_this_level: "Provides a complete solution with quantified tradeoffs and isolation strategy.",
+                        strengths: [
+                            "Concrete latency numbers",
+                            "Clear tradeoff analysis",
+                            "Addresses isolation concerns"
+                        ],
+                        principal_engineer_signals: [
+                            "Adapts architecture to new requirements cleanly",
+                            "Quantifies the impact of changes",
+                            "Considers multi-tenant isolation"
+                        ]
+                    }
+                ]
+            }
+        },
+        key_takeaways: [
+            "Be prepared to adapt your design when requirements change",
+            "Quantify the impact of architectural changes",
+            "Consider how different customer tiers might need different solutions"
+        ]
+    },
+    summary: {
+        critical_concepts_covered: [
+            "Distributed rate limiting patterns",
+            "Consistency vs availability tradeoffs",
+            "Local enforcement with global coordination",
+            "Graceful degradation",
+            "Multi-tenant isolation"
+        ],
+        patterns_demonstrated: [
+            "Quota-based resource allocation",
+            "Hybrid sync/async architectures",
+            "Reservation-based consistency",
+            "Circuit breaker pattern",
+            "Graceful degradation under failure"
+        ],
+        what_made_responses_best_level: [
+            "Clarifying requirements before proposing solutions",
+            "Quantifying tradeoffs with concrete numbers",
+            "Considering failure modes and their business impact",
+            "Building observability into the design",
+            "Adapting cleanly when requirements change"
+        ]
+    },
+    reflection_prompts: {
+        self_assessment: [
+            "Did I clarify the accuracy vs latency tradeoff before proposing a solution?",
+            "Could I explain the worst-case bounds of my approach?",
+            "Did I consider how the system behaves under various failure modes?",
+            "Would my design be operationally simple to run in production?"
+        ],
+        practice_next: [
+            "Design a distributed counter system for analytics",
+            "Design a global leaderboard with real-time updates",
+            "Design a circuit breaker service for microservices"
+        ]
+    }
+};
+
+export default function Scenario1() {
+    return (
+        <InterviewScenario
+            slug="sample-scenario-1"
+            scenario={scenarioData}
+            theme="scale"
+            problemType="SYSTEM_DESIGN"
+            focusArea="Distributed Systems"
+            generatedAt={new Date("2026-01-15")}
         />
     );
 }

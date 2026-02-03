@@ -2,7 +2,7 @@ import { db } from '@/lib/db';
 import { scenarios } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
-import DynamicScenario from '@/components/DynamicScenario';
+import InterviewScenario from '@/components/InterviewScenario';
 import type { Metadata } from 'next';
 
 interface PageProps {
@@ -23,9 +23,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         };
     }
 
+    const content = JSON.parse(scenario.content);
+
     return {
         title: `${scenario.title} | Principal Engineer Interview Prep`,
-        description: scenario.summary || scenario.context.substring(0, 160)
+        description: content.problem?.statement || content.problem?.context?.substring(0, 160)
     };
 }
 
@@ -42,20 +44,12 @@ export default async function ScenarioPage({ params }: PageProps) {
         notFound();
     }
 
-    // Parse JSON fields
-    const answers = JSON.parse(scenario.answers);
-    const keyTakeaways = JSON.parse(scenario.keyTakeaways);
+    const content = JSON.parse(scenario.content);
 
     return (
-        <DynamicScenario
+        <InterviewScenario
             slug={scenario.slug}
-            title={scenario.title}
-            difficulty={scenario.difficulty || 'Principal'}
-            summary={scenario.summary || undefined}
-            context={scenario.context}
-            question={scenario.question}
-            answers={answers}
-            keyTakeaways={keyTakeaways}
+            scenario={content}
             theme={scenario.theme}
             problemType={scenario.problemType}
             focusArea={scenario.focusArea || undefined}

@@ -1,13 +1,5 @@
-import OpenAI from 'openai';
-import { Theme, ProblemType } from './content-strategy';
+# System Design Interview Content Generator Prompt
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
-
-// Template-based prompt for comprehensive system design interview content
-// Based on template.md for structured 40-minute interview simulations
-const INTERVIEW_CONTENT_PROMPT = `
 You are an expert system design interviewer and principal engineer with 15+ years of experience conducting interviews at FAANG companies. Your task is to generate a complete 40-minute system design interview practice session in JSON format.
 
 ## Your Expertise
@@ -17,12 +9,8 @@ You are an expert system design interviewer and principal engineer with 15+ year
 - You can articulate nuanced trade-offs in distributed systems
 - You think in terms of cascading failures, consistency models, and operational complexity
 
-## Target Audience
-- Backend/Infrastructure engineers with 8-20+ years of experience
-- Currently at Senior level, targeting Staff/Principal roles
-- Has real production experience at scale
-- Familiar with distributed systems fundamentals
-- Does NOT need basic explanations—they need calibration on judgment
+## Task
+Generate a complete JSON object following the schema below for the system design problem: **[PROBLEM_TITLE]**
 
 ## Quality Standards
 
@@ -54,25 +42,23 @@ You are an expert system design interviewer and principal engineer with 15+ year
 - Makes complexity trade-offs explicit
 - Demonstrates experience-based intuition (cache hit rates, typical failure modes)
 
-## Theme: {{THEME_TITLE}}
-## Focus Area: {{FOCUS_AREA}}
-## Problem Type: {{PROBLEM_TYPE}}
+## JSON Schema to Fill
 
-## JSON Schema to Generate
-
+```json
 {
   "metadata": {
-    "difficulty": "{{DIFFICULTY}}",
+    "day_number": [INTEGER],
+    "difficulty": "[foundational|intermediate|advanced]",
     "estimated_time_minutes": 40,
     "topics": ["topic1", "topic2", "topic3"],
-    "generated_date": "{{GENERATED_DATE}}"
+    "generated_date": "[YYYY-MM-DD]"
   },
-
+  
   "problem": {
-    "title": "[Problem Title - specific to the focus area]",
+    "title": "[Problem Title]",
     "statement": "[1-2 sentence intentionally vague problem statement]",
     "context": "[Brief context about interview level and what's being tested]",
-    "pause_prompt": "Take 10-15 minutes to think through how you would approach this before continuing."
+    "pause_prompt": "[Instruction for user to think before reading]"
   },
 
   "framework_steps": [
@@ -80,16 +66,16 @@ You are an expert system design interviewer and principal engineer with 15+ year
       "step_number": 1,
       "step_name": "Clarify Requirements",
       "time_allocation": "5-10 min",
-      "description": "[What interviewer says to prompt this step]",
-      "pause_prompt": "[Prompt user to think about their requirements clarification approach]",
-
+      "description": "[What interviewer says]",
+      "pause_prompt": "[Prompt user to think]",
+      
       "comparison_table": {
         "criterion": "[What is being evaluated in this step]",
         "responses": [
           {
             "level": "bad",
             "icon": "❌",
-            "response": "[Actual bad response example - 1-2 paragraphs, specific]",
+            "response": "[Actual bad response example - be specific]",
             "why_this_level": "[Detailed explanation of why this is bad]",
             "red_flags": [
               "[Specific red flag 1]",
@@ -100,7 +86,7 @@ You are an expert system design interviewer and principal engineer with 15+ year
           {
             "level": "good",
             "icon": "✓",
-            "response": "[Actual good response example - 3-4 paragraphs]",
+            "response": "[Actual good response example - be specific and longer than bad]",
             "why_this_level": "[Why this is good but not best]",
             "strengths": [
               "[Specific strength 1]",
@@ -112,7 +98,7 @@ You are an expert system design interviewer and principal engineer with 15+ year
           {
             "level": "best",
             "icon": "✓✓",
-            "response": "[Actual best response example - 5-7 paragraphs, very detailed, show structure]",
+            "response": "[Actual best response example - be very detailed, show structure, 2-3x longer than good]",
             "why_this_level": "[Detailed explanation of principal engineer thinking]",
             "strengths": [
               "[Specific strength 1]",
@@ -131,7 +117,7 @@ You are an expert system design interviewer and principal engineer with 15+ year
 
       "interviewer_response": {
         "clarifications": [
-          "[Clarification 1 the interviewer provides]",
+          "[Clarification 1]",
           "[Clarification 2]",
           "[Clarification 3]",
           "[Clarification 4]",
@@ -152,7 +138,7 @@ You are an expert system design interviewer and principal engineer with 15+ year
       "step_name": "Estimate Scale",
       "time_allocation": "5 min",
       "description": "[Step description]",
-      "pause_prompt": "[Prompt to think about calculations]",
+      "pause_prompt": "[Prompt]",
 
       "comparison_table": {
         "criterion": "Back-of-envelope Calculations",
@@ -160,14 +146,14 @@ You are an expert system design interviewer and principal engineer with 15+ year
           {
             "level": "bad",
             "icon": "❌",
-            "response": "[Bad calculation example - vague, no numbers]",
+            "response": "[Bad calculation example]",
             "why_this_level": "[Why bad]",
             "red_flags": ["[flag1]", "[flag2]", "[flag3]"]
           },
           {
             "level": "good",
             "icon": "✓",
-            "response": "[Good calculation with math shown and units]",
+            "response": "[Good calculation with math shown]",
             "why_this_level": "[Why good]",
             "strengths": ["[strength1]", "[strength2]", "[strength3]"],
             "what_is_missing": "[What's missing]"
@@ -211,7 +197,7 @@ You are an expert system design interviewer and principal engineer with 15+ year
       "description": "[Description]",
       "pause_prompt": "[Prompt]",
 
-      "architecture_diagram_description": "[Describe architecture in text form with components and data flow]",
+      "architecture_diagram_description": "[Describe architecture in text form with arrows and components]",
 
       "component_decisions": [
         {
@@ -222,7 +208,7 @@ You are an expert system design interviewer and principal engineer with 15+ year
               {
                 "level": "bad",
                 "icon": "❌",
-                "response": "[Generic tool selection without reasoning]",
+                "response": "[Generic tool selection]",
                 "why_this_level": "[Why bad]",
                 "red_flags": ["[flag1]", "[flag2]", "[flag3]"]
               },
@@ -251,7 +237,7 @@ You are an expert system design interviewer and principal engineer with 15+ year
     },
 
     {
-      "step_number": 4,
+      "step_number": 6,
       "step_name": "Address Failures & Bottlenecks",
       "time_allocation": "5-7 min",
       "description": "[Description]",
@@ -259,7 +245,7 @@ You are an expert system design interviewer and principal engineer with 15+ year
 
       "comparison_table": {
         "criterion": "[Failure scenario being discussed]",
-        "interviewer_question": "[Question interviewer asks about failures]",
+        "interviewer_question": "[Question interviewer asks]",
         "responses": [
           {
             "level": "bad",
@@ -301,11 +287,11 @@ You are an expert system design interviewer and principal engineer with 15+ year
 
   "interview_simulation": {
     "title": "Handling Dynamic Requirements",
-    "description": "[Description of why requirements change mid-interview]",
+    "description": "[Description of why requirements change]",
     "scenario": {
       "interviewer_question": "[New requirement interviewer introduces]",
-      "pause_prompt": "[Prompt to think about adaptation]",
-
+      "pause_prompt": "[Prompt to think]",
+      
       "comparison_table": {
         "criterion": "Adapting to Changed Requirements",
         "responses": [
@@ -335,7 +321,7 @@ You are an expert system design interviewer and principal engineer with 15+ year
         ]
       }
     },
-
+    
     "key_takeaways": ["[takeaway1]", "[takeaway2]", "[takeaway3]"]
   },
 
@@ -347,21 +333,29 @@ You are an expert system design interviewer and principal engineer with 15+ year
       "[Concept 4]",
       "[Concept 5]"
     ],
-
+    
     "patterns_demonstrated": [
       "[Pattern 1]",
       "[Pattern 2]",
       "[Pattern 3]",
       "[Pattern 4]"
     ],
-
+    
     "what_made_responses_best_level": [
       "[Reason 1]",
       "[Reason 2]",
       "[Reason 3]",
       "[Reason 4]",
-      "[Reason 5]"
-    ]
+      "[Reason 5]",
+      "[Reason 6]",
+      "[Reason 7]"
+    ],
+    
+    "tomorrow_preview": {
+      "day_number": [N+1],
+      "problem_title": "[Next problem title]",
+      "focus_areas": ["[area1]", "[area2]", "[area3]"]
+    }
   },
 
   "reflection_prompts": {
@@ -377,6 +371,7 @@ You are an expert system design interviewer and principal engineer with 15+ year
     ]
   }
 }
+```
 
 ## Specific Instructions
 
@@ -404,207 +399,68 @@ You are an expert system design interviewer and principal engineer with 15+ year
 - Consider cascading effects
 
 ### Response Length Targets
-- Bad: 1-2 paragraphs
-- Good: 3-4 paragraphs with some structure
-- Best: 5-7+ paragraphs with clear structure, or detailed breakdown with subsections
+- Bad: 1-2 sentences
+- Good: 4-6 sentences or bulleted list
+- Best: 10-15+ sentences with structure, or detailed breakdown with subsections
+
+### Problem-Specific Guidance
+
+For **[PROBLEM_TITLE]**, ensure you:
+- [Specific guidance item 1 for this problem type]
+- [Specific guidance item 2 for this problem type]
+- [Specific guidance item 3 for this problem type]
 
 ## Output Format
-Return ONLY valid JSON. No markdown code fences, no explanations outside the JSON. The JSON must be parseable by JSON.parse().
+Return ONLY valid JSON. No markdown code fences, no explanations outside the JSON. The JSON must be parseable by `JSON.parse()`.
 
-Generate the complete JSON now.`;
+## Validation Checklist Before Returning
+- [ ] All comparison tables have 3 levels (bad, good, best)
+- [ ] Best responses are significantly longer and more detailed than good
+- [ ] All calculations include specific numbers with units
+- [ ] All architecture decisions include trade-offs
+- [ ] Failure scenarios include timeline and quantified impact
+- [ ] At least 3-4 key takeaways per major section
+- [ ] No placeholder text like "[fill this in]"
+- [ ] Valid JSON syntax (no trailing commas, proper escaping)
+- [ ] Response lengths match targets (bad < good < best)
+- [ ] Principal engineer signals are specific to the response content
 
-// Additional context prompts for specific themes
-const THEME_CONTEXT: Record<string, string> = {
-    'scale': `Focus on systems that handle massive scale: 100M+ users, billions of events, petabyte-scale data.
-Include specific numbers like "500K concurrent connections", "10TB daily data ingestion", "sub-50ms p99 latency requirement".
-Consider: horizontal scaling, sharding strategies, caching layers, async processing, eventual consistency tradeoffs.
-Example problems: Global CDN, Distributed Cache, Rate Limiter at Scale, Sharding Strategy for 100B Records.`,
+Generate the complete JSON now for: **[PROBLEM_TITLE]**
+```
 
-    'performance': `Focus on performance bottlenecks, optimization decisions, and capacity planning.
-Include specific metrics: latency percentiles (p50/p95/p99), throughput, CPU/memory utilization, query execution times.
-Consider: profiling approaches, database optimization, caching strategies, connection pooling, resource contention.
-Example problems: Database Query Optimization Under Load, Latency Spike Investigation, Memory Leak Diagnosis, Capacity Planning for 10x Growth.`,
+***
 
-    'reliability': `Focus on failure modes, incident response, chaos engineering, and building resilient systems.
-Include specific failure scenarios: cascading failures, split-brain, data corruption, dependency outages.
-Consider: circuit breakers, bulkheads, graceful degradation, disaster recovery, SLO/SLA tradeoffs.
-Example problems: Cascading Failure Prevention, Incident Response Strategy, Disaster Recovery Planning, Monitoring and Alerting Design.`,
+## Usage Example
 
-    'architecture': `Focus on architectural decisions and system evolution over time.
-Include specific tradeoffs: monolith vs microservices, sync vs async, SQL vs NoSQL, build vs buy.
-Consider: migration strategies, technical debt, organizational structure, team boundaries, backwards compatibility.
-Example problems: Monolith to Microservices Migration, SQL vs NoSQL Decision, Sync vs Async Processing, Technical Debt Prioritization.`
-};
+**For "Design a URL Shortener":**
 
-export interface FrameworkStepResponse {
-    level: 'bad' | 'good' | 'best';
-    icon: string;
-    response: string;
-    why_this_level: string;
-    red_flags?: string[];
-    strengths?: string[];
-    what_is_missing?: string;
-    principal_engineer_signals?: string[];
-}
+```
 
-export interface ComparisonTable {
-    criterion: string;
-    interviewer_question?: string;
-    responses: FrameworkStepResponse[];
-}
 
-export interface ComponentDecision {
-    component: string;
-    comparison_table: ComparisonTable;
-}
+### Problem-Specific Guidance
 
-export interface FrameworkStep {
-    step_number: number;
-    step_name: string;
-    time_allocation: string;
-    description: string;
-    pause_prompt: string;
-    comparison_table?: ComparisonTable;
-    interviewer_response?: {
-        clarifications: string[];
-        additional_context: string;
-    };
-    calculations_breakdown?: {
-        storage: { total_data: string; working_set: string; per_region: string };
-        throughput: { global_qps: string; per_region_qps: string; cache_hit_qps: string; database_qps: string };
-        bandwidth: { peak_bandwidth: string; per_region_bandwidth: string };
-    };
-    architecture_diagram_description?: string;
-    component_decisions?: ComponentDecision[];
-    other_failure_scenarios?: Array<{ scenario: string; impact: string; mitigation: string }>;
-    key_takeaways: string[];
-}
+For **Design a URL Shortener**, ensure you:
+- Discuss collision handling in hash generation (bad: ignore, good: mention, best: compare multiple strategies)
+- Include base62 encoding explanation
+- Cover analytics/click tracking requirements
+- Discuss short URL expiration strategies
+- Consider malicious URL handling and rate limiting
+- Show calculation for key space (62^7 = 3.5 trillion URLs)
+- Compare SQL vs NoSQL for URL storage with reasoning
+```
 
-export interface InterviewScenario {
-    metadata: {
-        difficulty: string;
-        estimated_time_minutes: number;
-        topics: string[];
-        generated_date: string;
-    };
-    problem: {
-        title: string;
-        statement: string;
-        context: string;
-        pause_prompt: string;
-    };
-    framework_steps: FrameworkStep[];
-    interview_simulation: {
-        title: string;
-        description: string;
-        scenario: {
-            interviewer_question: string;
-            pause_prompt: string;
-            comparison_table: ComparisonTable;
-        };
-        key_takeaways: string[];
-    };
-    summary: {
-        critical_concepts_covered: string[];
-        patterns_demonstrated: string[];
-        what_made_responses_best_level: string[];
-    };
-    reflection_prompts: {
-        self_assessment: string[];
-        practice_next: string[];
-    };
-}
+**For "Design Instagram":**
 
-export async function generateDailyScenario(strategy: { theme: Theme, problemType: ProblemType, focusArea: string }): Promise<InterviewScenario> {
-    const today = new Date();
-    const generatedDate = today.toISOString().split('T')[0];
+```
+### Problem-Specific Guidance
 
-    // Inject Strategy Variables into prompt
-    const systemPrompt = INTERVIEW_CONTENT_PROMPT
-        .replace('{{THEME_TITLE}}', strategy.theme.title)
-        .replace('{{FOCUS_AREA}}', strategy.focusArea)
-        .replace('{{PROBLEM_TYPE}}', strategy.problemType)
-        .replace('{{DIFFICULTY}}', 'Principal')
-        .replace('{{GENERATED_DATE}}', generatedDate);
-
-    // Create a user message with additional context
-    const themeContext = THEME_CONTEXT[strategy.theme.id] || '';
-    const userMessage = `Generate a complete ${strategy.problemType === 'SYSTEM_DESIGN' ? 'system design' : 'tactical'} interview scenario.
-
-Theme: ${strategy.theme.title}
-Focus Area: ${strategy.focusArea}
-
-${themeContext}
-
-Important reminders:
-- The problem must be specific to "${strategy.focusArea}" within the "${strategy.theme.title}" theme
-- Include concrete numbers and metrics throughout
-- The three response levels (bad/good/best) must be CLEARLY different in quality and depth
-- Best responses should be 2-3x longer than good responses
-- Include specific calculations with units in the scale estimation step
-- All content assumes the reader is an experienced engineer—no basic explanations needed
-- Make the comparison tables realistic—bad answers should be things real candidates actually say
-
-Generate the JSON now.`;
-
-    console.log(`Generating [${strategy.problemType}] scenario for theme: ${strategy.theme.title} (${strategy.focusArea})`);
-
-    try {
-        const completion = await openai.chat.completions.create({
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userMessage }
-            ],
-            model: 'gpt-4o',
-            response_format: { type: 'json_object' },
-            temperature: 0.75,
-            max_tokens: 8000, // Increased for longer comprehensive responses
-        });
-
-        const content = completion.choices[0].message.content;
-        if (!content) throw new Error('No content generated');
-
-        const scenario = JSON.parse(content) as InterviewScenario;
-
-        // Validate the response structure
-        validateScenarioStructure(scenario);
-
-        return scenario;
-    } catch (error) {
-        console.error('AI generation failed:', error);
-        throw error;
-    }
-}
-
-function validateScenarioStructure(scenario: InterviewScenario): void {
-    if (!scenario.metadata) throw new Error('Invalid scenario: missing metadata');
-    if (!scenario.problem?.title) throw new Error('Invalid scenario: missing problem.title');
-    if (!scenario.problem?.statement) throw new Error('Invalid scenario: missing problem.statement');
-    if (!scenario.framework_steps || !Array.isArray(scenario.framework_steps)) {
-        throw new Error('Invalid scenario: missing framework_steps');
-    }
-    if (scenario.framework_steps.length < 3) {
-        throw new Error('Invalid scenario: framework_steps must have at least 3 steps');
-    }
-
-    // Validate each framework step has comparison table
-    for (const step of scenario.framework_steps) {
-        if (!step.step_name) throw new Error(`Invalid step: missing step_name`);
-        if (!step.key_takeaways || !Array.isArray(step.key_takeaways)) {
-            throw new Error(`Invalid step ${step.step_number}: missing key_takeaways`);
-        }
-    }
-
-    if (!scenario.interview_simulation?.scenario?.comparison_table) {
-        throw new Error('Invalid scenario: missing interview_simulation comparison_table');
-    }
-
-    if (!scenario.summary?.critical_concepts_covered) {
-        throw new Error('Invalid scenario: missing summary.critical_concepts_covered');
-    }
-
-    if (!scenario.reflection_prompts?.self_assessment) {
-        throw new Error('Invalid scenario: missing reflection_prompts.self_assessment');
-    }
-}
+For **Design Instagram**, ensure you:
+- Clarify scope: focus on feed or entire app
+- Discuss image storage (CDN, object storage like S3)
+- Cover feed generation algorithms (pull vs push vs hybrid)
+- Include graph database for social connections or justify alternative
+- Discuss image processing pipeline (upload, resize, optimize)
+- Show calculation for image storage (100M users × 50 photos × 2MB = 10PB)
+- Compare real-time feed updates vs batch precomputation
+```
 

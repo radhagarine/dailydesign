@@ -39,6 +39,16 @@ const formatDate = (date: Date | number | null) => {
     });
 };
 
+// Parse content and extract summary
+function getScenarioSummary(content: string): string | undefined {
+    try {
+        const parsed = JSON.parse(content);
+        return parsed.problem?.statement;
+    } catch {
+        return undefined;
+    }
+}
+
 export default async function ArchivePage() {
     const allScenarios = await db
         .select()
@@ -90,39 +100,42 @@ export default async function ArchivePage() {
                     </div>
                 ) : (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {allScenarios.map((scenario) => (
-                            <Link
-                                key={scenario.id}
-                                href={`/scenarios/${scenario.slug}`}
-                                className="group bg-dark-800 border border-white/5 rounded-xl p-6 hover:border-maroon-900/50 transition"
-                            >
-                                <div className="flex items-center gap-2 mb-3">
-                                    <span className={`px-2 py-0.5 text-xs font-medium rounded border ${getThemeColor(scenario.theme)}`}>
-                                        {getThemeLabel(scenario.theme)}
-                                    </span>
-                                    <span className="text-xs text-gray-500">
-                                        {scenario.problemType === 'SYSTEM_DESIGN' ? 'Design' : 'Tactical'}
-                                    </span>
-                                </div>
-                                <h2 className="text-lg font-semibold mb-2 group-hover:text-maroon-400 transition">
-                                    {scenario.title}
-                                </h2>
-                                {scenario.summary && (
-                                    <p className="text-gray-500 text-sm line-clamp-2 mb-4">
-                                        {scenario.summary}
-                                    </p>
-                                )}
-                                <div className="flex items-center justify-between text-xs text-gray-600">
-                                    <span>{formatDate(scenario.generatedAt)}</span>
-                                    <span className="group-hover:text-maroon-400 transition flex items-center gap-1">
-                                        Read
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M5 12h14M12 5l7 7-7 7" />
-                                        </svg>
-                                    </span>
-                                </div>
-                            </Link>
-                        ))}
+                        {allScenarios.map((scenario) => {
+                            const summary = getScenarioSummary(scenario.content);
+                            return (
+                                <Link
+                                    key={scenario.id}
+                                    href={`/scenarios/${scenario.slug}`}
+                                    className="group bg-dark-800 border border-white/5 rounded-xl p-6 hover:border-maroon-900/50 transition"
+                                >
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <span className={`px-2 py-0.5 text-xs font-medium rounded border ${getThemeColor(scenario.theme)}`}>
+                                            {getThemeLabel(scenario.theme)}
+                                        </span>
+                                        <span className="text-xs text-gray-500">
+                                            {scenario.problemType === 'SYSTEM_DESIGN' ? 'Design' : 'Tactical'}
+                                        </span>
+                                    </div>
+                                    <h2 className="text-lg font-semibold mb-2 group-hover:text-maroon-400 transition">
+                                        {scenario.title}
+                                    </h2>
+                                    {summary && (
+                                        <p className="text-gray-500 text-sm line-clamp-2 mb-4">
+                                            {summary}
+                                        </p>
+                                    )}
+                                    <div className="flex items-center justify-between text-xs text-gray-600">
+                                        <span>{formatDate(scenario.generatedAt)}</span>
+                                        <span className="group-hover:text-maroon-400 transition flex items-center gap-1">
+                                            Read
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M5 12h14M12 5l7 7-7 7" />
+                                            </svg>
+                                        </span>
+                                    </div>
+                                </Link>
+                            );
+                        })}
                     </div>
                 )}
 
