@@ -1,440 +1,98 @@
 import OpenAI from 'openai';
+import { zodResponseFormat } from 'openai/helpers/zod';
+import { z } from 'zod';
 import { Theme, ProblemType } from './content-strategy';
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Template-based prompt for comprehensive system design interview content
-// Based on template.md for structured 40-minute interview simulations
-const INTERVIEW_CONTENT_PROMPT = `
-You are an expert system design interviewer and principal engineer with 15+ years of experience conducting interviews at FAANG companies. Your task is to generate a complete 40-minute system design interview practice session in JSON format.
+// ── Zod Schemas (OpenAI Structured Outputs requires all fields required + nullable for optional) ──
 
-## Your Expertise
-- You've conducted 500+ system design interviews
-- You understand what separates junior, senior, and principal engineer responses
-- You know common failure modes and anti-patterns
-- You can articulate nuanced trade-offs in distributed systems
-- You think in terms of cascading failures, consistency models, and operational complexity
+const FrameworkStepResponseSchema = z.object({
+    level: z.enum(['bad', 'good', 'best']),
+    icon: z.string(),
+    response: z.string(),
+    why_this_level: z.string(),
+    red_flags: z.array(z.string()).nullable(),
+    strengths: z.array(z.string()).nullable(),
+    what_is_missing: z.string().nullable(),
+    principal_engineer_signals: z.array(z.string()).nullable(),
+});
 
-## Target Audience
-- Backend/Infrastructure engineers with 8-20+ years of experience
-- Currently at Senior level, targeting Staff/Principal roles
-- Has real production experience at scale
-- Familiar with distributed systems fundamentals
-- Does NOT need basic explanations—they need calibration on judgment
+const ComparisonTableSchema = z.object({
+    criterion: z.string(),
+    interviewer_question: z.string().nullable(),
+    responses: z.array(FrameworkStepResponseSchema),
+});
 
-## Quality Standards
+const ComponentDecisionSchema = z.object({
+    component: z.string(),
+    comparison_table: ComparisonTableSchema,
+});
 
-### Bad Response Characteristics (What to Show as Anti-Patterns)
-- Generic statements that could apply to any problem
-- Tool name-dropping without justification ("use Redis because it's fast")
-- No quantitative reasoning or calculations
-- Ignores failure scenarios
-- Jumps to solutions without clarifying requirements
-- Vague language ("a lot", "probably", "should be fine")
-- No trade-offs discussed
+const FrameworkStepSchema = z.object({
+    step_number: z.number(),
+    step_name: z.string(),
+    time_allocation: z.string(),
+    description: z.string(),
+    pause_prompt: z.string(),
+    comparison_table: ComparisonTableSchema.nullable(),
+    interviewer_response: z.object({
+        clarifications: z.array(z.string()),
+        additional_context: z.string(),
+    }).nullable(),
+    calculations_breakdown: z.object({
+        storage: z.object({ total_data: z.string(), working_set: z.string(), per_region: z.string() }),
+        throughput: z.object({ global_qps: z.string(), per_region_qps: z.string(), cache_hit_qps: z.string(), database_qps: z.string() }),
+        bandwidth: z.object({ peak_bandwidth: z.string(), per_region_bandwidth: z.string() }),
+    }).nullable(),
+    architecture_diagram_description: z.string().nullable(),
+    component_decisions: z.array(ComponentDecisionSchema).nullable(),
+    other_failure_scenarios: z.array(z.object({
+        scenario: z.string(),
+        impact: z.string(),
+        mitigation: z.string(),
+    })).nullable(),
+    key_takeaways: z.array(z.string()),
+});
 
-### Good Response Characteristics (Competent Senior Engineer)
-- Shows calculations with units
-- Names specific technologies with reasoning
-- Considers alternatives
-- Mentions trade-offs
-- Asks clarifying questions
-- Quantifies impact
+const InterviewScenarioSchema = z.object({
+    metadata: z.object({
+        difficulty: z.string(),
+        estimated_time_minutes: z.number(),
+        topics: z.array(z.string()),
+        generated_date: z.string(),
+    }),
+    problem: z.object({
+        title: z.string(),
+        statement: z.string(),
+        context: z.string(),
+        pause_prompt: z.string(),
+    }),
+    framework_steps: z.array(FrameworkStepSchema),
+    interview_simulation: z.object({
+        title: z.string(),
+        description: z.string(),
+        scenario: z.object({
+            interviewer_question: z.string(),
+            pause_prompt: z.string(),
+            comparison_table: ComparisonTableSchema,
+        }),
+        key_takeaways: z.array(z.string()),
+    }),
+    summary: z.object({
+        critical_concepts_covered: z.array(z.string()),
+        patterns_demonstrated: z.array(z.string()),
+        what_made_responses_best_level: z.array(z.string()),
+    }),
+    reflection_prompts: z.object({
+        self_assessment: z.array(z.string()),
+        practice_next: z.array(z.string()),
+    }),
+});
 
-### Best Response Characteristics (Principal Engineer Level)
-- Structured frameworks (functional vs non-functional, decision matrices)
-- Explicit assumptions stated upfront
-- Multiple alternatives compared with pros/cons
-- Quantifies impacts at multiple levels (user-facing latency, system QPS, cost)
-- Considers cascading failures
-- Shows adaptability (when to change approach)
-- Includes monitoring/validation strategies
-- Makes complexity trade-offs explicit
-- Demonstrates experience-based intuition (cache hit rates, typical failure modes)
-
-## Theme: {{THEME_TITLE}}
-## Focus Area: {{FOCUS_AREA}}
-## Problem Type: {{PROBLEM_TYPE}}
-
-## JSON Schema to Generate
-
-{
-  "metadata": {
-    "difficulty": "{{DIFFICULTY}}",
-    "estimated_time_minutes": 40,
-    "topics": ["topic1", "topic2", "topic3"],
-    "generated_date": "{{GENERATED_DATE}}"
-  },
-
-  "problem": {
-    "title": "[Problem Title - specific to the focus area]",
-    "statement": "[1-2 sentence intentionally vague problem statement]",
-    "context": "[Brief context about interview level and what's being tested]",
-    "pause_prompt": "Take 10-15 minutes to think through how you would approach this before continuing."
-  },
-
-  "framework_steps": [
-    {
-      "step_number": 1,
-      "step_name": "Clarify Requirements",
-      "time_allocation": "5-10 min",
-      "description": "[What interviewer says to prompt this step]",
-      "pause_prompt": "[Prompt user to think about their requirements clarification approach]",
-
-      "comparison_table": {
-        "criterion": "[What is being evaluated in this step]",
-        "responses": [
-          {
-            "level": "bad",
-            "icon": "❌",
-            "response": "[Actual bad response example - 1-2 paragraphs, specific]",
-            "why_this_level": "[Detailed explanation of why this is bad]",
-            "red_flags": [
-              "[Specific red flag 1]",
-              "[Specific red flag 2]",
-              "[Specific red flag 3]"
-            ]
-          },
-          {
-            "level": "good",
-            "icon": "✓",
-            "response": "[Actual good response example - 3-4 paragraphs]",
-            "why_this_level": "[Why this is good but not best]",
-            "strengths": [
-              "[Specific strength 1]",
-              "[Specific strength 2]",
-              "[Specific strength 3]"
-            ],
-            "what_is_missing": "[What would make this best level]"
-          },
-          {
-            "level": "best",
-            "icon": "✓✓",
-            "response": "[Actual best response example - 5-7 paragraphs, very detailed, show structure]",
-            "why_this_level": "[Detailed explanation of principal engineer thinking]",
-            "strengths": [
-              "[Specific strength 1]",
-              "[Specific strength 2]",
-              "[Specific strength 3]",
-              "[Specific strength 4]"
-            ],
-            "principal_engineer_signals": [
-              "[Signal 1 - e.g., structured thinking]",
-              "[Signal 2 - e.g., collaborative approach]",
-              "[Signal 3 - e.g., adaptability shown]"
-            ]
-          }
-        ]
-      },
-
-      "interviewer_response": {
-        "clarifications": [
-          "[Clarification 1 the interviewer provides]",
-          "[Clarification 2]",
-          "[Clarification 3]",
-          "[Clarification 4]",
-          "[Clarification 5]"
-        ],
-        "additional_context": "[Any additional context interviewer provides]"
-      },
-
-      "key_takeaways": [
-        "[Takeaway 1]",
-        "[Takeaway 2]",
-        "[Takeaway 3]"
-      ]
-    },
-
-    {
-      "step_number": 2,
-      "step_name": "Estimate Scale",
-      "time_allocation": "5 min",
-      "description": "[Step description]",
-      "pause_prompt": "[Prompt to think about calculations]",
-
-      "comparison_table": {
-        "criterion": "Back-of-envelope Calculations",
-        "responses": [
-          {
-            "level": "bad",
-            "icon": "❌",
-            "response": "[Bad calculation example - vague, no numbers]",
-            "why_this_level": "[Why bad]",
-            "red_flags": ["[flag1]", "[flag2]", "[flag3]"]
-          },
-          {
-            "level": "good",
-            "icon": "✓",
-            "response": "[Good calculation with math shown and units]",
-            "why_this_level": "[Why good]",
-            "strengths": ["[strength1]", "[strength2]", "[strength3]"],
-            "what_is_missing": "[What's missing]"
-          },
-          {
-            "level": "best",
-            "icon": "✓✓",
-            "response": "[Best calculation - consider hot/cold data, cache hit rates, regional distribution, derive design implications]",
-            "why_this_level": "[Why best]",
-            "strengths": ["[strength1]", "[strength2]", "[strength3]", "[strength4]"],
-            "principal_engineer_signals": ["[signal1]", "[signal2]", "[signal3]"]
-          }
-        ]
-      },
-
-      "calculations_breakdown": {
-        "storage": {
-          "total_data": "[X TB/GB]",
-          "working_set": "[Y GB]",
-          "per_region": "[Z GB with reasoning]"
-        },
-        "throughput": {
-          "global_qps": "[N QPS]",
-          "per_region_qps": "[M QPS]",
-          "cache_hit_qps": "[P QPS]",
-          "database_qps": "[Q QPS]"
-        },
-        "bandwidth": {
-          "peak_bandwidth": "[X MB/s]",
-          "per_region_bandwidth": "[Y MB/s]"
-        }
-      },
-
-      "key_takeaways": ["[takeaway1]", "[takeaway2]", "[takeaway3]"]
-    },
-
-    {
-      "step_number": 3,
-      "step_name": "Define High-Level Architecture",
-      "time_allocation": "10 min",
-      "description": "[Description]",
-      "pause_prompt": "[Prompt]",
-
-      "architecture_diagram_description": "[Describe architecture in text form with components and data flow]",
-
-      "component_decisions": [
-        {
-          "component": "[Component name, e.g., 'Cache Technology']",
-          "comparison_table": {
-            "criterion": "[What's being evaluated]",
-            "responses": [
-              {
-                "level": "bad",
-                "icon": "❌",
-                "response": "[Generic tool selection without reasoning]",
-                "why_this_level": "[Why bad]",
-                "red_flags": ["[flag1]", "[flag2]", "[flag3]"]
-              },
-              {
-                "level": "good",
-                "icon": "✓",
-                "response": "[Good justification with features listed]",
-                "why_this_level": "[Why good]",
-                "strengths": ["[strength1]", "[strength2]", "[strength3]"],
-                "what_is_missing": "[What's missing]"
-              },
-              {
-                "level": "best",
-                "icon": "✓✓",
-                "response": "[Decision matrix comparing options, requirement mapping, trade-offs, when to use alternatives]",
-                "why_this_level": "[Why best]",
-                "strengths": ["[strength1]", "[strength2]", "[strength3]", "[strength4]"],
-                "principal_engineer_signals": ["[signal1]", "[signal2]", "[signal3]"]
-              }
-            ]
-          }
-        }
-      ],
-
-      "key_takeaways": ["[takeaway1]", "[takeaway2]", "[takeaway3]"]
-    },
-
-    {
-      "step_number": 4,
-      "step_name": "Address Failures & Bottlenecks",
-      "time_allocation": "5-7 min",
-      "description": "[Description]",
-      "pause_prompt": "[Prompt]",
-
-      "comparison_table": {
-        "criterion": "[Failure scenario being discussed]",
-        "interviewer_question": "[Question interviewer asks about failures]",
-        "responses": [
-          {
-            "level": "bad",
-            "icon": "❌",
-            "response": "[Hand-wavy answer about failover]",
-            "why_this_level": "[Why bad]",
-            "red_flags": ["[flag1]", "[flag2]", "[flag3]"]
-          },
-          {
-            "level": "good",
-            "icon": "✓",
-            "response": "[Step-by-step failure response with timing and impact]",
-            "why_this_level": "[Why good]",
-            "strengths": ["[strength1]", "[strength2]", "[strength3]"],
-            "what_is_missing": "[What's missing]"
-          },
-          {
-            "level": "best",
-            "icon": "✓✓",
-            "response": "[Timeline-based cascade analysis with phases (0-5s, 5-30s, 30s-5min), quantified impacts (QPS, latency), multiple mitigation strategies, trade-off discussions]",
-            "why_this_level": "[Why best]",
-            "strengths": ["[strength1]", "[strength2]", "[strength3]", "[strength4]"],
-            "principal_engineer_signals": ["[signal1]", "[signal2]", "[signal3]"]
-          }
-        ]
-      },
-
-      "other_failure_scenarios": [
-        {
-          "scenario": "[Scenario description]",
-          "impact": "[Impact description]",
-          "mitigation": "[Mitigation strategy]"
-        }
-      ],
-
-      "key_takeaways": ["[takeaway1]", "[takeaway2]", "[takeaway3]"]
-    }
-  ],
-
-  "interview_simulation": {
-    "title": "Handling Dynamic Requirements",
-    "description": "[Description of why requirements change mid-interview]",
-    "scenario": {
-      "interviewer_question": "[New requirement interviewer introduces]",
-      "pause_prompt": "[Prompt to think about adaptation]",
-
-      "comparison_table": {
-        "criterion": "Adapting to Changed Requirements",
-        "responses": [
-          {
-            "level": "bad",
-            "icon": "❌",
-            "response": "[Jumps to solution without clarifying]",
-            "why_this_level": "[Why bad]",
-            "red_flags": ["[flag1]", "[flag2]", "[flag3]"]
-          },
-          {
-            "level": "good",
-            "icon": "✓",
-            "response": "[Recognizes change, proposes solution, mentions trade-off]",
-            "why_this_level": "[Why good]",
-            "strengths": ["[strength1]", "[strength2]", "[strength3]"],
-            "what_is_missing": "[What's missing]"
-          },
-          {
-            "level": "best",
-            "icon": "✓✓",
-            "response": "[Clarifies scope, compares multiple approaches with trade-offs, makes explicit recommendation with reasoning, shows evolution path, proposes monitoring]",
-            "why_this_level": "[Why best]",
-            "strengths": ["[strength1]", "[strength2]", "[strength3]", "[strength4]"],
-            "principal_engineer_signals": ["[signal1]", "[signal2]", "[signal3]"]
-          }
-        ]
-      }
-    },
-
-    "key_takeaways": ["[takeaway1]", "[takeaway2]", "[takeaway3]"]
-  },
-
-  "summary": {
-    "critical_concepts_covered": [
-      "[Concept 1]",
-      "[Concept 2]",
-      "[Concept 3]",
-      "[Concept 4]",
-      "[Concept 5]"
-    ],
-
-    "patterns_demonstrated": [
-      "[Pattern 1]",
-      "[Pattern 2]",
-      "[Pattern 3]",
-      "[Pattern 4]"
-    ],
-
-    "what_made_responses_best_level": [
-      "[Reason 1]",
-      "[Reason 2]",
-      "[Reason 3]",
-      "[Reason 4]",
-      "[Reason 5]"
-    ]
-  },
-
-  "reflection_prompts": {
-    "self_assessment": [
-      "[Self-assessment question 1]",
-      "[Self-assessment question 2]",
-      "[Self-assessment question 3]"
-    ],
-    "practice_next": [
-      "[Practice suggestion 1]",
-      "[Practice suggestion 2]",
-      "[Practice suggestion 3]"
-    ]
-  }
-}
-
-## Specific Instructions
-
-### For Each Comparison Table
-1. **Bad Response**: Write as if a mid-level engineer with 3-4 years experience who hasn't prepared is responding. Show common anti-patterns.
-2. **Good Response**: Write as if a prepared senior engineer with solid fundamentals is responding. Show improvement over bad, but missing depth.
-3. **Best Response**: Write as if a staff/principal engineer with 10+ years and interview preparation is responding. This should be 2-3x longer than good, showing structured thinking, trade-offs, and adaptability.
-
-### Calculations Must Be
-- Specific with units (TB, GB, MB/s, QPS)
-- Show intermediate steps
-- Consider real-world patterns (Pareto principle for hot/cold data, typical cache hit rates 70-90%, typical P99 latency targets)
-- Derive infrastructure requirements from numbers
-
-### Architecture Decisions Must
-- Compare at least 2 alternatives
-- Map requirements to decisions
-- Discuss trade-offs explicitly
-- Show when you'd choose differently
-
-### Failure Scenarios Must
-- Use timeline-based breakdown (immediate, detection/failover, recovery)
-- Quantify impact (QPS changes, latency degradation)
-- Propose multiple mitigations
-- Consider cascading effects
-
-### Response Length Targets
-- Bad: 1-2 paragraphs
-- Good: 3-4 paragraphs with some structure
-- Best: 5-7+ paragraphs with clear structure, or detailed breakdown with subsections
-
-## Output Format
-Return ONLY valid JSON. No markdown code fences, no explanations outside the JSON. The JSON must be parseable by JSON.parse().
-
-Generate the complete JSON now.`;
-
-// Additional context prompts for specific themes
-const THEME_CONTEXT: Record<string, string> = {
-    'scale': `Focus on systems that handle massive scale: 100M+ users, billions of events, petabyte-scale data.
-Include specific numbers like "500K concurrent connections", "10TB daily data ingestion", "sub-50ms p99 latency requirement".
-Consider: horizontal scaling, sharding strategies, caching layers, async processing, eventual consistency tradeoffs.
-Example problems: Global CDN, Distributed Cache, Rate Limiter at Scale, Sharding Strategy for 100B Records.`,
-
-    'performance': `Focus on performance bottlenecks, optimization decisions, and capacity planning.
-Include specific metrics: latency percentiles (p50/p95/p99), throughput, CPU/memory utilization, query execution times.
-Consider: profiling approaches, database optimization, caching strategies, connection pooling, resource contention.
-Example problems: Database Query Optimization Under Load, Latency Spike Investigation, Memory Leak Diagnosis, Capacity Planning for 10x Growth.`,
-
-    'reliability': `Focus on failure modes, incident response, chaos engineering, and building resilient systems.
-Include specific failure scenarios: cascading failures, split-brain, data corruption, dependency outages.
-Consider: circuit breakers, bulkheads, graceful degradation, disaster recovery, SLO/SLA tradeoffs.
-Example problems: Cascading Failure Prevention, Incident Response Strategy, Disaster Recovery Planning, Monitoring and Alerting Design.`,
-
-    'architecture': `Focus on architectural decisions and system evolution over time.
-Include specific tradeoffs: monolith vs microservices, sync vs async, SQL vs NoSQL, build vs buy.
-Consider: migration strategies, technical debt, organizational structure, team boundaries, backwards compatibility.
-Example problems: Monolith to Microservices Migration, SQL vs NoSQL Decision, Sync vs Async Processing, Technical Debt Prioritization.`
-};
+// ── Exported TypeScript interfaces (kept for component compatibility) ──
 
 export interface FrameworkStepResponse {
     level: 'bad' | 'good' | 'best';
@@ -515,19 +173,129 @@ export interface InterviewScenario {
     };
 }
 
-export async function generateDailyScenario(strategy: { theme: Theme, problemType: ProblemType, focusArea: string }): Promise<InterviewScenario> {
-    const today = new Date();
-    const generatedDate = today.toISOString().split('T')[0];
+// ── Trimmed prompt (JSON schema removed — Structured Outputs enforces it) ──
 
-    // Inject Strategy Variables into prompt
+const INTERVIEW_CONTENT_PROMPT = `
+You are an expert system design interviewer and principal engineer with 15+ years of experience conducting interviews at FAANG companies. Your task is to generate a complete 40-minute system design interview practice session.
+
+## Your Expertise
+- You've conducted 500+ system design interviews
+- You understand what separates junior, senior, and principal engineer responses
+- You know common failure modes and anti-patterns
+- You can articulate nuanced trade-offs in distributed systems
+- You think in terms of cascading failures, consistency models, and operational complexity
+
+## Target Audience
+- Backend/Infrastructure engineers with 8-20+ years of experience
+- Currently at Senior level, targeting Staff/Principal roles
+- Has real production experience at scale
+- Familiar with distributed systems fundamentals
+- Does NOT need basic explanations—they need calibration on judgment
+
+## Quality Standards
+
+### Bad Response Characteristics (What to Show as Anti-Patterns)
+- Generic statements that could apply to any problem
+- Tool name-dropping without justification ("use Redis because it's fast")
+- No quantitative reasoning or calculations
+- Ignores failure scenarios
+- Jumps to solutions without clarifying requirements
+- Vague language ("a lot", "probably", "should be fine")
+- No trade-offs discussed
+
+### Good Response Characteristics (Competent Senior Engineer)
+- Shows calculations with units
+- Names specific technologies with reasoning
+- Considers alternatives
+- Mentions trade-offs
+- Asks clarifying questions
+- Quantifies impact
+
+### Best Response Characteristics (Principal Engineer Level)
+- Structured frameworks (functional vs non-functional, decision matrices)
+- Explicit assumptions stated upfront
+- Multiple alternatives compared with pros/cons
+- Quantifies impacts at multiple levels (user-facing latency, system QPS, cost)
+- Considers cascading failures
+- Shows adaptability (when to change approach)
+- Includes monitoring/validation strategies
+- Makes complexity trade-offs explicit
+- Demonstrates experience-based intuition (cache hit rates, typical failure modes)
+
+## Structural Requirements
+- Generate 4 framework steps: Clarify Requirements, Estimate Scale, High-Level Architecture, Failures & Bottlenecks
+- Each step has a comparison_table with bad/good/best responses
+- Step 2 must include calculations_breakdown with storage, throughput, bandwidth (specific numbers with units)
+- Step 3 must include architecture_diagram_description and component_decisions
+- Step 4 must include other_failure_scenarios
+- Step 1 must include interviewer_response with clarifications
+- Include interview_simulation with a dynamic requirements change scenario
+
+### For Each Comparison Table
+1. Bad Response: Write as if a mid-level engineer with 3-4 years experience who hasn't prepared is responding. Show common anti-patterns. Length: 1-2 paragraphs.
+2. Good Response: Write as if a prepared senior engineer with solid fundamentals is responding. Show improvement over bad, but missing depth. Length: 3-4 paragraphs.
+3. Best Response: Write as if a staff/principal engineer with 10+ years and interview preparation is responding. This should be 2-3x longer than good, showing structured thinking, trade-offs, and adaptability. Length: 5-7+ paragraphs with clear structure.
+
+### Calculations Must Be
+- Specific with units (TB, GB, MB/s, QPS)
+- Show intermediate steps
+- Consider real-world patterns (Pareto principle for hot/cold data, typical cache hit rates 70-90%, typical P99 latency targets)
+- Derive infrastructure requirements from numbers
+
+### Architecture Decisions Must
+- Compare at least 2 alternatives
+- Map requirements to decisions
+- Discuss trade-offs explicitly
+- Show when you'd choose differently
+
+### Failure Scenarios Must
+- Use timeline-based breakdown (immediate, detection/failover, recovery)
+- Quantify impact (QPS changes, latency degradation)
+- Propose multiple mitigations
+- Consider cascading effects
+
+Theme: {{THEME_TITLE}}
+Focus Area: {{FOCUS_AREA}}
+Problem Type: {{PROBLEM_TYPE}}
+Difficulty: Principal
+Date: {{GENERATED_DATE}}`;
+
+// Additional context prompts for specific themes
+const THEME_CONTEXT: Record<string, string> = {
+    'scale': `Focus on systems that handle massive scale: 100M+ users, billions of events, petabyte-scale data.
+Include specific numbers like "500K concurrent connections", "10TB daily data ingestion", "sub-50ms p99 latency requirement".
+Consider: horizontal scaling, sharding strategies, caching layers, async processing, eventual consistency tradeoffs.
+Example problems: Global CDN, Distributed Cache, Rate Limiter at Scale, Sharding Strategy for 100B Records.`,
+
+    'performance': `Focus on performance bottlenecks, optimization decisions, and capacity planning.
+Include specific metrics: latency percentiles (p50/p95/p99), throughput, CPU/memory utilization, query execution times.
+Consider: profiling approaches, database optimization, caching strategies, connection pooling, resource contention.
+Example problems: Database Query Optimization Under Load, Latency Spike Investigation, Memory Leak Diagnosis, Capacity Planning for 10x Growth.`,
+
+    'reliability': `Focus on failure modes, incident response, chaos engineering, and building resilient systems.
+Include specific failure scenarios: cascading failures, split-brain, data corruption, dependency outages.
+Consider: circuit breakers, bulkheads, graceful degradation, disaster recovery, SLO/SLA tradeoffs.
+Example problems: Cascading Failure Prevention, Incident Response Strategy, Disaster Recovery Planning, Monitoring and Alerting Design.`,
+
+    'architecture': `Focus on architectural decisions and system evolution over time.
+Include specific tradeoffs: monolith vs microservices, sync vs async, SQL vs NoSQL, build vs buy.
+Consider: migration strategies, technical debt, organizational structure, team boundaries, backwards compatibility.
+Example problems: Monolith to Microservices Migration, SQL vs NoSQL Decision, Sync vs Async Processing, Technical Debt Prioritization.`
+};
+
+export async function generateDailyScenario(
+    strategy: { theme: Theme, problemType: ProblemType, focusArea: string },
+    targetDate?: Date
+): Promise<InterviewScenario> {
+    const date = targetDate || new Date();
+    const generatedDate = date.toISOString().split('T')[0];
+
     const systemPrompt = INTERVIEW_CONTENT_PROMPT
         .replace('{{THEME_TITLE}}', strategy.theme.title)
         .replace('{{FOCUS_AREA}}', strategy.focusArea)
         .replace('{{PROBLEM_TYPE}}', strategy.problemType)
-        .replace('{{DIFFICULTY}}', 'Principal')
         .replace('{{GENERATED_DATE}}', generatedDate);
 
-    // Create a user message with additional context
     const themeContext = THEME_CONTEXT[strategy.theme.id] || '';
     const userMessage = `Generate a complete ${strategy.problemType === 'SYSTEM_DESIGN' ? 'system design' : 'tactical'} interview scenario.
 
@@ -536,75 +304,38 @@ Focus Area: ${strategy.focusArea}
 
 ${themeContext}
 
-Important reminders:
-- The problem must be specific to "${strategy.focusArea}" within the "${strategy.theme.title}" theme
+Important:
+- The problem must be specific to "${strategy.focusArea}" within "${strategy.theme.title}"
 - Include concrete numbers and metrics throughout
-- The three response levels (bad/good/best) must be CLEARLY different in quality and depth
+- Bad/good/best responses must be CLEARLY different in quality and depth
 - Best responses should be 2-3x longer than good responses
-- Include specific calculations with units in the scale estimation step
-- All content assumes the reader is an experienced engineer—no basic explanations needed
-- Make the comparison tables realistic—bad answers should be things real candidates actually say
-
-Generate the JSON now.`;
+- Bad answers should be things real candidates actually say`;
 
     console.log(`Generating [${strategy.problemType}] scenario for theme: ${strategy.theme.title} (${strategy.focusArea})`);
 
     try {
-        const completion = await openai.chat.completions.create({
+        const completion = await openai.chat.completions.parse({
             messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: userMessage }
             ],
-            model: 'gpt-4o',
-            response_format: { type: 'json_object' },
+            model: 'gpt-4o-mini',
+            response_format: zodResponseFormat(InterviewScenarioSchema, 'interview_scenario'),
             temperature: 0.75,
-            max_tokens: 8000, // Increased for longer comprehensive responses
+            max_tokens: 8000,
         });
 
-        const content = completion.choices[0].message.content;
-        if (!content) throw new Error('No content generated');
+        const message = completion.choices[0].message;
+        if (message.refusal) {
+            throw new Error(`Model refused to generate: ${message.refusal}`);
+        }
+        if (!message.parsed) {
+            throw new Error('No parsed content in response');
+        }
 
-        const scenario = JSON.parse(content) as InterviewScenario;
-
-        // Validate the response structure
-        validateScenarioStructure(scenario);
-
-        return scenario;
+        return message.parsed as InterviewScenario;
     } catch (error) {
         console.error('AI generation failed:', error);
         throw error;
     }
 }
-
-function validateScenarioStructure(scenario: InterviewScenario): void {
-    if (!scenario.metadata) throw new Error('Invalid scenario: missing metadata');
-    if (!scenario.problem?.title) throw new Error('Invalid scenario: missing problem.title');
-    if (!scenario.problem?.statement) throw new Error('Invalid scenario: missing problem.statement');
-    if (!scenario.framework_steps || !Array.isArray(scenario.framework_steps)) {
-        throw new Error('Invalid scenario: missing framework_steps');
-    }
-    if (scenario.framework_steps.length < 3) {
-        throw new Error('Invalid scenario: framework_steps must have at least 3 steps');
-    }
-
-    // Validate each framework step has comparison table
-    for (const step of scenario.framework_steps) {
-        if (!step.step_name) throw new Error(`Invalid step: missing step_name`);
-        if (!step.key_takeaways || !Array.isArray(step.key_takeaways)) {
-            throw new Error(`Invalid step ${step.step_number}: missing key_takeaways`);
-        }
-    }
-
-    if (!scenario.interview_simulation?.scenario?.comparison_table) {
-        throw new Error('Invalid scenario: missing interview_simulation comparison_table');
-    }
-
-    if (!scenario.summary?.critical_concepts_covered) {
-        throw new Error('Invalid scenario: missing summary.critical_concepts_covered');
-    }
-
-    if (!scenario.reflection_prompts?.self_assessment) {
-        throw new Error('Invalid scenario: missing reflection_prompts.self_assessment');
-    }
-}
-

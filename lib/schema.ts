@@ -52,10 +52,15 @@ export const scenarios = sqliteTable('scenarios', {
     problemType: text('problem_type').notNull(), // 'SYSTEM_DESIGN' | 'TACTICAL'
     focusArea: text('focus_area'),
     generatedAt: integer('generated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+    // Pre-generation scheduling
+    scheduledFor: integer('scheduled_for', { mode: 'timestamp' }),
+    scenarioStatus: text('scenario_status').default('sent'), // 'pending' | 'sent' | 'failed' (default 'sent' for backwards compat)
 }, (table) => ({
     slugIdx: index('slug_idx').on(table.slug),
     generatedAtIdx: index('generated_at_idx').on(table.generatedAt),
     themeIdx: index('theme_idx').on(table.theme),
+    scheduledForIdx: index('scheduled_for_idx').on(table.scheduledFor),
+    scenarioStatusIdx: index('scenario_status_idx').on(table.scenarioStatus),
 }));
 
 export const subscriptions = sqliteTable('subscriptions', {

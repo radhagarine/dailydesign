@@ -4,11 +4,21 @@
     {
       "path": "/api/cron/daily-challenge",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/pre-generate-weekly",
+      "schedule": "0 3 * * 0"
     }
   ],
   "functions": {
     "app/api/cron/daily-challenge/route.ts": {
-      "maxDuration": 60
+      "maxDuration": 120
+    },
+    "app/api/cron/pre-generate-weekly/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/admin/pre-generate/route.ts": {
+      "maxDuration": 300
     }
   }
 }

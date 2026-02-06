@@ -3,12 +3,11 @@ import { db } from '@/lib/db';
 import { subscribers, emails, scenarios, generateScenarioSlug } from '@/lib/schema';
 import { generateDailyScenario, InterviewScenario } from '@/lib/ai';
 import { sendEmail } from '@/lib/email';
-import { eq } from 'drizzle-orm';
+import { eq, and, gte, lte } from 'drizzle-orm';
 import { getDailyStrategy } from '@/lib/content-strategy';
 
-export const maxDuration = 120; // Allow longer timeout for comprehensive content generation
+export const maxDuration = 120;
 
-// Get base URL for links
 function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_BASE_URL) {
     return process.env.NEXT_PUBLIC_BASE_URL;
@@ -28,31 +27,57 @@ export async function GET(req: Request) {
   try {
     const baseUrl = getBaseUrl();
     const today = new Date();
+    const todayStart = new Date(today);
+    todayStart.setUTCHours(0, 0, 0, 0);
+    const todayEnd = new Date(today);
+    todayEnd.setUTCHours(23, 59, 59, 999);
 
-    // 1. Determine Strategy (Theme & Problem Type)
-    const strategy = getDailyStrategy(today);
-    console.log(`Using strategy: ${strategy.theme.title} / ${strategy.problemType} / ${strategy.focusArea}`);
+    let scenario: InterviewScenario;
+    let slug: string;
+    let preGenerated = false;
+    let scenarioDbId: number | undefined;
 
-    // 2. Generate Content
-    console.log('Generating comprehensive scenario...');
-    const scenario = await generateDailyScenario(strategy);
+    // 1. Try to use a pre-generated scenario
+    const preGen = await db.select()
+      .from(scenarios)
+      .where(and(
+        gte(scenarios.scheduledFor, todayStart),
+        lte(scenarios.scheduledFor, todayEnd),
+        eq(scenarios.scenarioStatus, 'pending'),
+      ))
+      .get();
 
-    // 3. Save scenario to database
-    const slug = generateScenarioSlug(scenario.problem.title, today);
-    console.log(`Saving scenario with slug: ${slug}`);
+    if (preGen) {
+      console.log(`Using pre-generated scenario: ${preGen.slug}`);
+      scenario = JSON.parse(preGen.content) as InterviewScenario;
+      slug = preGen.slug;
+      preGenerated = true;
+      scenarioDbId = preGen.id;
+    } else {
+      // 2. Fallback: generate on-the-fly
+      console.log('No pre-generated scenario found, generating on-the-fly...');
+      const strategy = getDailyStrategy(today);
+      console.log(`Using strategy: ${strategy.theme.title} / ${strategy.problemType} / ${strategy.focusArea}`);
 
-    await db.insert(scenarios).values({
-      slug,
-      title: scenario.problem.title,
-      content: JSON.stringify(scenario),
-      theme: strategy.theme.id,
-      problemType: strategy.problemType,
-      focusArea: strategy.focusArea,
-    }).run();
+      scenario = await generateDailyScenario(strategy);
+      slug = generateScenarioSlug(scenario.problem.title, today);
+
+      const result = await db.insert(scenarios).values({
+        slug,
+        title: scenario.problem.title,
+        content: JSON.stringify(scenario),
+        theme: strategy.theme.id,
+        problemType: strategy.problemType,
+        focusArea: strategy.focusArea,
+        scenarioStatus: 'sent',
+      }).run();
+
+      scenarioDbId = Number(result.lastInsertRowid);
+    }
 
     const scenarioUrl = `${baseUrl}/scenarios/${slug}`;
 
-    // 4. Get Active Subscribers
+    // 3. Get Active Subscribers
     const activeSubscribers = await db
       .select()
       .from(subscribers)
@@ -60,19 +85,26 @@ export async function GET(req: Request) {
       .all();
 
     if (activeSubscribers.length === 0) {
+      // Still mark pre-generated as sent
+      if (preGenerated && scenarioDbId) {
+        await db.update(scenarios)
+          .set({ scenarioStatus: 'sent' })
+          .where(eq(scenarios.id, scenarioDbId))
+          .run();
+      }
       return NextResponse.json({
         message: 'No active subscribers',
-        scenarioSaved: slug
+        scenarioSaved: slug,
+        preGenerated,
       });
     }
 
-    // 5. Send Emails with personalized unsubscribe links
+    // 4. Send Emails
     console.log(`Sending to ${activeSubscribers.length} subscribers...`);
     let recipientCount = 0;
 
     const results = await Promise.all(activeSubscribers.map(async (sub) => {
       const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${sub.unsubscribeToken}`;
-
       const emailHtml = generateEmailHtml(scenario, scenarioUrl, unsubscribeUrl);
 
       const res = await sendEmail({
@@ -84,12 +116,20 @@ export async function GET(req: Request) {
       return res;
     }));
 
-    // 6. Log to DB
+    // 5. Log to DB
     await db.insert(emails).values({
       subject: scenario.problem.title,
       body: JSON.stringify(scenario),
       recipientCount: recipientCount
     }).run();
+
+    // 6. Update pre-generated scenario status
+    if (preGenerated && scenarioDbId) {
+      await db.update(scenarios)
+        .set({ scenarioStatus: 'sent' })
+        .where(eq(scenarios.id, scenarioDbId))
+        .run();
+    }
 
     return NextResponse.json({
       success: true,
@@ -97,6 +137,7 @@ export async function GET(req: Request) {
       slug,
       sentTo: recipientCount,
       stepsGenerated: scenario.framework_steps.length,
+      preGenerated,
       results
     });
 
