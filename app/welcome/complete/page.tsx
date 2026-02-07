@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Setup Complete | Principal Engineer Interview Prep',
+    title: 'Setup Complete | DailyDesign',
     description: 'Your account is ready. Start your interview preparation journey.'
 };
 

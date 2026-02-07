@@ -19,7 +19,7 @@ export default function Home() {
                 <div className="container-wide text-center">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-8 animate-fade-in-up">
                         <div className="w-2 h-2 rounded-full bg-maroon-500 animate-pulse"></div>
-                        <span className="text-xs font-mono font-medium tracking-wide text-gray-300">DAILY INTERVIEW SIMULATION PLATFORM</span>
+                        <span className="text-xs font-mono font-medium tracking-wide text-gray-300">DAILYDESIGN</span>
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 animate-fade-in-up [animation-delay:100ms]">
@@ -315,9 +315,9 @@ export default function Home() {
                 <div className="container-wide">
                     <div className="grid md:grid-cols-4 gap-12 mb-12">
                         <div className="md:col-span-2">
-                            <div className="text-lg font-bold mb-4 text-white">Principal Interview Prep</div>
+                            <div className="text-lg font-bold mb-4 text-white">DailyDesign</div>
                             <p className="text-gray-500 text-sm mb-6 max-w-md">
-                                Daily interview simulations calibrated for Staff and Principal Engineer roles at top tech companies.
+                                Daily system design challenges calibrated for Staff and Principal Engineer roles at top tech companies.
                             </p>
                             <NewsletterSignup compact redirectToOnboarding={false} />
                         </div>
@@ -341,7 +341,7 @@ export default function Home() {
                         </div>
                     </div>
                     <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-gray-600 text-xs">© 2026 Principal Interview Prep. Not affiliated with any big tech company.</p>
+                        <p className="text-gray-600 text-xs">© 2026 DailyDesign. Not affiliated with any big tech company.</p>
                         <div className="flex gap-6 text-xs text-gray-500">
                             <a href="#" className="hover:text-white transition">Twitter</a>
                             <a href="#" className="hover:text-white transition">LinkedIn</a>

@@ -54,7 +54,7 @@ export default function InterviewSimulation({
                 <div className="mb-12 animate-fade-in">
                     <h1 className="text-4xl md:text-5xl font-bold mb-4">{title}</h1>
                     <p className="text-[var(--text-secondary)] text-lg">
-                        Daily Interview Simulation • Principal Engineer Level
+                        DailyDesign • System Design Challenge
                     </p>
                 </div>
 

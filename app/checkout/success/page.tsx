@@ -64,7 +64,7 @@ function SuccessContent() {
                     </svg>
                 </div>
 
-                <h1 className="text-3xl font-bold mb-4">Welcome to Principal Interview Prep!</h1>
+                <h1 className="text-3xl font-bold mb-4">Welcome to DailyDesign!</h1>
                 <p className="text-gray-400 mb-8">
                     Your subscription is now active. You will receive your first daily interview scenario in your inbox soon.
                 </p>

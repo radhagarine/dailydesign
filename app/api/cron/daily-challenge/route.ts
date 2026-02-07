@@ -248,7 +248,7 @@ function generateEmailHtml(scenario: InterviewScenario, scenarioUrl: string, uns
       <!-- Footer -->
       <div style="text-align: center; margin-top: 24px; padding: 16px;">
         <p style="color: #6b7280; font-size: 12px; margin-bottom: 8px;">
-          Principal Engineer Interview Prep
+          DailyDesign
         </p>
         <p style="color: #4b5563; font-size: 11px; margin: 0;">
           <a href="${unsubscribeUrl}" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a>

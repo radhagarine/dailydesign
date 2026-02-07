@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const content = JSON.parse(scenario.content);
 
     return {
-        title: `${scenario.title} | Principal Engineer Interview Prep`,
+        title: `${scenario.title} | DailyDesign`,
         description: content.problem?.statement || content.problem?.context?.substring(0, 160)
     };
 }
