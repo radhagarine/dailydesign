@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Database from 'better-sqlite3';
+import { createClient } from '@libsql/client';
 
-// Direct SQLite access for admin queries
-const sqlite = new Database('sqlite.db');
+const client = createClient({
+    url: process.env.TURSO_DATABASE_URL!,
+    authToken: process.env.TURSO_AUTH_TOKEN!,
+});
 
 export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
@@ -14,67 +16,78 @@ export async function GET(request: NextRequest) {
     try {
         if (!table) {
             // Return list of all tables with row counts
-            const tables = sqlite.prepare(`
+            const tablesResult = await client.execute(`
                 SELECT name FROM sqlite_master
                 WHERE type='table' AND name NOT LIKE 'sqlite_%'
                 ORDER BY name
-            `).all() as { name: string }[];
+            `);
 
-            const tableInfo = tables.map(t => {
-                const count = sqlite.prepare(`SELECT COUNT(*) as count FROM "${t.name}"`).get() as { count: number };
-                const columns = sqlite.prepare(`PRAGMA table_info("${t.name}")`).all() as {
-                    cid: number;
-                    name: string;
-                    type: string;
-                    notnull: number;
-                    dflt_value: string | null;
-                    pk: number;
-                }[];
-                return {
-                    name: t.name,
-                    rowCount: count.count,
-                    columns: columns.map(c => ({
-                        name: c.name,
-                        type: c.type,
-                        isPrimaryKey: c.pk === 1,
-                        notNull: c.notnull === 1,
-                        defaultValue: c.dflt_value
-                    }))
-                };
-            });
+            const tableInfo = await Promise.all(
+                tablesResult.rows.map(async (t) => {
+                    const tableName = t.name as string;
+                    const countResult = await client.execute({
+                        sql: `SELECT COUNT(*) as count FROM "${tableName}"`,
+                        args: [],
+                    });
+                    const columnsResult = await client.execute({
+                        sql: `PRAGMA table_info("${tableName}")`,
+                        args: [],
+                    });
+                    return {
+                        name: tableName,
+                        rowCount: countResult.rows[0].count as number,
+                        columns: columnsResult.rows.map((c) => ({
+                            name: c.name as string,
+                            type: c.type as string,
+                            isPrimaryKey: c.pk === 1,
+                            notNull: c.notnull === 1,
+                            defaultValue: c.dflt_value as string | null,
+                        })),
+                    };
+                })
+            );
 
             return NextResponse.json({ tables: tableInfo });
         }
 
         // Validate table name (prevent SQL injection)
-        const validTables = sqlite.prepare(`
+        const validTables = await client.execute(`
             SELECT name FROM sqlite_master
             WHERE type='table' AND name NOT LIKE 'sqlite_%'
-        `).all() as { name: string }[];
+        `);
 
-        if (!validTables.some(t => t.name === table)) {
+        if (!validTables.rows.some((t) => t.name === table)) {
             return NextResponse.json({ error: 'Invalid table name' }, { status: 400 });
         }
 
         // Get table data
-        const rows = sqlite.prepare(`SELECT * FROM "${table}" LIMIT ? OFFSET ?`).all(limit, offset);
-        const totalCount = sqlite.prepare(`SELECT COUNT(*) as count FROM "${table}"`).get() as { count: number };
-        const columns = sqlite.prepare(`PRAGMA table_info("${table}")`).all() as {
-            name: string;
-            type: string;
-        }[];
+        const rows = await client.execute({
+            sql: `SELECT * FROM "${table}" LIMIT ? OFFSET ?`,
+            args: [limit, offset],
+        });
+        const totalCount = await client.execute({
+            sql: `SELECT COUNT(*) as count FROM "${table}"`,
+            args: [],
+        });
+        const columns = await client.execute({
+            sql: `PRAGMA table_info("${table}")`,
+            args: [],
+        });
 
         return NextResponse.json({
             table,
-            columns: columns.map(c => c.name),
-            columnTypes: columns.reduce((acc, c) => ({ ...acc, [c.name]: c.type }), {}),
-            rows,
+            columns: columns.rows.map((c) => c.name as string),
+            columnTypes: columns.rows.reduce(
+                (acc, c) => ({ ...acc, [c.name as string]: c.type as string }),
+                {} as Record<string, string>
+            ),
+            rows: rows.rows,
             pagination: {
                 page,
                 limit,
-                total: totalCount.count,
-                totalPages: Math.ceil(totalCount.count / limit)
-            }
+                total: totalCount.rows[0].count as number,
+                totalPages: Math.ceil((totalCount.rows[0].count as number) / limit),
+            },
         });
     } catch (error) {
         console.error('Admin API error:', error);
@@ -99,8 +112,8 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
-        const result = sqlite.prepare(sql).all();
-        return NextResponse.json({ result, rowCount: result.length });
+        const result = await client.execute(sql);
+        return NextResponse.json({ result: result.rows, rowCount: result.rows.length });
     } catch (error) {
         console.error('SQL execution error:', error);
         return NextResponse.json({

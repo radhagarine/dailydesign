@@ -16,7 +16,7 @@ npm run dev          # Start dev server (localhost:3000)
 npm run build        # Production build
 npm run lint         # ESLint
 
-# Database (Drizzle + SQLite)
+# Database (Drizzle + Turso/libsql)
 npm run db:generate  # Generate migrations from schema changes
 npm run db:migrate   # Run migrations
 npm run db:push      # Push schema directly (dev only)
@@ -27,7 +27,7 @@ npm run db:studio    # Open Drizzle Studio GUI
 
 ### Tech Stack
 - **Framework**: Next.js 14 (App Router)
-- **Database**: SQLite via better-sqlite3 + Drizzle ORM
+- **Database**: Turso (libsql) + Drizzle ORM
 - **AI**: OpenAI API for scenario generation
 - **Email**: Resend for daily delivery
 - **Payments**: Stripe (checkout + webhooks)
@@ -74,6 +74,8 @@ npm run db:studio    # Open Drizzle Studio GUI
 ## Environment Variables
 
 Required in `.env.local` (see `.env.example`):
+- `TURSO_DATABASE_URL`: Turso database connection URL
+- `TURSO_AUTH_TOKEN`: Turso authentication token
 - `OPENAI_API_KEY`: For scenario generation
 - `RESEND_API_KEY`: For email delivery
 - `CRON_SECRET`: Protects cron endpoint
