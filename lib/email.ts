@@ -13,7 +13,7 @@ export async function sendEmail({
 }) {
     try {
         const data = await resend.emails.send({
-            from: 'Daily Challenge <onboarding@resend.dev>',
+            from: process.env.EMAIL_FROM || 'DailyDesign <noreply@mail.radhagarine.com>',
             to,
             subject,
             html,
