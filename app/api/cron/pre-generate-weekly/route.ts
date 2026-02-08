@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
+import { verifyBearerToken } from '@/lib/auth';
 
 export const maxDuration = 300; // 5 min for generating 7 scenarios
 
 export async function GET(req: Request) {
-    const authHeader = req.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!verifyBearerToken(req.headers.get('authorization'), process.env.CRON_SECRET)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -38,7 +38,7 @@ export async function GET(req: Request) {
     } catch (error) {
         console.error('Weekly pre-generation cron failed:', error);
         return NextResponse.json(
-            { error: 'Internal Server Error', details: String(error) },
+            { error: 'Internal Server Error' },
             { status: 500 }
         );
     }

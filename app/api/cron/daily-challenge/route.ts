@@ -5,22 +5,13 @@ import { generateDailyScenario, InterviewScenario } from '@/lib/ai';
 import { sendEmail } from '@/lib/email';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { getDailyStrategy } from '@/lib/content-strategy';
+import { getBaseUrl } from '@/lib/utils';
+import { verifyBearerToken } from '@/lib/auth';
 
 export const maxDuration = 120;
 
-function getBaseUrl(): string {
-  if (process.env.NEXT_PUBLIC_BASE_URL) {
-    return process.env.NEXT_PUBLIC_BASE_URL;
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  return 'http://localhost:3000';
-}
-
 export async function GET(req: Request) {
-  const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!verifyBearerToken(req.headers.get('authorization'), process.env.CRON_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

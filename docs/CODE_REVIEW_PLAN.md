@@ -62,17 +62,17 @@
 
 ## Low Severity Issues
 
-| # | File | Issue |
-|---|------|-------|
-| 22 | Multiple files | Duplicated code: `MarkdownContent`, `getBaseUrl()`, `getThemeLabel()` |
-| 23 | `app/page.tsx:286` | `**No.**` Markdown syntax in HTML `<p>` tag - renders as literal text |
-| 24 | `app/page.tsx:339` | Placeholder `support@example.com` and `#` links in footer |
-| 25 | `lib/schema.ts:68` | No FK constraint on `subscriptions.subscriberId` |
-| 26 | `components/InterviewScenario.tsx:626` | `new Set(Array.from(prev))` - `Array.from` unnecessary |
-| 27 | Multiple error handlers | `details: String(error)` leaks internals in responses |
-| 28 | `next.config.js` | No security headers configured |
-| 29 | Cron routes | Timing attack on `!==` secret comparison |
-| 30 | `app/api/unsubscribe/route.ts` | Email address leaked in unsubscribe response |
+| # | File | Issue | Status |
+|---|------|-------|--------|
+| 22 | Multiple files | Duplicated code: `MarkdownContent`, `getBaseUrl()`, `getThemeLabel()` | FIXED - Extracted to `components/MarkdownContent.tsx`, `lib/utils.ts` |
+| 23 | `app/page.tsx:286` | `**No.**` Markdown syntax in HTML `<p>` tag - renders as literal text | FIXED - Replaced with `<strong>No.</strong>` |
+| 24 | `app/page.tsx:339` | Placeholder `support@example.com` and `#` links in footer | FIXED - Real email, proper `<Link>` routes |
+| 25 | `lib/schema.ts:68` | No FK constraint on `subscriptions.subscriberId` | FIXED - `.references(() => subscribers.id)` |
+| 26 | `components/InterviewScenario.tsx:626` | `new Set(Array.from(prev))` - `Array.from` unnecessary | FIXED - `new Set(prev)` |
+| 27 | Multiple error handlers | `details: String(error)` leaks internals in responses | FIXED - Removed `details` from error responses |
+| 28 | `next.config.js` | No security headers configured | FIXED - Security headers in `next.config.js` headers() |
+| 29 | Cron routes | Timing attack on `!==` secret comparison | FIXED - `lib/auth.ts` with `crypto.timingSafeEqual()` |
+| 30 | `app/api/unsubscribe/route.ts` | Email address leaked in unsubscribe response | FIXED - Already fixed in High Severity pass |
 
 ---
 

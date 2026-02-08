@@ -3,16 +3,7 @@ import { stripe, PLANS, isStripeEnabled } from '@/lib/stripe';
 import { db } from '@/lib/db';
 import { subscribers } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
-
-function getBaseUrl(): string {
-    if (process.env.NEXT_PUBLIC_BASE_URL) {
-        return process.env.NEXT_PUBLIC_BASE_URL;
-    }
-    if (process.env.VERCEL_URL) {
-        return `https://${process.env.VERCEL_URL}`;
-    }
-    return 'http://localhost:3000';
-}
+import { getBaseUrl } from '@/lib/utils';
 
 export async function POST(req: Request) {
     // Check if Stripe is configured

@@ -35,15 +35,7 @@ const formatDate = (date: Date) => {
     });
 };
 
-const getThemeLabel = (theme: string) => {
-    const labels: Record<string, string> = {
-        'scale': 'Designing at Massive Scale',
-        'performance': 'Performance & Capacity',
-        'reliability': 'Reliability & Incidents',
-        'architecture': 'Architecture Tradeoffs'
-    };
-    return labels[theme] || theme;
-};
+import { getThemeLabel } from '@/lib/utils';
 
 export default function DynamicScenario(props: DynamicScenarioProps) {
     const [showAnswers, setShowAnswers] = useState(false);

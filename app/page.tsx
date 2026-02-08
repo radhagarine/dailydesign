@@ -280,7 +280,7 @@ export default function Home() {
                                 <span className="transition-transform group-open:rotate-180"><ChevronDown /></span>
                             </summary>
                             <p className="mt-3 text-gray-400 text-sm leading-relaxed">
-                                **No.** This product explicitly assumes 8+ years of experience. We do not explain basic concepts. We focus on the nuanced tradeoffs expected at Staff/Principal levels in Big Tech.
+                                <strong>No.</strong> This product explicitly assumes 8+ years of experience. We do not explain basic concepts. We focus on the nuanced tradeoffs expected at Staff/Principal levels in Big Tech.
                             </p>
                         </details>
 
@@ -331,17 +331,16 @@ export default function Home() {
                             <h4 className="text-sm font-semibold mb-4 text-white">Company</h4>
                             <ul className="space-y-2 text-sm text-gray-400">
                                 <li><a href="#pricing" className="hover:text-white transition">Pricing</a></li>
-                                <li><a href="#" className="hover:text-white transition">Terms of Service</a></li>
-                                <li><a href="#" className="hover:text-white transition">Privacy Policy</a></li>
-                                <li><a href="mailto:support@example.com" className="hover:text-white transition">Contact</a></li>
+                                <li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
+                                <li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
+                                <li><a href="mailto:support@dailydesign.dev" className="hover:text-white transition">Contact</a></li>
                             </ul>
                         </div>
                     </div>
                     <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="text-gray-600 text-xs">© 2026 DailyDesign. Not affiliated with any big tech company.</p>
                         <div className="flex gap-6 text-xs text-gray-500">
-                            <a href="#" className="hover:text-white transition">Twitter</a>
-                            <a href="#" className="hover:text-white transition">LinkedIn</a>
+                            <span className="text-gray-600">DailyDesign</span>
                         </div>
                     </div>
                 </div>

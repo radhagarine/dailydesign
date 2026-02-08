@@ -65,7 +65,7 @@ export const scenarios = sqliteTable('scenarios', {
 
 export const subscriptions = sqliteTable('subscriptions', {
     id: integer('id').primaryKey(),
-    subscriberId: integer('subscriber_id').notNull(),
+    subscriberId: integer('subscriber_id').notNull().references(() => subscribers.id),
     stripeSubscriptionId: text('stripe_subscription_id').notNull().unique(),
     stripePriceId: text('stripe_price_id').notNull(),
     status: text('status').notNull(), // active, canceled, past_due, trialing, etc.

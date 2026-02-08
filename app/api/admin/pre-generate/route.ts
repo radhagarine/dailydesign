@@ -4,6 +4,7 @@ import { scenarios, generateScenarioSlug } from '@/lib/schema';
 import { generateDailyScenario } from '@/lib/ai';
 import { getDailyStrategy } from '@/lib/content-strategy';
 import { and, gte, lte } from 'drizzle-orm';
+import { verifyBearerToken } from '@/lib/auth';
 
 export const maxDuration = 300; // 5 min for generating multiple scenarios
 
@@ -27,8 +28,7 @@ function addDays(date: Date, days: number): Date {
 
 // POST: Generate scenarios for upcoming days
 export async function POST(req: Request) {
-    const authHeader = req.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!verifyBearerToken(req.headers.get('authorization'), process.env.CRON_SECRET)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -100,14 +100,13 @@ export async function POST(req: Request) {
         });
     } catch (error) {
         console.error('Pre-generation failed:', error);
-        return NextResponse.json({ error: 'Internal Server Error', details: String(error) }, { status: 500 });
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
 
 // GET: Check status of upcoming pre-generated scenarios
 export async function GET(req: Request) {
-    const authHeader = req.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!verifyBearerToken(req.headers.get('authorization'), process.env.CRON_SECRET)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

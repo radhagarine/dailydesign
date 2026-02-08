@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@libsql/client';
+import { verifyBearerToken } from '@/lib/auth';
 
 const client = createClient({
     url: process.env.TURSO_DATABASE_URL!,
@@ -7,8 +8,7 @@ const client = createClient({
 });
 
 function authenticate(request: NextRequest): NextResponse | null {
-    const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!verifyBearerToken(request.headers.get('authorization'), process.env.CRON_SECRET)) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     return null;
