@@ -1,6 +1,6 @@
 import { db } from '@/lib/db';
 import { scenarios } from '@/lib/schema';
-import { desc } from 'drizzle-orm';
+import { desc, sql } from 'drizzle-orm';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 
@@ -39,19 +39,19 @@ const formatDate = (date: Date | number | null) => {
     });
 };
 
-// Parse content and extract summary
-function getScenarioSummary(content: string): string | undefined {
-    try {
-        const parsed = JSON.parse(content);
-        return parsed.problem?.statement;
-    } catch {
-        return undefined;
-    }
-}
+export const revalidate = 3600; // ISR: revalidate every hour
 
 export default async function ArchivePage() {
     const allScenarios = await db
-        .select()
+        .select({
+            id: scenarios.id,
+            slug: scenarios.slug,
+            title: scenarios.title,
+            theme: scenarios.theme,
+            problemType: scenarios.problemType,
+            generatedAt: scenarios.generatedAt,
+            summary: sql<string | null>`json_extract(${scenarios.content}, '$.problem.statement')`,
+        })
         .from(scenarios)
         .orderBy(desc(scenarios.generatedAt))
         .all();
@@ -101,7 +101,6 @@ export default async function ArchivePage() {
                 ) : (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {allScenarios.map((scenario) => {
-                            const summary = getScenarioSummary(scenario.content);
                             return (
                                 <Link
                                     key={scenario.id}
@@ -119,9 +118,9 @@ export default async function ArchivePage() {
                                     <h2 className="text-lg font-semibold mb-2 group-hover:text-maroon-400 transition">
                                         {scenario.title}
                                     </h2>
-                                    {summary && (
+                                    {scenario.summary && (
                                         <p className="text-gray-500 text-sm line-clamp-2 mb-4">
-                                            {summary}
+                                            {scenario.summary}
                                         </p>
                                     )}
                                     <div className="flex items-center justify-between text-xs text-gray-600">

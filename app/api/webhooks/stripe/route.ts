@@ -6,6 +6,22 @@ import { subscribers, subscriptions } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import type Stripe from 'stripe';
 
+// In-memory idempotency cache for processed webhook events.
+// Prevents duplicate processing within the same serverless instance.
+const processedEvents = new Map<string, number>();
+const IDEMPOTENCY_TTL = 5 * 60 * 1000; // 5 minutes
+
+function markEventProcessed(eventId: string) {
+    processedEvents.set(eventId, Date.now());
+    // Clean up old entries
+    if (processedEvents.size > 1000) {
+        const now = Date.now();
+        processedEvents.forEach((timestamp, id) => {
+            if (now - timestamp > IDEMPOTENCY_TTL) processedEvents.delete(id);
+        });
+    }
+}
+
 export async function POST(req: Request) {
     if (!stripe) {
         return NextResponse.json(
@@ -46,6 +62,11 @@ export async function POST(req: Request) {
         );
     }
 
+    // Idempotency check: skip already-processed events
+    if (processedEvents.has(event.id)) {
+        return NextResponse.json({ received: true, duplicate: true });
+    }
+
     try {
         switch (event.type) {
             case 'checkout.session.completed': {
@@ -77,6 +98,7 @@ export async function POST(req: Request) {
                 console.log(`Unhandled event type: ${event.type}`);
         }
 
+        markEventProcessed(event.id);
         return NextResponse.json({ received: true });
     } catch (error) {
         console.error('Webhook handler error:', error);

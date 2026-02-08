@@ -54,7 +54,8 @@ export function getDailyStrategy(date: Date = new Date()) {
     let problemType: ProblemType = 'TACTICAL'; // Default
 
     if (day === 0) {
-        problemType = Math.random() > 0.5 ? 'SYSTEM_DESIGN' : 'TACTICAL';
+        // Deterministic: alternate Sundays based on week index (even weeks = SYSTEM_DESIGN)
+        problemType = weekIndex % 2 === 0 ? 'SYSTEM_DESIGN' : 'TACTICAL';
     } else if (day % 2 === 0) {
         // Tue (2), Thu (4), Sat (6) -> System Design (More time to read?)
         problemType = 'SYSTEM_DESIGN';

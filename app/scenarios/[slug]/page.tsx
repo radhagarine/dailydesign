@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { db } from '@/lib/db';
 import { scenarios } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
@@ -9,13 +10,20 @@ interface PageProps {
     params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-    const { slug } = await params;
-    const scenario = await db
+// Deduplicate DB query across generateMetadata and page component
+const getScenario = cache(async (slug: string) => {
+    return db
         .select()
         .from(scenarios)
         .where(eq(scenarios.slug, slug))
         .get();
+});
+
+export const revalidate = 3600; // ISR: revalidate every hour
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { slug } = await params;
+    const scenario = await getScenario(slug);
 
     if (!scenario) {
         return {
@@ -34,11 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function ScenarioPage({ params }: PageProps) {
     const { slug } = await params;
 
-    const scenario = await db
-        .select()
-        .from(scenarios)
-        .where(eq(scenarios.slug, slug))
-        .get();
+    const scenario = await getScenario(slug);
 
     if (!scenario) {
         notFound();

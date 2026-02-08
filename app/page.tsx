@@ -1,6 +1,3 @@
-'use client';
-
-import React from 'react';
 import Link from 'next/link';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import PricingButton from '@/components/PricingButton';

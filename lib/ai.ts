@@ -92,86 +92,13 @@ const InterviewScenarioSchema = z.object({
     }),
 });
 
-// ── Exported TypeScript interfaces (kept for component compatibility) ──
+// ── Exported TypeScript types (derived from Zod schemas — single source of truth) ──
 
-export interface FrameworkStepResponse {
-    level: 'bad' | 'good' | 'best';
-    icon: string;
-    response: string;
-    why_this_level: string;
-    red_flags?: string[];
-    strengths?: string[];
-    what_is_missing?: string;
-    principal_engineer_signals?: string[];
-}
-
-export interface ComparisonTable {
-    criterion: string;
-    interviewer_question?: string;
-    responses: FrameworkStepResponse[];
-}
-
-export interface ComponentDecision {
-    component: string;
-    comparison_table: ComparisonTable;
-}
-
-export interface FrameworkStep {
-    step_number: number;
-    step_name: string;
-    time_allocation: string;
-    description: string;
-    pause_prompt: string;
-    comparison_table?: ComparisonTable;
-    interviewer_response?: {
-        clarifications: string[];
-        additional_context: string;
-    };
-    calculations_breakdown?: {
-        storage: { total_data: string; working_set: string; per_region: string };
-        throughput: { global_qps: string; per_region_qps: string; cache_hit_qps: string; database_qps: string };
-        bandwidth: { peak_bandwidth: string; per_region_bandwidth: string };
-    };
-    architecture_diagram_description?: string;
-    component_decisions?: ComponentDecision[];
-    other_failure_scenarios?: Array<{ scenario: string; impact: string; mitigation: string }>;
-    key_takeaways: string[];
-}
-
-export interface InterviewScenario {
-    metadata: {
-        difficulty: string;
-        estimated_time_minutes: number;
-        topics: string[];
-        generated_date: string;
-    };
-    problem: {
-        title: string;
-        statement: string;
-        context: string;
-        pause_prompt: string;
-    };
-    framework_steps: FrameworkStep[];
-    interview_simulation: {
-        title: string;
-        description: string;
-        scenario: {
-            interviewer_question: string;
-            pause_prompt: string;
-            comparison_table: ComparisonTable;
-        };
-        key_takeaways: string[];
-    };
-    summary: {
-        critical_concepts_covered: string[];
-        patterns_demonstrated: string[];
-        what_made_responses_best_level: string[];
-    };
-    reflection_prompts: {
-        self_assessment: string[];
-        practice_next: string[];
-    };
-}
+export type FrameworkStepResponse = z.infer<typeof FrameworkStepResponseSchema>;
+export type ComparisonTable = z.infer<typeof ComparisonTableSchema>;
+export type ComponentDecision = z.infer<typeof ComponentDecisionSchema>;
+export type FrameworkStep = z.infer<typeof FrameworkStepSchema>;
+export type InterviewScenario = z.infer<typeof InterviewScenarioSchema>;
 
 // ── Trimmed prompt (JSON schema removed — Structured Outputs enforces it) ──
 
@@ -313,29 +240,53 @@ Important:
 
     console.log(`Generating [${strategy.problemType}] scenario for theme: ${strategy.theme.title} (${strategy.focusArea})`);
 
-    try {
-        const completion = await openai.chat.completions.parse({
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userMessage }
-            ],
-            model: 'gpt-4o-mini',
-            response_format: zodResponseFormat(InterviewScenarioSchema, 'interview_scenario'),
-            temperature: 0.75,
-            max_tokens: 8000,
-        });
+    const MAX_RETRIES = 3;
+    let lastError: unknown;
 
-        const message = completion.choices[0].message;
-        if (message.refusal) {
-            throw new Error(`Model refused to generate: ${message.refusal}`);
-        }
-        if (!message.parsed) {
-            throw new Error('No parsed content in response');
-        }
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+            const completion = await openai.chat.completions.parse({
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userMessage }
+                ],
+                model: 'gpt-4o-mini',
+                response_format: zodResponseFormat(InterviewScenarioSchema, 'interview_scenario'),
+                temperature: 0.75,
+                max_tokens: 8000,
+            });
 
-        return message.parsed as InterviewScenario;
-    } catch (error) {
-        console.error('AI generation failed:', error);
-        throw error;
+            const message = completion.choices[0].message;
+            if (message.refusal) {
+                throw new Error(`Model refused to generate: ${message.refusal}`);
+            }
+            if (!message.parsed) {
+                throw new Error('No parsed content in response');
+            }
+
+            return message.parsed as InterviewScenario;
+        } catch (error) {
+            lastError = error;
+            const isRetryable = error instanceof Error && (
+                error.message.includes('timeout') ||
+                error.message.includes('rate_limit') ||
+                error.message.includes('overloaded') ||
+                error.message.includes('500') ||
+                error.message.includes('502') ||
+                error.message.includes('503') ||
+                error.message.includes('529')
+            );
+
+            if (!isRetryable || attempt === MAX_RETRIES) {
+                console.error(`AI generation failed (attempt ${attempt}/${MAX_RETRIES}):`, error);
+                throw error;
+            }
+
+            const delayMs = Math.min(1000 * Math.pow(2, attempt - 1), 8000);
+            console.warn(`AI generation attempt ${attempt} failed, retrying in ${delayMs}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
     }
+
+    throw lastError;
 }

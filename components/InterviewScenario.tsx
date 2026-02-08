@@ -642,22 +642,29 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
         summaryRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    // Update current step based on scroll position
+    // Update current step based on scroll position (throttled with rAF)
     useEffect(() => {
+        let rafId = 0;
         const handleScroll = () => {
-            const scrollPosition = window.scrollY + 200;
-
-            for (let i = stepRefs.current.length - 1; i >= 0; i--) {
-                const ref = stepRefs.current[i];
-                if (ref && ref.offsetTop <= scrollPosition) {
-                    setCurrentStep(i);
-                    break;
+            if (rafId) return;
+            rafId = requestAnimationFrame(() => {
+                const scrollPosition = window.scrollY + 200;
+                for (let i = stepRefs.current.length - 1; i >= 0; i--) {
+                    const ref = stepRefs.current[i];
+                    if (ref && ref.offsetTop <= scrollPosition) {
+                        setCurrentStep(i);
+                        break;
+                    }
                 }
-            }
+                rafId = 0;
+            });
         };
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (rafId) cancelAnimationFrame(rafId);
+        };
     }, []);
 
     const allStepsRevealed = scenario.framework_steps.every((_, i) => revealedSteps.has(i));

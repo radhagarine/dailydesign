@@ -43,20 +43,20 @@
 
 ## Medium Severity Issues
 
-| # | File | Issue |
-|---|------|-------|
-| 10 | `app/api/cron/daily-challenge/route.ts:150-262` | Email HTML interpolates AI content without escaping |
-| 11 | `app/api/subscribe/route.ts:10` | Email validation is just `!email.includes('@')` |
-| 12 | `app/api/webhooks/stripe/route.ts` | No idempotency check on webhook events |
-| 13 | `app/scenarios/[slug]/page.tsx` | Same DB query runs twice (generateMetadata + page) - use React `cache()` |
-| 14 | `app/archive/page.tsx:52-57` | `SELECT *` fetches full JSON content column; only needs slug/title/date |
-| 15 | `app/scenarios/[slug]/page.tsx`, `app/archive/page.tsx` | No `revalidate` export - every request hits DB |
-| 16 | `lib/ai.ts:316-341` | No retry logic for OpenAI API calls |
-| 17 | `lib/content-strategy.ts:56-57` | `Math.random()` for Sunday problem type - non-deterministic |
-| 18 | `lib/ai.ts:12-174` | Zod schemas and TS interfaces manually synced; use `z.infer<>` |
-| 19 | `components/InterviewScenario.tsx:646-661` | Scroll handler without throttling/rAF |
-| 20 | `app/page.tsx:1` | Entire landing page is `'use client'` - kills SSR |
-| 21 | `package.json` | `mermaid` (~2-3MB) large bundle impact |
+| # | File | Issue | Status |
+|---|------|-------|--------|
+| 10 | `app/api/cron/daily-challenge/route.ts:150-262` | Email HTML interpolates AI content without escaping | FIXED - `escapeHtml()` applied to all AI content |
+| 11 | `app/api/subscribe/route.ts:10` | Email validation is just `!email.includes('@')` | FIXED - Proper regex + length check |
+| 12 | `app/api/webhooks/stripe/route.ts` | No idempotency check on webhook events | FIXED - In-memory event ID dedup |
+| 13 | `app/scenarios/[slug]/page.tsx` | Same DB query runs twice (generateMetadata + page) - use React `cache()` | FIXED - `cache()` wrapping `getScenario()` |
+| 14 | `app/archive/page.tsx:52-57` | `SELECT *` fetches full JSON content column; only needs slug/title/date | FIXED - Uses `json_extract()` for summary, no full content fetch |
+| 15 | `app/scenarios/[slug]/page.tsx`, `app/archive/page.tsx` | No `revalidate` export - every request hits DB | FIXED - `revalidate = 3600` on both pages |
+| 16 | `lib/ai.ts:316-341` | No retry logic for OpenAI API calls | FIXED - 3 retries with exponential backoff for transient errors |
+| 17 | `lib/content-strategy.ts:56-57` | `Math.random()` for Sunday problem type - non-deterministic | FIXED - Uses `weekIndex % 2` for deterministic alternation |
+| 18 | `lib/ai.ts:12-174` | Zod schemas and TS interfaces manually synced; use `z.infer<>` | FIXED - Types derived via `z.infer<>` |
+| 19 | `components/InterviewScenario.tsx:646-661` | Scroll handler without throttling/rAF | FIXED - `requestAnimationFrame` throttling + passive listener |
+| 20 | `app/page.tsx:1` | Entire landing page is `'use client'` - kills SSR | FIXED - Removed `'use client'`, now server component (saved ~5KB) |
+| 21 | `package.json` | `mermaid` (~2-3MB) large bundle impact | MITIGATED - Already uses dynamic `import()`, code-split from main bundle |
 
 ---
 
