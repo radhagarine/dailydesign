@@ -6,7 +6,18 @@ const client = createClient({
     authToken: process.env.TURSO_AUTH_TOKEN!,
 });
 
+function authenticate(request: NextRequest): NextResponse | null {
+    const authHeader = request.headers.get('authorization');
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    return null;
+}
+
 export async function GET(request: NextRequest) {
+    const authError = authenticate(request);
+    if (authError) return authError;
+
     const searchParams = request.nextUrl.searchParams;
     const table = searchParams.get('table');
     const page = parseInt(searchParams.get('page') || '1');
@@ -97,6 +108,9 @@ export async function GET(request: NextRequest) {
 
 // Execute raw SQL (for advanced users)
 export async function POST(request: NextRequest) {
+    const authError = authenticate(request);
+    if (authError) return authError;
+
     try {
         const { sql } = await request.json();
 
@@ -116,8 +130,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ result: result.rows, rowCount: result.rows.length });
     } catch (error) {
         console.error('SQL execution error:', error);
-        return NextResponse.json({
-            error: error instanceof Error ? error.message : 'Query execution failed'
-        }, { status: 500 });
+        return NextResponse.json({ error: 'Query execution failed' }, { status: 500 });
     }
 }

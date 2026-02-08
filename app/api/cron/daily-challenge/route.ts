@@ -99,22 +99,31 @@ export async function GET(req: Request) {
       });
     }
 
-    // 4. Send Emails
+    // 4. Send Emails (batched to avoid rate limits)
     console.log(`Sending to ${activeSubscribers.length} subscribers...`);
     let recipientCount = 0;
+    const BATCH_SIZE = 10;
 
-    const results = await Promise.all(activeSubscribers.map(async (sub) => {
-      const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${sub.unsubscribeToken}`;
-      const emailHtml = generateEmailHtml(scenario, scenarioUrl, unsubscribeUrl);
+    for (let i = 0; i < activeSubscribers.length; i += BATCH_SIZE) {
+      const batch = activeSubscribers.slice(i, i + BATCH_SIZE);
+      await Promise.all(batch.map(async (sub) => {
+        const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${sub.unsubscribeToken}`;
+        const emailHtml = generateEmailHtml(scenario, scenarioUrl, unsubscribeUrl);
 
-      const res = await sendEmail({
-        to: sub.email,
-        subject: `Daily Challenge: ${scenario.problem.title}`,
-        html: emailHtml
-      });
-      if (res.success) recipientCount++;
-      return res;
-    }));
+        const res = await sendEmail({
+          to: sub.email,
+          subject: `Daily Challenge: ${scenario.problem.title}`,
+          html: emailHtml
+        });
+        if (res.success) recipientCount++;
+        return res;
+      }));
+
+      // Delay between batches to respect rate limits (except after last batch)
+      if (i + BATCH_SIZE < activeSubscribers.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
 
     // 5. Log to DB
     await db.insert(emails).values({
@@ -136,14 +145,12 @@ export async function GET(req: Request) {
       generated: scenario.problem.title,
       slug,
       sentTo: recipientCount,
-      stepsGenerated: scenario.framework_steps.length,
       preGenerated,
-      results
     });
 
   } catch (error) {
     console.error('Cron job failed:', error);
-    return NextResponse.json({ error: 'Internal Server Error', details: String(error) }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 

@@ -22,7 +22,6 @@ export async function POST(req: Request) {
             return NextResponse.json({
                 success: true,
                 message: 'Already subscribed',
-                token: existing.unsubscribeToken,
                 isNew: false
             });
         }
