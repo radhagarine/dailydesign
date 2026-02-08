@@ -106,30 +106,3 @@ export async function GET(request: NextRequest) {
     }
 }
 
-// Execute raw SQL (for advanced users)
-export async function POST(request: NextRequest) {
-    const authError = authenticate(request);
-    if (authError) return authError;
-
-    try {
-        const { sql } = await request.json();
-
-        if (!sql || typeof sql !== 'string') {
-            return NextResponse.json({ error: 'SQL query required' }, { status: 400 });
-        }
-
-        // Basic safety check - only allow SELECT for read-only operations
-        const trimmedSql = sql.trim().toLowerCase();
-        if (!trimmedSql.startsWith('select')) {
-            return NextResponse.json({
-                error: 'Only SELECT queries are allowed for safety. Use drizzle migrations for writes.'
-            }, { status: 400 });
-        }
-
-        const result = await client.execute(sql);
-        return NextResponse.json({ result: result.rows, rowCount: result.rows.length });
-    } catch (error) {
-        console.error('SQL execution error:', error);
-        return NextResponse.json({ error: 'Query execution failed' }, { status: 500 });
-    }
-}

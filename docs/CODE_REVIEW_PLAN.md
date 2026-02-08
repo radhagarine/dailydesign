@@ -30,14 +30,14 @@
 
 ## High Severity Issues
 
-| # | File | Issue |
-|---|------|-------|
-| 4 | `app/api/admin/tables/route.ts:115` | Raw SQL execution with bypassable SELECT-only check |
-| 5 | All API routes | No rate limiting on any endpoint |
-| 6 | `app/api/unsubscribe/route.ts` | GET for state-changing operation - email scanners auto-unsubscribe users |
-| 7 | Project root | No `middleware.ts` for centralized security headers or auth |
-| 8 | `components/ArchitectureDiagram.tsx:39` | `innerHTML = svg` without DOMPurify (XSS risk) |
-| 9 | Project-wide | Zero test coverage - no test files or framework |
+| # | File | Issue | Status |
+|---|------|-------|--------|
+| 4 | `app/api/admin/tables/route.ts:115` | Raw SQL execution with bypassable SELECT-only check | FIXED - POST handler removed entirely |
+| 5 | All API routes | No rate limiting on any endpoint | FIXED - In-memory rate limiter in `middleware.ts` |
+| 6 | `app/api/unsubscribe/route.ts` | GET for state-changing operation - email scanners auto-unsubscribe users | FIXED - GET is read-only; POST does unsubscribe; page shows confirmation |
+| 7 | Project root | No `middleware.ts` for centralized security headers or auth | FIXED - `middleware.ts` with security headers (HSTS, X-Frame-Options, CSP, etc.) |
+| 8 | `components/ArchitectureDiagram.tsx:39` | `innerHTML = svg` without DOMPurify (XSS risk) | FIXED - SVG sanitized with DOMPurify |
+| 9 | Project-wide | Zero test coverage - no test files or framework | TODO |
 
 ---
 

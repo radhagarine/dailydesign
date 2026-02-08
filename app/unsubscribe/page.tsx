@@ -1,31 +1,30 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-type UnsubscribeState = 'loading' | 'success' | 'already' | 'error' | 'invalid';
+type UnsubscribeState = 'checking' | 'confirm' | 'unsubscribing' | 'success' | 'already' | 'error' | 'invalid';
 
 function UnsubscribeContent() {
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
-    const [state, setState] = useState<UnsubscribeState>('loading');
-    const [email, setEmail] = useState<string>('');
+    const [state, setState] = useState<UnsubscribeState>('checking');
 
+    // Step 1: Validate token via GET (read-only, no state change)
     useEffect(() => {
         if (!token) {
             setState('invalid');
             return;
         }
 
-        const unsubscribe = async () => {
+        const checkToken = async () => {
             try {
                 const response = await fetch(`/api/unsubscribe?token=${encodeURIComponent(token)}`);
                 const data = await response.json();
 
                 if (response.ok) {
-                    setEmail(data.email || '');
-                    setState(data.message === 'Already unsubscribed' ? 'already' : 'success');
+                    setState(data.alreadyUnsubscribed ? 'already' : 'confirm');
                 } else if (response.status === 404) {
                     setState('invalid');
                 } else {
@@ -36,18 +35,71 @@ function UnsubscribeContent() {
             }
         };
 
-        unsubscribe();
+        checkToken();
+    }, [token]);
+
+    // Step 2: User clicks confirm → POST to actually unsubscribe
+    const handleConfirmUnsubscribe = useCallback(async () => {
+        if (!token) return;
+        setState('unsubscribing');
+
+        try {
+            const response = await fetch('/api/unsubscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token }),
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                setState(data.message === 'Already unsubscribed' ? 'already' : 'success');
+            } else if (response.status === 404) {
+                setState('invalid');
+            } else {
+                setState('error');
+            }
+        } catch {
+            setState('error');
+        }
     }, [token]);
 
     return (
         <main className="min-h-screen bg-dark-900 text-white flex items-center justify-center px-4">
             <div className="max-w-md w-full text-center">
-                {state === 'loading' && (
+                {(state === 'checking' || state === 'unsubscribing') && (
                     <div className="animate-pulse">
                         <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-white/10" />
                         <div className="h-8 bg-white/10 rounded mb-4" />
                         <div className="h-4 bg-white/5 rounded w-3/4 mx-auto" />
                     </div>
+                )}
+
+                {state === 'confirm' && (
+                    <>
+                        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-yellow-900/30 flex items-center justify-center border border-yellow-900/50">
+                            <svg className="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h1 className="text-2xl font-bold mb-4">Confirm Unsubscribe</h1>
+                        <p className="text-gray-400 mb-8">
+                            Are you sure you want to unsubscribe from DailyDesign? You will stop receiving daily interview simulations.
+                        </p>
+                        <div className="flex flex-col gap-3 items-center">
+                            <button
+                                onClick={handleConfirmUnsubscribe}
+                                className="px-6 py-3 bg-red-700 hover:bg-red-600 text-white rounded-lg font-medium transition"
+                            >
+                                Yes, Unsubscribe Me
+                            </button>
+                            <Link
+                                href="/"
+                                className="text-gray-500 hover:text-gray-300 text-sm transition"
+                            >
+                                Cancel — keep my subscription
+                            </Link>
+                        </div>
+                    </>
                 )}
 
                 {state === 'success' && (
@@ -58,9 +110,6 @@ function UnsubscribeContent() {
                             </svg>
                         </div>
                         <h1 className="text-2xl font-bold mb-4">Successfully Unsubscribed</h1>
-                        <p className="text-gray-400 mb-2">
-                            {email && <span className="text-white font-mono text-sm">{email}</span>}
-                        </p>
                         <p className="text-gray-500 mb-8">
                             You will not receive any more daily interview simulations from us.
                         </p>
@@ -72,7 +121,7 @@ function UnsubscribeContent() {
                             className="inline-flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition"
                         >
                             <span>Back to homepage</span>
-                            <span aria-hidden="true">→</span>
+                            <span aria-hidden="true">&rarr;</span>
                         </Link>
                     </>
                 )}
@@ -85,9 +134,6 @@ function UnsubscribeContent() {
                             </svg>
                         </div>
                         <h1 className="text-2xl font-bold mb-4">Already Unsubscribed</h1>
-                        <p className="text-gray-400 mb-2">
-                            {email && <span className="text-white font-mono text-sm">{email}</span>}
-                        </p>
                         <p className="text-gray-500 mb-8">
                             This email was already removed from our mailing list.
                         </p>
@@ -96,7 +142,7 @@ function UnsubscribeContent() {
                             className="inline-flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition"
                         >
                             <span>Back to homepage</span>
-                            <span aria-hidden="true">→</span>
+                            <span aria-hidden="true">&rarr;</span>
                         </Link>
                     </>
                 )}
@@ -117,7 +163,7 @@ function UnsubscribeContent() {
                             className="inline-flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition"
                         >
                             <span>Back to homepage</span>
-                            <span aria-hidden="true">→</span>
+                            <span aria-hidden="true">&rarr;</span>
                         </Link>
                     </>
                 )}
@@ -138,7 +184,7 @@ function UnsubscribeContent() {
                             className="inline-flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition"
                         >
                             <span>Back to homepage</span>
-                            <span aria-hidden="true">→</span>
+                            <span aria-hidden="true">&rarr;</span>
                         </Link>
                     </>
                 )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
 
 interface ArchitectureDiagramProps {
     diagram: string;
@@ -36,7 +37,10 @@ export default function ArchitectureDiagram({ diagram, title }: ArchitectureDiag
                 const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
                 mermaid.default.render(id, diagram).then(({ svg }) => {
                     if (diagramRef.current) {
-                        diagramRef.current.innerHTML = svg;
+                        diagramRef.current.innerHTML = DOMPurify.sanitize(svg, {
+                            USE_PROFILES: { svg: true, svgFilters: true },
+                            ADD_TAGS: ['foreignObject'],
+                        });
                     }
                 });
             });
