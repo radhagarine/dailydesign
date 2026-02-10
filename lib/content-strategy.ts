@@ -30,7 +30,7 @@ export const THEMES: Theme[] = [
         id: 'architecture',
         title: 'Architecture Tradeoffs & Evolution',
         description: 'Making hard choices between technologies (SQL vs NoSQL) and managing system evolution.',
-        focusAreas: ['Monolith vs Microservices', 'Sync vs Async', 'Consistency vs Availability', 'Migration Strategy']
+        focusAreas: ['Monolith vs Microservices', 'Sync vs Async', 'Consistency vs Availability', 'Migration Strategy', 'Event-Driven Architecture', 'API Design & Evolution']
     }
 ];
 
@@ -65,7 +65,8 @@ export function getDailyStrategy(date: Date = new Date()) {
     }
 
     // 3. Pick a specific focus area for variety
-    const focusArea = theme.focusAreas[day % theme.focusAreas.length];
+    // Use (weekIndex * 7 + day) to avoid bias — day % length favors indices 0-1
+    const focusArea = theme.focusAreas[(weekIndex * 7 + day) % theme.focusAreas.length];
 
     return {
         theme,
