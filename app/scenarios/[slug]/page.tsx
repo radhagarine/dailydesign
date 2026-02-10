@@ -4,10 +4,13 @@ import { scenarios } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import InterviewScenario from '@/components/InterviewScenario';
+import ScenarioTeaser from '@/components/ScenarioTeaser';
+import { validateScenarioAccess } from '@/lib/access';
 import type { Metadata } from 'next';
 
 interface PageProps {
     params: Promise<{ slug: string }>;
+    searchParams: Promise<{ token?: string }>;
 }
 
 // Deduplicate DB query across generateMetadata and page component
@@ -39,8 +42,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
 }
 
-export default async function ScenarioPage({ params }: PageProps) {
+export default async function ScenarioPage({ params, searchParams }: PageProps) {
     const { slug } = await params;
+    const { token } = await searchParams;
 
     const scenario = await getScenario(slug);
 
@@ -49,6 +53,21 @@ export default async function ScenarioPage({ params }: PageProps) {
     }
 
     const content = JSON.parse(scenario.content);
+
+    // Check access: valid token required for full content
+    const { valid } = token ? await validateScenarioAccess(token) : { valid: false };
+
+    if (!valid) {
+        return (
+            <ScenarioTeaser
+                title={scenario.title}
+                metadata={content.metadata}
+                problem={content.problem}
+                theme={scenario.theme}
+                problemType={scenario.problemType}
+            />
+        );
+    }
 
     return (
         <InterviewScenario

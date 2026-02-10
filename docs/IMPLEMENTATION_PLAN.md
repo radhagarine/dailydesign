@@ -5,18 +5,23 @@
 **Completed:**
 - Landing page with pricing UI
 - 3 sample scenarios (fully functional)
-- Newsletter signup with SQLite storage
-- AI content generation (OpenAI GPT-4)
+- Newsletter signup with Turso (libsql) storage
+- AI content generation (OpenAI GPT-4o-mini + Zod Structured Outputs)
 - Email delivery (Resend)
-- Daily cron endpoint structure
-- Theme rotation system
+- Daily cron endpoint with pre-generation support
+- Theme rotation system (4 themes, weekly rotation)
+- Email unsubscribe mechanism (token-based)
+- Scenario persistence & archive pages
+- User preferences collection & onboarding
+- Stripe payment integration (checkout, webhooks, subscriptions)
+- Legal pages (Terms of Service, Privacy Policy)
+- Content gating (token-based access via email links)
+- Pre-generation system (weekly cron + admin endpoint)
 
-**Critical Gaps (Priority Order):**
-1. Email unsubscribe mechanism (legal requirement)
-2. Scenario persistence & archive pages
-3. User preferences collection
-4. Production deployment
-5. Stripe payment integration (last)
+**Remaining User Tasks:**
+1. Create Stripe account and configure products/prices
+2. Deploy to Vercel and set environment variables
+3. Generate test scenarios to verify AI quality
 
 ---
 
@@ -77,10 +82,10 @@
   - `timezone`: string (for delivery time)
 
 ### 3.2 Preferences Collection
-- [ ] Create `/welcome` onboarding page
-- [ ] 3-question form (quick, <60 seconds)
-- [ ] Save preferences on submit
-- [ ] Redirect after newsletter signup
+- [x] Create `/welcome` onboarding page
+- [x] 3-question form (quick, <60 seconds)
+- [x] Save preferences on submit
+- [x] Redirect after newsletter signup
 
 ### 3.3 Personalization (Light)
 - [ ] Use preferences to adjust "Best Answer" scaffolding level
@@ -96,12 +101,12 @@
 
 ### 4.2 Database Migration
 - [x] Add migration script to package.json (db:generate, db:push)
-- [ ] Consider switching to Turso/LibSQL for serverless (optional)
+- [x] Migrated to Turso/LibSQL for serverless (using `@libsql/client` + `drizzle-orm/libsql`)
 
 ### 4.3 Vercel Deployment
 - [x] Configure `vercel.json` for cron jobs (daily at 6am UTC)
-- [ ] Set up environment variables in Vercel dashboard
-- [ ] Deploy and test
+- [ ] Set up environment variables in Vercel dashboard (user task)
+- [ ] Deploy and test (user task)
 
 ### 4.4 Monitoring
 - [ ] Add basic error logging
@@ -136,55 +141,85 @@
 - [x] Create `PricingButton` component with email capture
 - [x] Update home page pricing section with functional buttons
 
-### 5.6 Access Control (Future)
-- [ ] Gate daily scenarios behind subscription
-- [ ] Keep samples free
-- [ ] Add subscription status check to cron
+### 5.6 Access Control
+- [x] Gate daily scenarios behind token-based access (via email links)
+- [x] Keep samples free (no gating on `/samples/*`)
+- [ ] Add subscription status check to cron (only email paying subscribers)
 
 ---
 
 ## Technical Decisions
 
 ### Database
-- **Current:** SQLite (better-sqlite3)
-- **Production:** Consider Turso for edge compatibility, or keep SQLite for simplicity
+- **Current:** Turso (libsql) with `@libsql/client` driver + Drizzle ORM
+- **Dialect:** `turso` in Drizzle config
+- **Connection:** `createClient({ url, authToken })` from `@libsql/client`
 
 ### Email
-- **Provider:** Resend (already integrated)
-- **Compliance:** CAN-SPAM requires unsubscribe in every email
+- **Provider:** Resend (integrated)
+- **Compliance:** CAN-SPAM compliant — unsubscribe in every email
 
 ### AI
-- **Model:** GPT-4o (already integrated)
-- **Fallback:** Consider caching/pre-generation for reliability
+- **Model:** GPT-4o-mini with Zod Structured Outputs (`zodResponseFormat`)
+- **Pre-generation:** Weekly cron pre-generates 7 days of content (Sunday 3 AM UTC)
+- **Fallback:** On-the-fly generation if no pre-generated scenario available
 
 ### Hosting
 - **Target:** Vercel (Next.js native, cron support)
 - **Alternative:** Railway, Render
 
+### Content Gating
+- **Method:** Token-based via email links (`?token=unsubscribeToken`)
+- **Reuses:** Existing `unsubscribeToken` from subscribers table (no new column needed)
+- **Free content:** Sample scenarios at `/samples/*` remain ungated
+- **Paywall:** `ScenarioTeaser` component shows problem + context, locks analysis
+
 ---
 
-## File Structure After Implementation
+## File Structure
 
 ```
 app/
-├── page.tsx                    # Landing page
-├── archive/page.tsx            # Scenario archive (NEW)
-├── scenarios/[slug]/page.tsx   # Dynamic scenario pages (NEW)
-├── unsubscribe/page.tsx        # Unsubscribe confirmation (NEW)
-├── welcome/page.tsx            # Onboarding preferences (NEW)
-├── samples/                    # Existing sample pages
+├── page.tsx                        # Landing page
+├── archive/page.tsx                # Scenario archive
+├── scenarios/[slug]/page.tsx       # Dynamic scenario pages (gated)
+├── unsubscribe/page.tsx            # Unsubscribe confirmation
+├── welcome/page.tsx                # Onboarding preferences
+├── terms/page.tsx                  # Terms of Service
+├── privacy/page.tsx                # Privacy Policy
+├── checkout/success/page.tsx       # Post-payment success
+├── samples/                        # Free sample pages (ungated)
+├── admin/tables/route.ts           # Admin data access
 └── api/
-    ├── subscribe/route.ts      # Updated with token
-    ├── unsubscribe/route.ts    # NEW
-    ├── scenarios/route.ts      # NEW - list scenarios
-    └── cron/daily-challenge/route.ts  # Updated
+    ├── subscribe/route.ts          # Newsletter signup
+    ├── unsubscribe/route.ts        # Unsubscribe handler
+    ├── preferences/route.ts        # User preferences
+    ├── checkout/route.ts           # Stripe checkout
+    ├── webhooks/stripe/route.ts    # Stripe webhooks
+    ├── admin/pre-generate/route.ts # Admin pre-generation
+    └── cron/
+        ├── daily-challenge/route.ts    # Daily scenario + email
+        └── pre-generate-weekly/route.ts # Weekly pre-generation
 
 lib/
-├── schema.ts                   # Updated with new tables
-├── db.ts                       # Unchanged
-├── email.ts                    # Updated with unsubscribe link
-├── ai.ts                       # Unchanged
-└── content-strategy.ts         # Unchanged
+├── schema.ts                   # DB schema (subscribers, scenarios, emails, subscriptions)
+├── db.ts                       # Turso/Drizzle connection
+├── access.ts                   # Token-based access validation
+├── ai.ts                       # OpenAI scenario generation
+├── auth.ts                     # Bearer token verification
+├── email.ts                    # Resend email delivery
+├── stripe.ts                   # Stripe configuration
+├── content-strategy.ts         # Theme/problem type rotation
+└── utils.ts                    # Shared utilities
+
+components/
+├── InterviewScenario.tsx       # Full scenario viewer (gated content)
+├── ScenarioTeaser.tsx          # Paywall teaser (ungated preview)
+├── Badge.tsx                   # Reusable badge component
+├── DesignProblem.tsx           # Design problem display
+├── MarkdownContent.tsx         # Markdown renderer
+├── NewsletterSignup.tsx        # Email capture form
+└── PricingButton.tsx           # Stripe checkout integration
 ```
 
 ---
@@ -215,6 +250,7 @@ lib/
 - ✅ `.env.example` with documented variables
 - ✅ `vercel.json` for cron job configuration
 - ✅ Database migration scripts in package.json
+- ✅ Migrated to Turso (libsql) for serverless compatibility
 
 **Phase 5: Stripe Integration**
 - ✅ Stripe SDK integration
@@ -223,18 +259,35 @@ lib/
 - ✅ `/api/webhooks/stripe` for handling subscription events
 - ✅ `/checkout/success` page for post-payment
 - ✅ `PricingButton` component with email capture
+- ✅ Token-based content gating (scenarios locked without valid token)
+
+**Phase 6: Template.md Integration**
+- ✅ Enhanced AI prompt with Zod Structured Outputs
+- ✅ InterviewScenario component with progressive reveal
+- ✅ Pre-generation system (weekly cron + admin endpoint)
+
+**Phase 7: Legal Pages**
+- ✅ `/terms` — Terms of Service (subscription terms, 7-day refund, educational disclaimer)
+- ✅ `/privacy` — Privacy Policy (email usage, no data selling, Stripe/Resend/Vercel/Turso disclosures)
+
+**Phase 8: Content Gating**
+- ✅ `lib/access.ts` — Token-based access validation
+- ✅ `ScenarioTeaser` component — Paywall with problem preview + subscribe CTA
+- ✅ Scenario page gating — Full content requires valid subscriber token
+- ✅ Personalized email links — Each subscriber gets unique `?token=` in scenario URLs
+- ✅ Samples remain free — `/samples/*` routes ungated
 
 **Additional Improvements**
 - ✅ Enhanced AI prompts for principal-level quality content
 - ✅ Free samples section on home page
 - ✅ Improved footer with navigation links
 - ✅ Better pricing section with value messaging
+- ✅ Security audit (authentication, token leaks, rate limiting)
 
 ### Remaining User Tasks
 1. Create Stripe account and configure products/prices
 2. Deploy to Vercel and set environment variables
 3. Generate test scenarios to verify AI quality
-4. Add subscription gating for premium content (optional)
 
 ---
 
@@ -305,6 +358,58 @@ The content format follows this structure:
   "reflection_prompts": { "self_assessment", "practice_next" }
 }
 ```
+
+---
+
+## Phase 7: Legal Pages (Completed)
+
+### 7.1 Terms of Service (`app/terms/page.tsx`)
+- [x] Server component with SEO metadata
+- [x] Dark theme matching site design (`bg-dark-900`, maroon accents)
+- [x] Covers: subscription terms, 7-day refund, cancellation policy
+- [x] Educational content disclaimer (fictional scenarios, no interview guarantee)
+- [x] Intellectual property and acceptable use sections
+- [x] Contact information
+
+### 7.2 Privacy Policy (`app/privacy/page.tsx`)
+- [x] Server component with SEO metadata
+- [x] Dark theme matching site design
+- [x] Covers: email usage, no data selling
+- [x] Third-party disclosures: Stripe, Resend, Vercel, Turso, OpenAI
+- [x] Cookie policy (minimal cookies, no tracking)
+- [x] Data retention periods (active, unsubscribed, email logs)
+- [x] User rights (unsubscribe, data deletion, data access)
+
+---
+
+## Phase 8: Content Gating (Completed)
+
+### 8.1 Access Validation (`lib/access.ts`)
+- [x] `validateScenarioAccess(token)` function
+- [x] Looks up subscriber by `unsubscribeToken`
+- [x] Checks `status === 'active'`
+- [x] Returns `{ valid, subscriber }` for page to use
+
+### 8.2 Scenario Teaser (`components/ScenarioTeaser.tsx`)
+- [x] Shows problem title, metadata (difficulty, topics, estimated time)
+- [x] Displays full scenario context and interview question
+- [x] Blurred placeholder for locked content
+- [x] Lock icon + subscribe CTA overlay
+- [x] "Already subscribed? Check your email" help text
+- [x] Uses existing Badge component for topic tags
+
+### 8.3 Scenario Page Gating (`app/scenarios/[slug]/page.tsx`)
+- [x] Reads `token` from `searchParams`
+- [x] Validates token via `validateScenarioAccess()`
+- [x] Valid token → full `InterviewScenario` component
+- [x] No/invalid token → `ScenarioTeaser` paywall
+
+### 8.4 Personalized Email Links (`app/api/cron/daily-challenge/route.ts`)
+- [x] Scenario URL now per-subscriber: `/scenarios/[slug]?token=[unsubscribeToken]`
+- [x] Reuses existing `unsubscribeToken` (no new DB column needed)
+- [x] Each subscriber gets a unique link in their email
+
+---
 
 ### Benefits of New Format
 1. **Structured Learning**: Step-by-step interview framework mirrors real interviews

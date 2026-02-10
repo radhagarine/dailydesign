@@ -66,8 +66,6 @@ export async function GET(req: Request) {
       scenarioDbId = Number(result.lastInsertRowid);
     }
 
-    const scenarioUrl = `${baseUrl}/scenarios/${slug}`;
-
     // 3. Get Active Subscribers
     const activeSubscribers = await db
       .select()
@@ -98,6 +96,7 @@ export async function GET(req: Request) {
     for (let i = 0; i < activeSubscribers.length; i += BATCH_SIZE) {
       const batch = activeSubscribers.slice(i, i + BATCH_SIZE);
       await Promise.all(batch.map(async (sub) => {
+        const scenarioUrl = `${baseUrl}/scenarios/${slug}?token=${sub.unsubscribeToken}`;
         const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${sub.unsubscribeToken}`;
         const emailHtml = generateEmailHtml(scenario, scenarioUrl, unsubscribeUrl);
 
