@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { subscribers, emails, scenarios, generateScenarioSlug } from '@/lib/schema';
+import { emails, scenarios, generateScenarioSlug } from '@/lib/schema';
 import { generateDailyScenario, InterviewScenario } from '@/lib/ai';
 import { sendEmail } from '@/lib/email';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { getDailyStrategy } from '@/lib/content-strategy';
 import { getBaseUrl } from '@/lib/utils';
 import { verifyBearerToken } from '@/lib/auth';
+import { getActiveSubscribersByTier } from '@/lib/subscribers';
 
 export const maxDuration = 120;
 
@@ -66,14 +67,10 @@ export async function GET(req: Request) {
       scenarioDbId = Number(result.lastInsertRowid);
     }
 
-    // 3. Get Active Subscribers
-    const activeSubscribers = await db
-      .select()
-      .from(subscribers)
-      .where(eq(subscribers.status, 'active'))
-      .all();
+    // 3. Get Paid Subscribers
+    const { paid: paidSubscribers } = await getActiveSubscribersByTier();
 
-    if (activeSubscribers.length === 0) {
+    if (paidSubscribers.length === 0) {
       // Still mark pre-generated as sent
       if (preGenerated && scenarioDbId) {
         await db.update(scenarios)
@@ -82,19 +79,19 @@ export async function GET(req: Request) {
           .run();
       }
       return NextResponse.json({
-        message: 'No active subscribers',
+        message: 'No paid subscribers',
         scenarioSaved: slug,
         preGenerated,
       });
     }
 
     // 4. Send Emails (batched to avoid rate limits)
-    console.log(`Sending to ${activeSubscribers.length} subscribers...`);
+    console.log(`Sending to ${paidSubscribers.length} subscribers...`);
     let recipientCount = 0;
     const BATCH_SIZE = 10;
 
-    for (let i = 0; i < activeSubscribers.length; i += BATCH_SIZE) {
-      const batch = activeSubscribers.slice(i, i + BATCH_SIZE);
+    for (let i = 0; i < paidSubscribers.length; i += BATCH_SIZE) {
+      const batch = paidSubscribers.slice(i, i + BATCH_SIZE);
       await Promise.all(batch.map(async (sub) => {
         const scenarioUrl = `${baseUrl}/scenarios/${slug}?token=${sub.unsubscribeToken}`;
         const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${sub.unsubscribeToken}`;
@@ -110,7 +107,7 @@ export async function GET(req: Request) {
       }));
 
       // Delay between batches to respect rate limits (except after last batch)
-      if (i + BATCH_SIZE < activeSubscribers.length) {
+      if (i + BATCH_SIZE < paidSubscribers.length) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
