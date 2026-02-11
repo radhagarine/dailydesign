@@ -7,6 +7,9 @@ const RATE_LIMITS: Record<string, [number, number]> = {
   '/api/unsubscribe':  [10, 60_000],    // 10 per minute
   '/api/checkout':     [5,  60_000],    // 5 per minute
   '/api/preferences':  [10, 60_000],    // 10 per minute
+  '/api/portal':       [5,  60_000],    // 5 per minute
+  '/api/checkout/verify': [10, 60_000], // 10 per minute
+  '/api/referral':       [10, 60_000], // 10 per minute
 };
 
 function getClientIp(request: NextRequest): string {

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import PricingButton from '@/components/PricingButton';
+import ManageSubscription from '@/components/ManageSubscription';
 
 // Chevron Icons for FAQ
 const ChevronDown = () => (
@@ -334,6 +335,7 @@ export default function Home() {
                                 <li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
                                 <li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
                                 <li><a href="mailto:support@dailydesign.dev" className="hover:text-white transition">Contact</a></li>
+                                <li><ManageSubscription /></li>
                             </ul>
                         </div>
                     </div>

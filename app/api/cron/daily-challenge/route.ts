@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { emails, scenarios, generateScenarioSlug } from '@/lib/schema';
 import { generateDailyScenario, InterviewScenario } from '@/lib/ai';
-import { sendEmail } from '@/lib/email';
+import { sendEmailWithTracking } from '@/lib/email-retry';
 import { eq, and, gte, lte } from 'drizzle-orm';
 import { getDailyStrategy } from '@/lib/content-strategy';
 import { getBaseUrl } from '@/lib/utils';
@@ -97,13 +97,14 @@ export async function GET(req: Request) {
         const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${sub.unsubscribeToken}`;
         const emailHtml = generateEmailHtml(scenario, scenarioUrl, unsubscribeUrl);
 
-        const res = await sendEmail({
+        const success = await sendEmailWithTracking({
           to: sub.email,
           subject: `Daily Challenge: ${scenario.problem.title}`,
-          html: emailHtml
+          html: emailHtml,
+          emailType: 'daily',
+          scenarioSlug: slug,
         });
-        if (res.success) recipientCount++;
-        return res;
+        if (success) recipientCount++;
       }));
 
       // Delay between batches to respect rate limits (except after last batch)

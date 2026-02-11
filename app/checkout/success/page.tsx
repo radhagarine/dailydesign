@@ -1,30 +1,50 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import ManageSubscription from '@/components/ManageSubscription';
 
 function SuccessContent() {
     const searchParams = useSearchParams();
     const sessionId = searchParams.get('session_id');
     const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+    const [errorMessage, setErrorMessage] = useState('');
 
-    useEffect(() => {
-        if (sessionId) {
-            // In a production app, you might verify the session with the backend
+    const verifySession = useCallback(async (id: string) => {
+        try {
+            const res = await fetch(`/api/checkout/verify?session_id=${encodeURIComponent(id)}`);
+            const data = await res.json();
+
+            if (!res.ok || !data.verified) {
+                setErrorMessage(data.reason || data.error || 'Payment could not be verified');
+                setStatus('error');
+                return;
+            }
+
             setStatus('success');
-        } else {
+        } catch {
+            setErrorMessage('Unable to verify payment. Please check your email for confirmation.');
             setStatus('error');
         }
-    }, [sessionId]);
+    }, []);
+
+    useEffect(() => {
+        if (!sessionId) {
+            setErrorMessage('No payment session found.');
+            setStatus('error');
+            return;
+        }
+
+        verifySession(sessionId);
+    }, [sessionId, verifySession]);
 
     if (status === 'loading') {
         return (
             <main className="min-h-screen bg-dark-900 text-white flex items-center justify-center">
-                <div className="animate-pulse text-center">
-                    <div className="h-20 w-20 bg-white/10 rounded-full mb-6 mx-auto" />
-                    <div className="h-8 w-48 bg-white/10 rounded mb-4 mx-auto" />
-                    <div className="h-4 w-64 bg-white/5 rounded mx-auto" />
+                <div className="text-center">
+                    <div className="h-20 w-20 bg-white/10 rounded-full mb-6 mx-auto animate-pulse" />
+                    <p className="text-gray-400">Verifying your payment...</p>
                 </div>
             </main>
         );
@@ -41,7 +61,7 @@ function SuccessContent() {
                     </div>
                     <h1 className="text-3xl font-bold mb-4">Something went wrong</h1>
                     <p className="text-gray-400 mb-8">
-                        We could not verify your payment. If you were charged, please contact support.
+                        {errorMessage || 'We could not verify your payment. If you were charged, please contact support.'}
                     </p>
                     <Link
                         href="/"
@@ -112,6 +132,10 @@ function SuccessContent() {
                 <p className="mt-8 text-gray-600 text-sm">
                     A receipt has been sent to your email address.
                 </p>
+
+                <div className="mt-4">
+                    <ManageSubscription />
+                </div>
             </div>
         </main>
     );
@@ -120,9 +144,9 @@ function SuccessContent() {
 function LoadingFallback() {
     return (
         <main className="min-h-screen bg-dark-900 text-white flex items-center justify-center">
-            <div className="animate-pulse text-center">
-                <div className="h-20 w-20 bg-white/10 rounded-full mb-6 mx-auto" />
-                <div className="h-8 w-48 bg-white/10 rounded mb-4 mx-auto" />
+            <div className="text-center">
+                <div className="h-20 w-20 bg-white/10 rounded-full mb-6 mx-auto animate-pulse" />
+                <p className="text-gray-400">Verifying your payment...</p>
             </div>
         </main>
     );

@@ -6,6 +6,11 @@ export function generateUnsubscribeToken(): string {
     return randomBytes(32).toString('hex');
 }
 
+// Generate a short referral code (8 chars, URL-safe)
+export function generateReferralCode(): string {
+    return randomBytes(4).toString('hex');
+}
+
 // Generate a URL-friendly slug from title and date
 export function generateScenarioSlug(title: string, date: Date): string {
     const dateStr = date.toISOString().split('T')[0]; // 2024-01-15
@@ -30,6 +35,9 @@ export const subscribers = sqliteTable('subscribers', {
     timezone: text('timezone').default('UTC'),
     // Stripe integration
     stripeCustomerId: text('stripe_customer_id'),
+    // Referral
+    referralCode: text('referral_code').unique().$defaultFn(() => generateReferralCode()),
+    referredBy: integer('referred_by'), // subscriber ID of referrer
 });
 
 export const emails = sqliteTable('emails', {
@@ -78,4 +86,44 @@ export const subscriptions = sqliteTable('subscriptions', {
 }, (table) => ({
     subscriberIdx: index('subscription_subscriber_idx').on(table.subscriberId),
     stripeSubIdx: index('stripe_subscription_idx').on(table.stripeSubscriptionId),
+}));
+
+export const referrals = sqliteTable('referrals', {
+    id: integer('id').primaryKey(),
+    referrerId: integer('referrer_id').notNull().references(() => subscribers.id),
+    referredId: integer('referred_id').notNull().references(() => subscribers.id),
+    rewardStatus: text('reward_status').default('pending'), // 'pending' | 'granted' | 'ineligible'
+    createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+}, (table) => ({
+    referrerIdx: index('referral_referrer_idx').on(table.referrerId),
+    referredIdx: index('referral_referred_idx').on(table.referredId),
+}));
+
+export const emailSendLog = sqliteTable('email_send_log', {
+    id: integer('id').primaryKey(),
+    recipientEmail: text('recipient_email').notNull(),
+    subject: text('subject').notNull(),
+    sendStatus: text('send_status').notNull().default('pending'), // 'pending' | 'sent' | 'failed' | 'dead_letter'
+    attempts: integer('attempts').notNull().default(0),
+    lastAttemptAt: integer('last_attempt_at', { mode: 'timestamp' }),
+    lastError: text('last_error'),
+    emailType: text('email_type').notNull(), // 'daily' | 'teaser'
+    scenarioSlug: text('scenario_slug'),
+    createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+}, (table) => ({
+    statusIdx: index('email_send_log_status_idx').on(table.sendStatus),
+    recipientIdx: index('email_send_log_recipient_idx').on(table.recipientEmail),
+}));
+
+export const emailEvents = sqliteTable('email_events', {
+    id: integer('id').primaryKey(),
+    resendEmailId: text('resend_email_id').notNull(),
+    recipientEmail: text('recipient_email').notNull(),
+    eventType: text('event_type').notNull(), // 'delivered' | 'opened' | 'clicked' | 'bounced' | 'complained'
+    metadata: text('metadata'), // JSON for extra event data (e.g. click URL)
+    occurredAt: integer('occurred_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+}, (table) => ({
+    resendEmailIdx: index('email_event_resend_idx').on(table.resendEmailId),
+    recipientIdx: index('email_event_recipient_idx').on(table.recipientEmail),
+    eventTypeIdx: index('email_event_type_idx').on(table.eventType),
 }));

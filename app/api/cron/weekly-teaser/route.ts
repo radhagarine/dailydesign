@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { emails, scenarios } from '@/lib/schema';
-import { sendEmail } from '@/lib/email';
+import { sendEmailWithTracking } from '@/lib/email-retry';
 import { eq, desc } from 'drizzle-orm';
 import { getBaseUrl } from '@/lib/utils';
 import { verifyBearerToken } from '@/lib/auth';
@@ -52,13 +52,14 @@ export async function GET(req: Request) {
         const upgradeUrl = `${baseUrl}/#pricing`;
         const emailHtml = generateTeaserEmailHtml(content, upgradeUrl, unsubscribeUrl);
 
-        const res = await sendEmail({
+        const success = await sendEmailWithTracking({
           to: sub.email,
           subject: `This Week's Challenge: ${content.problem.title}`,
           html: emailHtml,
+          emailType: 'teaser',
+          scenarioSlug: latestScenario.slug,
         });
-        if (res.success) recipientCount++;
-        return res;
+        if (success) recipientCount++;
       }));
 
       if (i + BATCH_SIZE < freeSubscribers.length) {

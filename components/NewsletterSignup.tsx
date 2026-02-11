@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface NewsletterSignupProps {
@@ -10,7 +10,14 @@ interface NewsletterSignupProps {
 
 export default function NewsletterSignup({ redirectToOnboarding = true, compact = false }: NewsletterSignupProps) {
     const router = useRouter();
+    const [refCode, setRefCode] = useState<string | null>(null);
     const [email, setEmail] = useState('');
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref');
+        if (ref) setRefCode(ref);
+    }, []);
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
 
@@ -25,7 +32,7 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
             const res = await fetch('/api/subscribe', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email, ...(refCode ? { ref: refCode } : {}) }),
             });
 
             const data = await res.json();
