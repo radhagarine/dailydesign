@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import InterviewScenario from '@/components/InterviewScenario';
 import ScenarioTeaser from '@/components/ScenarioTeaser';
 import { validateScenarioAccess } from '@/lib/access';
+import { getSubscriberFromCookie } from '@/lib/cookies';
 import type { Metadata } from 'next';
 
 interface PageProps {
@@ -22,7 +23,7 @@ const getScenario = cache(async (slug: string) => {
         .get();
 });
 
-export const revalidate = 3600; // ISR: revalidate every hour
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { slug } = await params;
@@ -54,8 +55,13 @@ export default async function ScenarioPage({ params, searchParams }: PageProps) 
 
     const content = JSON.parse(scenario.content);
 
-    // Check access: valid token required for full content
-    const { valid } = token ? await validateScenarioAccess(token) : { valid: false };
+    // Check access: cookie first, then fallback to ?token= param
+    const cookieSubscriber = await getSubscriberFromCookie();
+    const { valid } = cookieSubscriber
+      ? { valid: true }
+      : token
+        ? await validateScenarioAccess(token)
+        : { valid: false };
 
     if (!valid) {
         return (

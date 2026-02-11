@@ -18,6 +18,38 @@ function WelcomeContent() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
 
+    // Access code state
+    const [accessCode, setAccessCode] = useState('');
+    const [codeStatus, setCodeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [codeMessage, setCodeMessage] = useState('');
+
+    const handleRedeem = async () => {
+        if (!accessCode.trim()) return;
+
+        setCodeStatus('loading');
+        setCodeMessage('');
+
+        try {
+            const response = await fetch('/api/redeem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, code: accessCode }),
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                setCodeStatus('success');
+                setCodeMessage(data.message || 'Premium access activated!');
+            } else {
+                setCodeStatus('error');
+                setCodeMessage(data.error || 'Failed to redeem code');
+            }
+        } catch {
+            setCodeStatus('error');
+            setCodeMessage('Something went wrong. Please try again.');
+        }
+    };
+
     const [preferences, setPreferences] = useState({
         yearsExperience: '' as YearsExperience | '',
         primaryRole: '' as PrimaryRole | '',
@@ -57,7 +89,7 @@ function WelcomeContent() {
     };
 
     const skipOnboarding = () => {
-        router.push('/archive');
+        router.push('/');
     };
 
     return (
@@ -76,6 +108,38 @@ function WelcomeContent() {
                         Help us personalize your experience with 3 quick questions.
                     </p>
                 </div>
+
+                {/* Access Code Redemption */}
+                {email && codeStatus !== 'success' && (
+                    <div className="mb-8 p-4 rounded-lg border border-white/10 bg-dark-800">
+                        <p className="text-sm font-medium text-gray-300 mb-3">Have an access code?</p>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={accessCode}
+                                onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
+                                placeholder="DAILY-XXXXXX"
+                                className="flex-1 px-3 py-2 rounded-md bg-dark-900 border border-white/10 text-white font-mono text-sm placeholder:text-gray-600 focus:outline-none focus:border-accent-500"
+                            />
+                            <button
+                                onClick={handleRedeem}
+                                disabled={codeStatus === 'loading' || !accessCode.trim()}
+                                className="px-4 py-2 rounded-md bg-accent-600 hover:bg-accent-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition"
+                            >
+                                {codeStatus === 'loading' ? 'Redeeming...' : 'Redeem'}
+                            </button>
+                        </div>
+                        {codeStatus === 'error' && codeMessage && (
+                            <p className="mt-2 text-sm text-red-400">{codeMessage}</p>
+                        )}
+                    </div>
+                )}
+
+                {codeStatus === 'success' && (
+                    <div className="mb-8 p-4 rounded-lg border border-green-500/30 bg-green-900/20">
+                        <p className="text-sm text-green-400">{codeMessage}</p>
+                    </div>
+                )}
 
                 {/* Progress indicator */}
                 <div className="flex gap-2 mb-8">

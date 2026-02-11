@@ -3,6 +3,8 @@ import { scenarios } from '@/lib/schema';
 import { desc, sql } from 'drizzle-orm';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { getSubscriberFromCookie, isSubscriberPaid } from '@/lib/cookies';
+import ArchiveAccessGate from '@/components/ArchiveAccessGate';
 
 export const metadata: Metadata = {
     title: 'Scenario Archive | DailyDesign',
@@ -39,9 +41,46 @@ const formatDate = (date: Date | number | null) => {
     });
 };
 
-export const revalidate = 3600; // ISR: revalidate every hour
+export const dynamic = 'force-dynamic';
 
 export default async function ArchivePage() {
+    const subscriber = await getSubscriberFromCookie();
+
+    if (!subscriber) {
+        return <ArchiveAccessGate />;
+    }
+
+    const paid = await isSubscriberPaid(subscriber);
+
+    if (!paid) {
+        return (
+            <div className="min-h-screen bg-dark-900 text-white flex items-center justify-center px-4">
+                <div className="max-w-md w-full text-center">
+                    <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-yellow-900/20 border border-yellow-900/50 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                        </svg>
+                    </div>
+                    <h1 className="text-2xl font-bold mb-3">Upgrade to Access the Archive</h1>
+                    <p className="text-gray-400 mb-6">
+                        The full scenario archive is available to paid subscribers. Upgrade to unlock all past interview simulations.
+                    </p>
+                    <Link
+                        href="/#pricing"
+                        className="inline-block px-8 py-3 rounded-lg bg-accent-600 hover:bg-accent-500 transition text-white font-semibold"
+                    >
+                        View Plans
+                    </Link>
+                    <div className="mt-4">
+                        <Link href="/" className="text-gray-500 hover:text-gray-300 text-sm transition">
+                            Back to home
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     const allScenarios = await db
         .select({
             id: scenarios.id,

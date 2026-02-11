@@ -99,6 +99,7 @@ app/
   welcome/page.tsx                  # Post-signup welcome
   checkout/success/page.tsx         # Stripe checkout success
   api/
+    auth/magic-link/route.ts        # Magic link email for archive access
     subscribe/route.ts              # Newsletter signup
     unsubscribe/route.ts            # One-click unsubscribe
     preferences/route.ts            # User preference updates
@@ -112,11 +113,13 @@ app/
       pre-generate-weekly/route.ts  # Weekly cron: pre-generate 7 days
 lib/
   ai.ts                             # OpenAI scenario generation
+  cookies.ts                        # Cookie-based subscriber auth helpers
   db.ts                             # Database connection (Turso)
   schema.ts                         # Drizzle ORM schema
   email.ts                          # Resend email helper
   content-strategy.ts               # Theme/problem rotation logic
 components/
+  ArchiveAccessGate.tsx              # Email gate for unauthenticated visitors
   InterviewScenario.tsx              # Main scenario viewer component
   DesignProblem.tsx                  # Design problem presentation
   NewsletterSignup.tsx               # Email capture form
@@ -181,6 +184,103 @@ curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://your-app.vercel.app/api
 - **Hobby plan**: Function timeout capped at 60s. The daily challenge route needs ~120s for AI generation, so it may timeout. Consider upgrading to Pro or relying on pre-generated scenarios.
 - **Pro plan**: Supports up to 300s function timeout, which covers all routes.
 
+## Granting Free Access
+
+You can grant specific subscribers full paid-tier access (daily emails, full scenario content) without requiring a Stripe subscription. All requests require the `CRON_SECRET` bearer token.
+
+### Grant free access
+
+```bash
+curl -X POST https://your-app.vercel.app/api/admin/free-access \
+  -H "Authorization: Bearer YOUR_CRON_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com"}'
+```
+
+### Revoke free access
+
+```bash
+curl -X DELETE https://your-app.vercel.app/api/admin/free-access \
+  -H "Authorization: Bearer YOUR_CRON_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com"}'
+```
+
+### List all free-access subscribers
+
+```bash
+curl https://your-app.vercel.app/api/admin/free-access \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+
+## Access Codes
+
+Share a redeemable code instead of running curl commands to grant free premium access. The flow: generate a code → share it → the recipient enters it on the welcome page → they get `freeAccess = true`.
+
+### Generate a code
+
+```bash
+curl -X POST https://your-app.vercel.app/api/admin/access-codes \
+  -H "Authorization: Bearer YOUR_CRON_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"expiresInDays": 30}'
+```
+
+Returns a code like `DAILY-A7F3B2`. The `expiresInDays` field is optional (defaults to 30).
+
+### List all codes
+
+```bash
+curl https://your-app.vercel.app/api/admin/access-codes \
+  -H "Authorization: Bearer YOUR_CRON_SECRET"
+```
+
+Each code shows its status: `unused`, `redeemed` (with redeemer email), or `expired`.
+
+### Redemption
+
+The recipient enters the code on the welcome page (`/welcome?email=their@email.com`). The code can also be redeemed directly via API:
+
+```bash
+curl -X POST https://your-app.vercel.app/api/redeem \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "code": "DAILY-A7F3B2"}'
+```
+
+Each code is single-use and tied to one subscriber after redemption.
+
+## Subscriber Authentication (Archive Access)
+
+The scenario archive and individual scenario pages are gated to authenticated subscribers. Authentication uses a cookie-based system inspired by Substack — no passwords, no login form.
+
+### How it works
+
+1. **Email click**: Every link in daily/teaser emails includes a `?token=` parameter. The middleware intercepts it, sets a `subscriber_token` cookie (30-day sliding expiration), and redirects to the clean URL.
+2. **Direct visit**: If a subscriber visits `/archive` without a cookie, they see an "Enter your email" form. Submitting it sends a magic link email via `POST /api/auth/magic-link`. Clicking the link sets the cookie.
+3. **Access tiers**:
+   - **Paid subscriber** (active Stripe subscription or `freeAccess = true`): Full archive and scenario access
+   - **Free subscriber** (no subscription): Sees an upgrade prompt with a link to pricing
+   - **No cookie / unknown visitor**: Sees the email gate
+
+### Magic link endpoint
+
+```bash
+curl -X POST https://your-app.vercel.app/api/auth/magic-link \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com"}'
+```
+
+Rate limited to 3 requests per 5 minutes per IP.
+
+### Key files
+
+| File | Purpose |
+|------|---------|
+| `lib/cookies.ts` | Cookie helpers: `getSubscriberFromCookie()`, `isSubscriberPaid()` |
+| `middleware.ts` | Intercepts `?token=`, sets/refreshes cookie, rate limits |
+| `app/api/auth/magic-link/route.ts` | Sends magic link email |
+| `components/ArchiveAccessGate.tsx` | Email gate UI for unauthenticated visitors |
+
 ## Database Schema
 
 | Table | Description |
@@ -189,6 +289,7 @@ curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://your-app.vercel.app/api
 | `scenarios` | AI-generated interview content (JSON blob in `content` column) |
 | `emails` | Sent email log with recipient counts |
 | `subscriptions` | Stripe subscription tracking (plan, status, billing period) |
+| `access_codes` | Redeemable codes for granting free premium access |
 
 Browse your data with `npm run db:studio` or via the [Turso dashboard](https://app.turso.tech).
 

@@ -26,7 +26,7 @@ export async function getActiveSubscribersByTier(): Promise<{ paid: Subscriber[]
   const free: Subscriber[] = [];
 
   for (const sub of allActive) {
-    if (paidSubscriberIds.has(sub.id)) {
+    if (paidSubscriberIds.has(sub.id) || sub.freeAccess) {
       paid.push(sub);
     } else {
       free.push(sub);

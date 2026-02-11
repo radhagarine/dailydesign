@@ -63,6 +63,11 @@ npm run db:studio    # Open Drizzle Studio GUI
 | `/api/checkout` | Create Stripe checkout session |
 | `/api/webhooks/stripe` | Stripe webhook handler |
 | `/api/admin/tables` | Admin data access |
+| `/api/auth/magic-link` | Sends magic link email for cookie-based archive access |
+
+### Subscriber Authentication
+
+Cookie-based auth (no passwords). Clicking any email link sets a `subscriber_token` cookie via middleware. Direct visitors can request a magic link. `lib/cookies.ts` provides `getSubscriberFromCookie()` and `isSubscriberPaid()` for server components. Archive and scenario pages are gated: paid subscribers see full content, free subscribers see an upgrade prompt, unauthenticated visitors see an email gate.
 
 ### Main Components
 
@@ -70,6 +75,7 @@ npm run db:studio    # Open Drizzle Studio GUI
 - `DesignProblem.tsx`: Design problem presentation
 - `NewsletterSignup.tsx`: Email capture form
 - `PricingButton.tsx`: Stripe checkout integration
+- `ArchiveAccessGate.tsx`: Email gate for unauthenticated archive visitors
 
 ## Environment Variables
 

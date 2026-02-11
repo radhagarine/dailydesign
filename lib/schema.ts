@@ -6,6 +6,11 @@ export function generateUnsubscribeToken(): string {
     return randomBytes(32).toString('hex');
 }
 
+// Generate an access code: DAILY- + 6 random hex chars (uppercase)
+export function generateAccessCode(): string {
+    return `DAILY-${randomBytes(3).toString('hex').toUpperCase()}`;
+}
+
 // Generate a short referral code (8 chars, URL-safe)
 export function generateReferralCode(): string {
     return randomBytes(4).toString('hex');
@@ -35,6 +40,8 @@ export const subscribers = sqliteTable('subscribers', {
     timezone: text('timezone').default('UTC'),
     // Stripe integration
     stripeCustomerId: text('stripe_customer_id'),
+    // Free access override (grants paid-tier access without Stripe subscription)
+    freeAccess: integer('free_access', { mode: 'boolean' }).default(false),
     // Referral
     referralCode: text('referral_code').unique().$defaultFn(() => generateReferralCode()),
     referredBy: integer('referred_by'), // subscriber ID of referrer
@@ -113,6 +120,17 @@ export const emailSendLog = sqliteTable('email_send_log', {
 }, (table) => ({
     statusIdx: index('email_send_log_status_idx').on(table.sendStatus),
     recipientIdx: index('email_send_log_recipient_idx').on(table.recipientEmail),
+}));
+
+export const accessCodes = sqliteTable('access_codes', {
+    id: integer('id').primaryKey(),
+    code: text('code').notNull().unique(),
+    expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+    redeemedBy: integer('redeemed_by').references(() => subscribers.id),
+    redeemedAt: integer('redeemed_at', { mode: 'timestamp' }),
+    createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+}, (table) => ({
+    codeIdx: index('access_code_idx').on(table.code),
 }));
 
 export const emailEvents = sqliteTable('email_events', {
