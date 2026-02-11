@@ -65,9 +65,9 @@ function WelcomeContent() {
             <div className="max-w-lg w-full">
                 {/* Header */}
                 <div className="text-center mb-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-maroon-900/30 border border-maroon-900/50 mb-6">
-                        <div className="w-2 h-2 rounded-full bg-maroon-500"></div>
-                        <span className="text-xs font-mono text-maroon-400">QUICK SETUP</span>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-900/30 border border-accent-900/50 mb-6">
+                        <div className="w-2 h-2 rounded-full bg-accent-500"></div>
+                        <span className="text-xs font-mono text-accent-400">QUICK SETUP</span>
                     </div>
                     <h1 className="text-3xl font-bold mb-3">Welcome aboard!</h1>
                     <p className="text-gray-400">
@@ -83,7 +83,7 @@ function WelcomeContent() {
                         <div
                             key={s}
                             className={`h-1 flex-1 rounded-full transition-colors ${
-                                s <= step ? 'bg-maroon-500' : 'bg-white/10'
+                                s <= step ? 'bg-accent-500' : 'bg-white/10'
                             }`}
                         />
                     ))}
@@ -109,7 +109,7 @@ function WelcomeContent() {
                                     }}
                                     className={`p-4 rounded-lg border text-left transition-all ${
                                         preferences.yearsExperience === option.value
-                                            ? 'border-maroon-500 bg-maroon-900/20'
+                                            ? 'border-accent-500 bg-accent-900/20'
                                             : 'border-white/10 hover:border-white/30 bg-dark-800'
                                     }`}
                                 >
@@ -140,7 +140,7 @@ function WelcomeContent() {
                                     }}
                                     className={`p-4 rounded-lg border text-left transition-all ${
                                         preferences.primaryRole === option.value
-                                            ? 'border-maroon-500 bg-maroon-900/20'
+                                            ? 'border-accent-500 bg-accent-900/20'
                                             : 'border-white/10 hover:border-white/30 bg-dark-800'
                                     }`}
                                 >
@@ -176,7 +176,7 @@ function WelcomeContent() {
                                     }}
                                     className={`p-4 rounded-lg border text-left transition-all ${
                                         preferences.prepStage === option.value
-                                            ? 'border-maroon-500 bg-maroon-900/20'
+                                            ? 'border-accent-500 bg-accent-900/20'
                                             : 'border-white/10 hover:border-white/30 bg-dark-800'
                                     }`}
                                 >
@@ -202,7 +202,7 @@ function WelcomeContent() {
                             <button
                                 onClick={handleSubmit}
                                 disabled={isSubmitting || !preferences.prepStage}
-                                className="flex-1 py-3 rounded-lg bg-maroon-600 hover:bg-maroon-500 disabled:opacity-50 disabled:cursor-not-allowed transition text-white font-semibold"
+                                className="flex-1 py-3 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-50 disabled:cursor-not-allowed transition text-white font-semibold"
                             >
                                 {isSubmitting ? 'Saving...' : 'Complete Setup'}
                             </button>

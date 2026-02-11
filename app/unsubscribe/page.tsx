@@ -118,7 +118,7 @@ function UnsubscribeContent() {
                         </p>
                         <Link
                             href="/"
-                            className="inline-flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition"
+                            className="inline-flex items-center gap-2 text-accent-400 hover:text-accent-300 transition"
                         >
                             <span>Back to homepage</span>
                             <span aria-hidden="true">&rarr;</span>
@@ -139,7 +139,7 @@ function UnsubscribeContent() {
                         </p>
                         <Link
                             href="/"
-                            className="inline-flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition"
+                            className="inline-flex items-center gap-2 text-accent-400 hover:text-accent-300 transition"
                         >
                             <span>Back to homepage</span>
                             <span aria-hidden="true">&rarr;</span>
@@ -160,7 +160,7 @@ function UnsubscribeContent() {
                         </p>
                         <Link
                             href="/"
-                            className="inline-flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition"
+                            className="inline-flex items-center gap-2 text-accent-400 hover:text-accent-300 transition"
                         >
                             <span>Back to homepage</span>
                             <span aria-hidden="true">&rarr;</span>
@@ -181,7 +181,7 @@ function UnsubscribeContent() {
                         </p>
                         <Link
                             href="/"
-                            className="inline-flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition"
+                            className="inline-flex items-center gap-2 text-accent-400 hover:text-accent-300 transition"
                         >
                             <span>Back to homepage</span>
                             <span aria-hidden="true">&rarr;</span>

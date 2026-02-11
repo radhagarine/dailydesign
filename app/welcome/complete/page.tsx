@@ -27,19 +27,19 @@ export default function CompletePage() {
                     <h2 className="font-semibold mb-4">What to expect:</h2>
                     <ul className="space-y-3 text-sm text-gray-400">
                         <li className="flex gap-3">
-                            <span className="text-maroon-500">→</span>
+                            <span className="text-accent-500">→</span>
                             <span>Daily emails with a new interview scenario</span>
                         </li>
                         <li className="flex gap-3">
-                            <span className="text-maroon-500">→</span>
+                            <span className="text-accent-500">→</span>
                             <span>Bad/Good/Best answer analysis to calibrate your thinking</span>
                         </li>
                         <li className="flex gap-3">
-                            <span className="text-maroon-500">→</span>
+                            <span className="text-accent-500">→</span>
                             <span>Interviewer rubrics showing what signals to hit</span>
                         </li>
                         <li className="flex gap-3">
-                            <span className="text-maroon-500">→</span>
+                            <span className="text-accent-500">→</span>
                             <span>Key takeaways you can apply in real interviews</span>
                         </li>
                     </ul>
@@ -49,7 +49,7 @@ export default function CompletePage() {
                 <div className="space-y-4">
                     <Link
                         href="/samples/scenario-1"
-                        className="block w-full py-3 rounded-lg bg-maroon-600 hover:bg-maroon-500 transition text-white font-semibold"
+                        className="block w-full py-3 rounded-lg bg-accent-600 hover:bg-accent-500 transition text-white font-semibold"
                     >
                         Try Your First Scenario Now
                     </Link>

@@ -174,7 +174,7 @@ function generateEmailHtml(scenario: InterviewScenario, scenarioUrl: string, uns
 
         <!-- Header -->
         <div style="text-align: center; margin-bottom: 24px;">
-          <span style="display: inline-block; padding: 4px 12px; background-color: #7f1d1d; color: #fca5a5; border-radius: 4px; font-size: 12px; font-weight: 600;">40-MINUTE INTERVIEW SIMULATION</span>
+          <span style="display: inline-block; padding: 4px 12px; background-color: #0e7490; color: #67e8f9; border-radius: 4px; font-size: 12px; font-weight: 600;">40-MINUTE INTERVIEW SIMULATION</span>
         </div>
 
         <h1 style="color: #ffffff; font-size: 24px; margin-bottom: 8px; text-align: center;">${escapeHtml(scenario.problem.title)}</h1>
@@ -189,7 +189,7 @@ function generateEmailHtml(scenario: InterviewScenario, scenarioUrl: string, uns
 
         <!-- CTA Button -->
         <div style="text-align: center; margin-bottom: 32px;">
-          <a href="${scenarioUrl}" style="display: inline-block; padding: 14px 28px; background-color: #7f1d1d; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Start Interview Simulation</a>
+          <a href="${scenarioUrl}" style="display: inline-block; padding: 14px 28px; background-color: #0e7490; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Start Interview Simulation</a>
         </div>
 
         <hr style="border: none; border-top: 1px solid #333; margin: 24px 0;" />
@@ -199,7 +199,7 @@ function generateEmailHtml(scenario: InterviewScenario, scenarioUrl: string, uns
         <div style="background-color: #1f1f1f; border-radius: 6px; padding: 16px; margin-bottom: 24px;">
           ${scenario.framework_steps.map((step, i) => `
             <div style="display: flex; align-items: center; margin-bottom: ${i < scenario.framework_steps.length - 1 ? '12px' : '0'};">
-              <span style="display: inline-block; width: 24px; height: 24px; background-color: #7f1d1d; color: #fff; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; margin-right: 12px;">${step.step_number}</span>
+              <span style="display: inline-block; width: 24px; height: 24px; background-color: #0e7490; color: #fff; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px; margin-right: 12px;">${step.step_number}</span>
               <span style="color: #d1d5db; font-size: 14px;">${escapeHtml(step.step_name)}</span>
               <span style="color: #6b7280; font-size: 12px; margin-left: auto;">${escapeHtml(step.time_allocation)}</span>
             </div>
@@ -214,7 +214,7 @@ function generateEmailHtml(scenario: InterviewScenario, scenarioUrl: string, uns
 
         <hr style="border: none; border-top: 1px solid #333; margin: 24px 0;" />
 
-        <p style="color: #fca5a5; font-size: 14px; text-align: center; margin-bottom: 24px; font-style: italic;">
+        <p style="color: #67e8f9; font-size: 14px; text-align: center; margin-bottom: 24px; font-style: italic;">
           ${escapeHtml(scenario.problem.pause_prompt)}
         </p>
 
@@ -238,7 +238,7 @@ function generateEmailHtml(scenario: InterviewScenario, scenarioUrl: string, uns
 
         <!-- CTA Button -->
         <div style="text-align: center; margin-bottom: 24px;">
-          <a href="${scenarioUrl}" style="display: inline-block; padding: 14px 28px; background-color: #7f1d1d; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Start Full Simulation</a>
+          <a href="${scenarioUrl}" style="display: inline-block; padding: 14px 28px; background-color: #0e7490; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Start Full Simulation</a>
         </div>
 
         <!-- Key Takeaways Preview -->

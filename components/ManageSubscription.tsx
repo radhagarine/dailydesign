@@ -59,14 +59,14 @@ export default function ManageSubscription() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Your email"
-                className="px-3 py-1.5 bg-dark-900 border border-white/10 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:border-maroon-500 w-52"
+                className="px-3 py-1.5 bg-dark-900 border border-white/10 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:border-accent-500 w-52"
                 disabled={isLoading}
                 autoFocus
             />
             <button
                 type="submit"
                 disabled={isLoading}
-                className="px-3 py-1.5 bg-maroon-600 hover:bg-maroon-500 text-white text-sm rounded font-medium transition disabled:opacity-50"
+                className="px-3 py-1.5 bg-accent-600 hover:bg-accent-500 text-white text-sm rounded font-medium transition disabled:opacity-50"
             >
                 {isLoading ? '...' : 'Go'}
             </button>

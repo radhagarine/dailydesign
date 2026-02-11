@@ -146,7 +146,7 @@ export default function AdminPage() {
             <div className="bg-dark-800/80 border-b border-white/5">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <Link href="/" className="flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition">
+                        <Link href="/" className="flex items-center gap-2 text-accent-400 hover:text-accent-300 transition">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M19 12H5M12 19l-7-7 7-7" />
                             </svg>
@@ -183,7 +183,7 @@ export default function AdminPage() {
                                         }}
                                         className={`w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between ${
                                             selectedTable === table.name
-                                                ? 'bg-maroon-900/50 text-white'
+                                                ? 'bg-accent-900/50 text-white'
                                                 : 'hover:bg-white/5 text-gray-400'
                                         }`}
                                     >
@@ -288,7 +288,7 @@ export default function AdminPage() {
                                                         <td className="px-4 py-2 text-gray-600">{(page - 1) * 50 + idx + 1}</td>
                                                         {tableData.columns.map(col => (
                                                             <td key={col} className="px-4 py-2 font-mono">
-                                                                <span className={isLongValue(row[col]) ? 'text-maroon-400' : ''}>
+                                                                <span className={isLongValue(row[col]) ? 'text-accent-400' : ''}>
                                                                     {formatValue(row[col], tableData.columnTypes[col] || '')}
                                                                 </span>
                                                             </td>
@@ -325,13 +325,13 @@ export default function AdminPage() {
                                     value={sqlQuery}
                                     onChange={e => setSqlQuery(e.target.value)}
                                     placeholder="SELECT * FROM subscribers LIMIT 10"
-                                    className="w-full h-24 bg-black/30 border border-white/10 rounded-lg p-3 font-mono text-sm focus:outline-none focus:border-maroon-900/50 resize-none"
+                                    className="w-full h-24 bg-black/30 border border-white/10 rounded-lg p-3 font-mono text-sm focus:outline-none focus:border-accent-900/50 resize-none"
                                 />
                                 <div className="flex items-center gap-4">
                                     <button
                                         onClick={executeSql}
                                         disabled={sqlLoading || !sqlQuery.trim()}
-                                        className="px-4 py-2 bg-maroon-900 hover:bg-maroon-800 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                        className="px-4 py-2 bg-accent-900 hover:bg-accent-800 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition"
                                     >
                                         {sqlLoading ? 'Running...' : 'Execute'}
                                     </button>

@@ -50,7 +50,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-white mb-3">4. Third-Party Services</h2>
             <p>We use the following third-party services to operate DailyDesign:</p>
             <ul className="list-disc pl-5 space-y-2">
-              <li><strong className="text-white">Stripe</strong> &mdash; payment processing. Stripe handles all payment data under their own <a href="https://stripe.com/privacy" className="text-maroon-400 hover:text-maroon-300 transition" target="_blank" rel="noopener noreferrer">privacy policy</a>.</li>
+              <li><strong className="text-white">Stripe</strong> &mdash; payment processing. Stripe handles all payment data under their own <a href="https://stripe.com/privacy" className="text-accent-400 hover:text-accent-300 transition" target="_blank" rel="noopener noreferrer">privacy policy</a>.</li>
               <li><strong className="text-white">Resend</strong> &mdash; email delivery. Resend processes your email address to deliver our daily emails.</li>
               <li><strong className="text-white">Vercel</strong> &mdash; hosting. Our application is hosted on Vercel&apos;s infrastructure.</li>
               <li><strong className="text-white">Turso</strong> &mdash; database hosting. Your subscriber data is stored in a Turso-hosted database.</li>
@@ -103,7 +103,7 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-white mb-3">10. Contact</h2>
             <p>
               For privacy-related questions or data requests, contact us at{' '}
-              <a href="mailto:support@dailydesign.dev" className="text-maroon-400 hover:text-maroon-300 transition">
+              <a href="mailto:support@dailydesign.dev" className="text-accent-400 hover:text-accent-300 transition">
                 support@dailydesign.dev
               </a>.
             </p>

@@ -252,8 +252,8 @@ function AnswerLevelsSection({
     return (
         <div className="space-y-3 mt-4">
             {table.interviewer_question && (
-                <div className="bg-maroon-900/20 border border-maroon-900/40 rounded-lg p-4 mb-4">
-                    <p className="text-maroon-200 font-medium text-sm">Interviewer Question:</p>
+                <div className="bg-accent-900/20 border border-accent-900/40 rounded-lg p-4 mb-4">
+                    <p className="text-accent-200 font-medium text-sm">Interviewer Question:</p>
                     <p className="text-white mt-1">{table.interviewer_question}</p>
                 </div>
             )}
@@ -301,7 +301,7 @@ function SidebarNavItem({
             onClick={onClick}
             className={`w-full text-left p-3 rounded-lg transition-all duration-200 group ${
                 isActive
-                    ? 'bg-maroon-900/40 border border-maroon-800'
+                    ? 'bg-accent-900/40 border border-accent-800'
                     : 'hover:bg-dark-700/50 border border-transparent'
             }`}
         >
@@ -310,7 +310,7 @@ function SidebarNavItem({
                     isCompleted
                         ? 'bg-green-600 text-white'
                         : isActive
-                            ? 'bg-maroon-600 text-white'
+                            ? 'bg-accent-600 text-white'
                             : 'bg-dark-600 text-gray-400 group-hover:bg-dark-500'
                 }`}>
                     {isCompleted ? (
@@ -353,7 +353,7 @@ function MobileNav({
                         onClick={() => onStepClick(i)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-full whitespace-nowrap text-sm transition-all ${
                             currentStep === i
-                                ? 'bg-maroon-600 text-white'
+                                ? 'bg-accent-600 text-white'
                                 : revealedSteps.has(i)
                                     ? 'bg-green-900/30 text-green-300 border border-green-800'
                                     : 'bg-dark-700 text-gray-400'
@@ -393,7 +393,7 @@ function StepContent({
         <div className="space-y-6">
             {/* Step Header */}
             <div className="flex items-center gap-4 pb-4 border-b border-white/10">
-                <span className="w-10 h-10 flex items-center justify-center bg-maroon-900 text-white rounded-full text-lg font-bold">
+                <span className="w-10 h-10 flex items-center justify-center bg-accent-900 text-white rounded-full text-lg font-bold">
                     {step.step_number}
                 </span>
                 <div>
@@ -406,16 +406,16 @@ function StepContent({
             <p className="text-gray-300 leading-relaxed">{step.description}</p>
 
             {/* Pause Prompt - Always visible but styled differently based on reveal state */}
-            <div className={`bg-maroon-900/20 border border-maroon-900/40 rounded-lg p-4 transition-all ${isRevealed ? 'opacity-60' : ''}`}>
+            <div className={`bg-accent-900/20 border border-accent-900/40 rounded-lg p-4 transition-all ${isRevealed ? 'opacity-60' : ''}`}>
                 <div className="flex items-start gap-3">
-                    <span className="text-maroon-400 text-xl">💭</span>
+                    <span className="text-accent-400 text-xl">💭</span>
                     <div className="flex-1">
-                        <p className="text-xs text-maroon-400 font-medium mb-1 uppercase tracking-wide">Think about this first</p>
-                        <p className="text-maroon-200 italic">{step.pause_prompt}</p>
+                        <p className="text-xs text-accent-400 font-medium mb-1 uppercase tracking-wide">Think about this first</p>
+                        <p className="text-accent-200 italic">{step.pause_prompt}</p>
                         {!isRevealed && (
                             <button
                                 onClick={onReveal}
-                                className="mt-4 px-5 py-2.5 bg-maroon-600 hover:bg-maroon-500 text-white rounded-lg font-medium transition inline-flex items-center gap-2"
+                                className="mt-4 px-5 py-2.5 bg-accent-600 hover:bg-accent-500 text-white rounded-lg font-medium transition inline-flex items-center gap-2"
                             >
                                 <span>Reveal Analysis</span>
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -436,7 +436,7 @@ function StepContent({
             {/* Interviewer Response */}
             {isRevealed && step.interviewer_response && (
                 <div className="bg-dark-700/50 rounded-lg p-4 border border-white/5">
-                    <h5 className="text-maroon-400 font-semibold mb-3 flex items-center gap-2">
+                    <h5 className="text-accent-400 font-semibold mb-3 flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
@@ -445,7 +445,7 @@ function StepContent({
                     <ul className="space-y-2">
                         {step.interviewer_response.clarifications.map((clarification, i) => (
                             <li key={i} className="text-gray-300 text-sm flex gap-2">
-                                <span className="text-maroon-500">•</span>
+                                <span className="text-accent-500">•</span>
                                 {clarification}
                             </li>
                         ))}
@@ -461,7 +461,7 @@ function StepContent({
             {/* Calculations Breakdown */}
             {isRevealed && step.calculations_breakdown && (
                 <div className="bg-dark-700/50 rounded-lg p-4 border border-white/5">
-                    <h5 className="text-maroon-400 font-semibold mb-3 flex items-center gap-2">
+                    <h5 className="text-accent-400 font-semibold mb-3 flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
@@ -499,7 +499,7 @@ function StepContent({
             {/* Architecture Diagram Description */}
             {isRevealed && step.architecture_diagram_description && (
                 <div className="bg-dark-700/50 rounded-lg p-4 border border-white/5">
-                    <h5 className="text-maroon-400 font-semibold mb-3 flex items-center gap-2">
+                    <h5 className="text-accent-400 font-semibold mb-3 flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
@@ -512,7 +512,7 @@ function StepContent({
             {/* Component Decisions */}
             {isRevealed && step.component_decisions && step.component_decisions.length > 0 && (
                 <div className="space-y-4">
-                    <h5 className="text-maroon-400 font-semibold flex items-center gap-2">
+                    <h5 className="text-accent-400 font-semibold flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -531,7 +531,7 @@ function StepContent({
             {/* Other Failure Scenarios */}
             {isRevealed && step.other_failure_scenarios && step.other_failure_scenarios.length > 0 && (
                 <div className="bg-dark-700/50 rounded-lg p-4 border border-white/5">
-                    <h5 className="text-maroon-400 font-semibold mb-3 flex items-center gap-2">
+                    <h5 className="text-accent-400 font-semibold mb-3 flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
@@ -555,15 +555,15 @@ function StepContent({
 
             {/* Key Takeaways */}
             {isRevealed && step.key_takeaways && step.key_takeaways.length > 0 && (
-                <div className="bg-gradient-to-r from-maroon-900/20 to-maroon-900/5 border border-maroon-900/30 rounded-lg p-4">
-                    <h5 className="text-maroon-400 font-semibold mb-3 flex items-center gap-2">
+                <div className="bg-gradient-to-r from-accent-900/20 to-accent-900/5 border border-accent-900/30 rounded-lg p-4">
+                    <h5 className="text-accent-400 font-semibold mb-3 flex items-center gap-2">
                         <span className="text-lg">💡</span>
                         Key Takeaways
                     </h5>
                     <ul className="space-y-2">
                         {step.key_takeaways.map((takeaway, i) => (
                             <li key={i} className="flex gap-3 text-gray-300 text-sm">
-                                <span className="text-maroon-500 font-bold">{i + 1}.</span>
+                                <span className="text-accent-500 font-bold">{i + 1}.</span>
                                 <span>{takeaway}</span>
                             </li>
                         ))}
@@ -641,7 +641,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
             {/* Sticky Header */}
             <div className="bg-dark-800/95 border-b border-white/5 sticky top-0 z-30 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3 flex items-center justify-between">
-                    <Link href="/archive" className="flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition">
+                    <Link href="/archive" className="flex items-center gap-2 text-accent-400 hover:text-accent-300 transition">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M19 12H5M12 19l-7-7 7-7" />
                         </svg>
@@ -655,7 +655,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                         </div>
                         <div className="h-1.5 bg-dark-700 rounded-full overflow-hidden">
                             <div
-                                className="h-full bg-gradient-to-r from-maroon-600 to-maroon-500 transition-all duration-500"
+                                className="h-full bg-gradient-to-r from-accent-600 to-accent-500 transition-all duration-500"
                                 style={{ width: `${(completedCount / totalSections) * 100}%` }}
                             />
                         </div>
@@ -710,7 +710,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                             <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="4" className="text-dark-600" />
                                             <circle
                                                 cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="4"
-                                                className="text-maroon-500"
+                                                className="text-accent-500"
                                                 strokeDasharray={`${(completedCount / totalSections) * 125.6} 125.6`}
                                             />
                                         </svg>
@@ -800,7 +800,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                         onClick={() => scrollToStep(i)}
                                         className={`w-full p-2 rounded-lg transition-all ${
                                             currentStep === i
-                                                ? 'bg-maroon-900/40'
+                                                ? 'bg-accent-900/40'
                                                 : 'hover:bg-dark-700/50'
                                         }`}
                                     >
@@ -808,7 +808,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                             revealedSteps.has(i)
                                                 ? 'bg-green-600 text-white'
                                                 : currentStep === i
-                                                    ? 'bg-maroon-600 text-white'
+                                                    ? 'bg-accent-600 text-white'
                                                     : 'bg-dark-600 text-gray-400'
                                         }`}>
                                             {revealedSteps.has(i) ? '✓' : step.step_number}
@@ -824,7 +824,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                 <main className="flex-1 min-w-0 px-4 lg:px-8 py-8">
                     {/* Title Section */}
                     <div className="mb-10">
-                        <p className="text-maroon-400 text-sm font-mono mb-2">{formatDate(props.generatedAt)}</p>
+                        <p className="text-accent-400 text-sm font-mono mb-2">{formatDate(props.generatedAt)}</p>
                         <h1 className="text-3xl lg:text-4xl font-bold mb-4">{scenario.problem.title}</h1>
                         <p className="text-lg text-gray-400 leading-relaxed mb-4">{scenario.problem.statement}</p>
 
@@ -842,14 +842,14 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                     <section className="mb-10">
                         <div className="bg-dark-800 border border-white/10 rounded-xl p-6">
                             <h2 className="text-xl font-bold mb-4 flex items-center gap-3">
-                                <span className="w-8 h-8 rounded-full bg-maroon-900 flex items-center justify-center text-sm font-mono">00</span>
+                                <span className="w-8 h-8 rounded-full bg-accent-900 flex items-center justify-center text-sm font-mono">00</span>
                                 The Situation
                             </h2>
                             <MarkdownContent content={scenario.problem.context} className="mb-4" />
-                            <div className="bg-maroon-900/20 border border-maroon-900/40 rounded-lg p-4">
+                            <div className="bg-accent-900/20 border border-accent-900/40 rounded-lg p-4">
                                 <div className="flex items-start gap-3">
-                                    <span className="text-maroon-400 text-xl">💭</span>
-                                    <p className="text-maroon-200 italic">{scenario.problem.pause_prompt}</p>
+                                    <span className="text-accent-400 text-xl">💭</span>
+                                    <p className="text-accent-200 italic">{scenario.problem.pause_prompt}</p>
                                 </div>
                             </div>
                         </div>
@@ -876,7 +876,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                 <div className="mt-4 text-center">
                                     <button
                                         onClick={() => scrollToStep(i + 1)}
-                                        className="inline-flex items-center gap-2 px-4 py-2 text-sm text-maroon-400 hover:text-maroon-300 transition"
+                                        className="inline-flex items-center gap-2 px-4 py-2 text-sm text-accent-400 hover:text-accent-300 transition"
                                     >
                                         Continue to Step {i + 2}
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -957,7 +957,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                 <div className="text-center py-8">
                                     <button
                                         onClick={() => setShowSummary(true)}
-                                        className="px-6 py-3 bg-maroon-600 hover:bg-maroon-500 text-white rounded-lg font-medium transition inline-flex items-center gap-2"
+                                        className="px-6 py-3 bg-accent-600 hover:bg-accent-500 text-white rounded-lg font-medium transition inline-flex items-center gap-2"
                                     >
                                         View Summary & Reflection
                                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -975,7 +975,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                         </h3>
                                         <div className="flex flex-wrap gap-2">
                                             {scenario.summary.critical_concepts_covered.map((concept, i) => (
-                                                <span key={i} className="px-3 py-2 bg-maroon-900/30 border border-maroon-900/50 rounded-lg text-sm text-gray-300">
+                                                <span key={i} className="px-3 py-2 bg-accent-900/30 border border-accent-900/50 rounded-lg text-sm text-gray-300">
                                                     {concept}
                                                 </span>
                                             ))}
@@ -991,7 +991,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                         <ul className="space-y-2">
                                             {scenario.summary.patterns_demonstrated.map((pattern, i) => (
                                                 <li key={i} className="flex gap-3 text-gray-300">
-                                                    <span className="text-maroon-500">•</span>
+                                                    <span className="text-accent-500">•</span>
                                                     {pattern}
                                                 </li>
                                             ))}
@@ -1022,7 +1022,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                         </h3>
                                         <div className="grid md:grid-cols-2 gap-6">
                                             <div>
-                                                <h4 className="text-maroon-400 font-semibold mb-3">Self-Assessment Questions</h4>
+                                                <h4 className="text-accent-400 font-semibold mb-3">Self-Assessment Questions</h4>
                                                 <ul className="space-y-3">
                                                     {scenario.reflection_prompts.self_assessment.map((question, i) => (
                                                         <li key={i} className="text-gray-300 text-sm bg-dark-700/50 p-3 rounded-lg">
@@ -1032,7 +1032,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                                 </ul>
                                             </div>
                                             <div>
-                                                <h4 className="text-maroon-400 font-semibold mb-3">Practice Suggestions</h4>
+                                                <h4 className="text-accent-400 font-semibold mb-3">Practice Suggestions</h4>
                                                 <ul className="space-y-3">
                                                     {scenario.reflection_prompts.practice_next.map((suggestion, i) => (
                                                         <li key={i} className="text-gray-300 text-sm bg-dark-700/50 p-3 rounded-lg">
@@ -1061,7 +1061,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                         </Link>
                         <Link
                             href="/"
-                            className="text-maroon-400 hover:text-maroon-300 transition"
+                            className="text-accent-400 hover:text-accent-300 transition"
                         >
                             Subscribe for Daily Scenarios →
                         </Link>

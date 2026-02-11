@@ -49,7 +49,7 @@ export default function DynamicScenario(props: DynamicScenarioProps) {
             {/* Header */}
             <div className="bg-dark-800/80 border-b border-white/5 sticky top-0 z-10 backdrop-blur-xl">
                 <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <Link href="/archive" className="flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition">
+                    <Link href="/archive" className="flex items-center gap-2 text-accent-400 hover:text-accent-300 transition">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M19 12H5M12 19l-7-7 7-7" />
                         </svg>
@@ -66,7 +66,7 @@ export default function DynamicScenario(props: DynamicScenarioProps) {
             <main className="max-w-4xl mx-auto px-6 py-8">
                 {/* Title Section */}
                 <div className="mb-8">
-                    <p className="text-maroon-400 text-sm font-mono mb-2">{formatDate(props.generatedAt)}</p>
+                    <p className="text-accent-400 text-sm font-mono mb-2">{formatDate(props.generatedAt)}</p>
                     <h1 className="text-4xl font-bold mb-4">{props.title}</h1>
                     {props.summary && (
                         <p className="text-xl text-gray-400 leading-relaxed">{props.summary}</p>
@@ -84,7 +84,7 @@ export default function DynamicScenario(props: DynamicScenarioProps) {
                 <section className="mb-8">
                     <div className="bg-dark-800 border border-white/10 rounded-xl p-6">
                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                            <span className="text-maroon-500">01</span> The Situation
+                            <span className="text-accent-500">01</span> The Situation
                         </h2>
                         <div className="text-gray-300 leading-relaxed whitespace-pre-wrap">
                             {props.context}
@@ -94,11 +94,11 @@ export default function DynamicScenario(props: DynamicScenarioProps) {
 
                 {/* Question Section */}
                 <section className="mb-8">
-                    <div className="bg-maroon-900/20 border border-maroon-900/40 rounded-xl p-6">
+                    <div className="bg-accent-900/20 border border-accent-900/40 rounded-xl p-6">
                         <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                            <span className="text-maroon-500">02</span> The Question
+                            <span className="text-accent-500">02</span> The Question
                         </h2>
-                        <p className="text-lg text-maroon-200 font-medium">{props.question}</p>
+                        <p className="text-lg text-accent-200 font-medium">{props.question}</p>
                     </div>
                 </section>
 
@@ -111,7 +111,7 @@ export default function DynamicScenario(props: DynamicScenarioProps) {
                             </p>
                             <button
                                 onClick={() => setShowAnswers(true)}
-                                className="px-6 py-3 bg-maroon-900 hover:bg-maroon-800 text-white rounded-lg font-medium transition"
+                                className="px-6 py-3 bg-accent-900 hover:bg-accent-800 text-white rounded-lg font-medium transition"
                             >
                                 Reveal Analysis
                             </button>
@@ -192,12 +192,12 @@ export default function DynamicScenario(props: DynamicScenarioProps) {
                         <section>
                             <div className="bg-dark-800 border border-white/10 rounded-xl p-6">
                                 <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                                    <span className="text-maroon-500">💡</span> Key Takeaways
+                                    <span className="text-accent-500">💡</span> Key Takeaways
                                 </h2>
                                 <ul className="space-y-3">
                                     {props.keyTakeaways.map((takeaway, index) => (
                                         <li key={index} className="flex gap-3 text-gray-300">
-                                            <span className="text-maroon-500 font-bold">{index + 1}.</span>
+                                            <span className="text-accent-500 font-bold">{index + 1}.</span>
                                             <span>{takeaway}</span>
                                         </li>
                                     ))}
@@ -220,7 +220,7 @@ export default function DynamicScenario(props: DynamicScenarioProps) {
                     </Link>
                     <Link
                         href="/"
-                        className="text-maroon-400 hover:text-maroon-300 transition"
+                        className="text-accent-400 hover:text-accent-300 transition"
                     >
                         Subscribe for Daily Scenarios →
                     </Link>

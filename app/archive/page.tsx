@@ -61,7 +61,7 @@ export default async function ArchivePage() {
             {/* Header */}
             <div className="bg-dark-800/80 border-b border-white/5">
                 <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition">
+                    <Link href="/" className="flex items-center gap-2 text-accent-400 hover:text-accent-300 transition">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M19 12H5M12 19l-7-7 7-7" />
                         </svg>
@@ -93,7 +93,7 @@ export default async function ArchivePage() {
                         </p>
                         <Link
                             href="/"
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-maroon-900 hover:bg-maroon-800 text-white rounded-lg font-medium transition"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-accent-900 hover:bg-accent-800 text-white rounded-lg font-medium transition"
                         >
                             Get Started
                         </Link>
@@ -105,7 +105,7 @@ export default async function ArchivePage() {
                                 <Link
                                     key={scenario.id}
                                     href={`/scenarios/${scenario.slug}`}
-                                    className="group bg-dark-800 border border-white/5 rounded-xl p-6 hover:border-maroon-900/50 transition"
+                                    className="group bg-dark-800 border border-white/5 rounded-xl p-6 hover:border-accent-900/50 transition"
                                 >
                                     <div className="flex items-center gap-2 mb-3">
                                         <span className={`px-2 py-0.5 text-xs font-medium rounded border ${getThemeColor(scenario.theme)}`}>
@@ -115,7 +115,7 @@ export default async function ArchivePage() {
                                             {scenario.problemType === 'SYSTEM_DESIGN' ? 'Design' : 'Tactical'}
                                         </span>
                                     </div>
-                                    <h2 className="text-lg font-semibold mb-2 group-hover:text-maroon-400 transition">
+                                    <h2 className="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">
                                         {scenario.title}
                                     </h2>
                                     {scenario.summary && (
@@ -125,7 +125,7 @@ export default async function ArchivePage() {
                                     )}
                                     <div className="flex items-center justify-between text-xs text-gray-600">
                                         <span>{formatDate(scenario.generatedAt)}</span>
-                                        <span className="group-hover:text-maroon-400 transition flex items-center gap-1">
+                                        <span className="group-hover:text-accent-400 transition flex items-center gap-1">
                                             Read
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                 <path d="M5 12h14M12 5l7 7-7 7" />
@@ -147,12 +147,12 @@ export default async function ArchivePage() {
                     <div className="grid gap-6 md:grid-cols-3">
                         <Link
                             href="/samples/scenario-1"
-                            className="group bg-dark-800 border border-white/10 rounded-xl p-6 hover:border-maroon-900/50 transition"
+                            className="group bg-dark-800 border border-white/10 rounded-xl p-6 hover:border-accent-900/50 transition"
                         >
                             <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-purple-900/30 text-purple-400 border border-purple-900/50 mb-3">
                                 System Design
                             </span>
-                            <h3 className="text-lg font-semibold mb-2 group-hover:text-maroon-400 transition">
+                            <h3 className="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">
                                 Distributed Rate Limiter
                             </h3>
                             <p className="text-gray-500 text-sm">
@@ -161,12 +161,12 @@ export default async function ArchivePage() {
                         </Link>
                         <Link
                             href="/samples/scenario-2"
-                            className="group bg-dark-800 border border-white/10 rounded-xl p-6 hover:border-maroon-900/50 transition"
+                            className="group bg-dark-800 border border-white/10 rounded-xl p-6 hover:border-accent-900/50 transition"
                         >
                             <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-blue-900/30 text-blue-400 border border-blue-900/50 mb-3">
                                 Architecture
                             </span>
-                            <h3 className="text-lg font-semibold mb-2 group-hover:text-maroon-400 transition">
+                            <h3 className="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">
                                 Microservices vs Monolith
                             </h3>
                             <p className="text-gray-500 text-sm">
@@ -175,12 +175,12 @@ export default async function ArchivePage() {
                         </Link>
                         <Link
                             href="/samples/scenario-3"
-                            className="group bg-dark-800 border border-white/10 rounded-xl p-6 hover:border-maroon-900/50 transition"
+                            className="group bg-dark-800 border border-white/10 rounded-xl p-6 hover:border-accent-900/50 transition"
                         >
                             <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-red-900/30 text-red-400 border border-red-900/50 mb-3">
                                 Tactical
                             </span>
-                            <h3 className="text-lg font-semibold mb-2 group-hover:text-maroon-400 transition">
+                            <h3 className="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">
                                 API Performance Crisis
                             </h3>
                             <p className="text-gray-500 text-sm">

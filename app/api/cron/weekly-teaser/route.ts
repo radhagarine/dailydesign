@@ -159,7 +159,7 @@ function generateTeaserEmailHtml(scenario: TeaserScenario, upgradeUrl: string, u
             <li>Interview dialogue simulation</li>
             <li>Reflection prompts & summary</li>
           </ul>
-          <a href="${upgradeUrl}" style="display: inline-block; padding: 14px 28px; background-color: #7f1d1d; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Upgrade for Full Daily Analysis</a>
+          <a href="${upgradeUrl}" style="display: inline-block; padding: 14px 28px; background-color: #0e7490; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Upgrade for Full Daily Analysis</a>
         </div>
 
         <p style="color: #6b7280; font-size: 13px; text-align: center; margin: 0;">

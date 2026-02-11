@@ -101,7 +101,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-white mb-3">11. Contact</h2>
             <p>
               For questions about these terms, contact us at{' '}
-              <a href="mailto:support@dailydesign.dev" className="text-maroon-400 hover:text-maroon-300 transition">
+              <a href="mailto:support@dailydesign.dev" className="text-accent-400 hover:text-accent-300 transition">
                 support@dailydesign.dev
               </a>.
             </p>

@@ -67,14 +67,14 @@ export default function DesignProblem(props: DesignProblemProps) {
             {/* Header */}
             <div className="bg-dark-800/80 border-b border-white/5 sticky top-0 z-10 backdrop-blur-xl">
                 <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 text-maroon-400 hover:text-maroon-300 transition">
+                    <Link href="/" className="flex items-center gap-2 text-accent-400 hover:text-accent-300 transition">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M19 12H5M12 19l-7-7 7-7" />
                         </svg>
                         Back to Hub
                     </Link>
                     <div className="flex gap-4 items-center text-sm">
-                        <span className="text-maroon-400">{props.category}</span>
+                        <span className="text-accent-400">{props.category}</span>
                         <span className="w-1 h-1 rounded-full bg-gray-600"></span>
                         <span className="text-gray-400">{props.estimatedTime}</span>
                         <span className="w-1 h-1 rounded-full bg-gray-600"></span>
@@ -97,12 +97,12 @@ export default function DesignProblem(props: DesignProblemProps) {
                         {/* Problem Context */}
                         <div className="bg-dark-800 border border-white/10 rounded-xl p-8">
                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                                <span className="text-maroon-500">00</span> The Challenge
+                                <span className="text-accent-500">00</span> The Challenge
                             </h2>
                             <MarkdownContent content={props.context} className="mb-6" />
 
-                            <div className="bg-maroon-900/20 border border-maroon-900/40 rounded-lg p-6">
-                                <h3 className="text-lg font-bold text-maroon-400 mb-2">Your Task</h3>
+                            <div className="bg-accent-900/20 border border-accent-900/40 rounded-lg p-6">
+                                <h3 className="text-lg font-bold text-accent-400 mb-2">Your Task</h3>
                                 <p className="text-lg text-white">{props.question}</p>
                             </div>
                         </div>
@@ -115,7 +115,7 @@ export default function DesignProblem(props: DesignProblemProps) {
                             <ul className="space-y-3">
                                 {props.guidingQuestions.map((q, i) => (
                                     <li key={i} className="flex gap-3 text-gray-300">
-                                        <span className="text-maroon-500 font-bold">?</span>
+                                        <span className="text-accent-500 font-bold">?</span>
                                         <span>{q}</span>
                                     </li>
                                 ))}
@@ -152,10 +152,10 @@ export default function DesignProblem(props: DesignProblemProps) {
                             {!showAnswers ? (
                                 <button
                                     onClick={() => setShowAnswers(true)}
-                                    className="w-full py-4 mt-4 bg-dark-800 border border-white/10 rounded-xl hover:border-maroon-900/50 transition-all font-semibold flex flex-col items-center gap-2 group"
+                                    className="w-full py-4 mt-4 bg-dark-800 border border-white/10 rounded-xl hover:border-accent-900/50 transition-all font-semibold flex flex-col items-center gap-2 group"
                                 >
                                     <span className="text-gray-300">Ready to compare your solution?</span>
-                                    <span className="text-maroon-400 group-hover:text-maroon-300">Reveal Answers & Analysis</span>
+                                    <span className="text-accent-400 group-hover:text-accent-300">Reveal Answers & Analysis</span>
                                 </button>
                             ) : (
                                 <div className="space-y-12 mt-12">
@@ -222,12 +222,12 @@ export default function DesignProblem(props: DesignProblemProps) {
                                     {/* Key Takeaways */}
                                     <div className="bg-dark-800 border border-white/10 rounded-xl p-8">
                                         <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
-                                            <span className="text-maroon-500">📚</span> Key Takeaways
+                                            <span className="text-accent-500">📚</span> Key Takeaways
                                         </h3>
                                         <ul className="space-y-4">
                                             {props.keyTakeaways.map((takeaway, i) => (
                                                 <li key={i} className="flex gap-4 items-start p-3 rounded-lg hover:bg-white/5 transition-colors">
-                                                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-maroon-900/30 text-maroon-400 flex items-center justify-center font-bold text-sm border border-maroon-900/50">
+                                                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-accent-900/30 text-accent-400 flex items-center justify-center font-bold text-sm border border-accent-900/50">
                                                         {i + 1}
                                                     </span>
                                                     <span className="text-gray-300 leading-relaxed">{takeaway}</span>
@@ -244,7 +244,7 @@ export default function DesignProblem(props: DesignProblemProps) {
                     <div className="hidden lg:block">
                         <div className="sticky top-24 space-y-6">
                             <div className="bg-dark-800 border border-white/10 rounded-xl p-6">
-                                <h3 className="font-bold mb-4 text-maroon-400">Progress</h3>
+                                <h3 className="font-bold mb-4 text-accent-400">Progress</h3>
                                 <div className="space-y-2 text-sm text-gray-400">
                                     <div className="flex justify-between">
                                         <span>Problem Analysis</span>
@@ -271,8 +271,8 @@ export default function DesignProblem(props: DesignProblemProps) {
                                     <ul className="space-y-3">
                                         {props.relatedChallenges.map((challenge, i) => (
                                             <li key={i}>
-                                                <Link href={challenge.href} className="text-sm text-gray-400 hover:text-maroon-400 transition-colors flex items-center gap-2">
-                                                    <span className="text-maroon-500">→</span>
+                                                <Link href={challenge.href} className="text-sm text-gray-400 hover:text-accent-400 transition-colors flex items-center gap-2">
+                                                    <span className="text-accent-500">→</span>
                                                     {challenge.title}
                                                 </Link>
                                             </li>

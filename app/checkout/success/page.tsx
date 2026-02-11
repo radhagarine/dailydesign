@@ -65,7 +65,7 @@ function SuccessContent() {
                     </p>
                     <Link
                         href="/"
-                        className="inline-block px-6 py-3 bg-maroon-600 hover:bg-maroon-500 rounded-lg font-semibold transition"
+                        className="inline-block px-6 py-3 bg-accent-600 hover:bg-accent-500 rounded-lg font-semibold transition"
                     >
                         Return Home
                     </Link>
@@ -116,7 +116,7 @@ function SuccessContent() {
                 <div className="space-y-4">
                     <Link
                         href="/samples/scenario-1"
-                        className="block w-full py-3 rounded-lg bg-maroon-600 hover:bg-maroon-500 transition text-white font-semibold"
+                        className="block w-full py-3 rounded-lg bg-accent-600 hover:bg-accent-500 transition text-white font-semibold"
                     >
                         Start Your First Scenario
                     </Link>

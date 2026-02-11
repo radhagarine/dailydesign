@@ -70,7 +70,7 @@ export default function PricingButton({ plan, className = '', children }: Pricin
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="Enter your email"
-                        className="w-full px-4 py-3 bg-dark-900 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-maroon-500"
+                        className="w-full px-4 py-3 bg-dark-900 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-accent-500"
                         disabled={isLoading}
                         autoFocus
                     />
@@ -91,7 +91,7 @@ export default function PricingButton({ plan, className = '', children }: Pricin
                             disabled={isLoading}
                             className={`flex-1 py-3 rounded-lg font-semibold transition ${
                                 plan === 'annual'
-                                    ? 'bg-maroon-600 hover:bg-maroon-500 text-white'
+                                    ? 'bg-accent-600 hover:bg-accent-500 text-white'
                                     : 'bg-white/10 hover:bg-white/20'
                             }`}
                         >

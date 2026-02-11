@@ -73,7 +73,7 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="flex-1 px-3 py-2 bg-dark-800 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-maroon-500 transition-colors"
+                    className="flex-1 px-3 py-2 bg-dark-800 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-accent-500 transition-colors"
                     disabled={status === 'loading' || status === 'success'}
                 />
                 <button
@@ -81,7 +81,7 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
                     disabled={status === 'loading' || status === 'success'}
                     className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${status === 'success'
                         ? 'bg-emerald-500/20 text-emerald-500'
-                        : 'bg-maroon-600 text-white hover:bg-maroon-500'
+                        : 'bg-accent-600 text-white hover:bg-accent-500'
                         }`}
                 >
                     {status === 'loading' ? '...' : status === 'success' ? '✓' : 'Join'}
@@ -98,7 +98,7 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="work@company.com"
-                    className="flex-1 px-4 py-3 bg-dark-800 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-maroon-500 transition-colors"
+                    className="flex-1 px-4 py-3 bg-dark-800 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-accent-500 transition-colors"
                     disabled={status === 'loading' || status === 'success'}
                 />
                 <button
@@ -106,7 +106,7 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
                     disabled={status === 'loading' || status === 'success'}
                     className={`px-6 py-3 font-semibold rounded-lg transition-all ${status === 'success'
                         ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30'
-                        : 'bg-maroon-600 text-white hover:bg-maroon-500'
+                        : 'bg-accent-600 text-white hover:bg-accent-500'
                         }`}
                 >
                     {status === 'loading' ? 'Joining...' : status === 'success' ? 'Redirecting...' : 'Get Started Free'}

@@ -40,7 +40,7 @@ export default function ScenarioTeaser({
 
         {/* Metadata badges */}
         <div className="flex flex-wrap items-center gap-3 mb-6">
-          <span className="inline-flex items-center px-3 py-1 rounded-full bg-maroon-900/30 text-maroon-400 border border-maroon-800/50 text-xs font-semibold uppercase tracking-wider">
+          <span className="inline-flex items-center px-3 py-1 rounded-full bg-accent-900/30 text-accent-400 border border-accent-800/50 text-xs font-semibold uppercase tracking-wider">
             {problemType.replace('_', ' ')}
           </span>
           <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/5 text-gray-400 border border-white/10 text-xs">
@@ -71,8 +71,8 @@ export default function ScenarioTeaser({
         </div>
 
         {/* Pause prompt (the question) */}
-        <div className="bg-maroon-900/20 border border-maroon-800/40 rounded-lg p-6 mb-8">
-          <p className="text-maroon-300 font-medium italic">{problem.pause_prompt}</p>
+        <div className="bg-accent-900/20 border border-accent-800/40 rounded-lg p-6 mb-8">
+          <p className="text-accent-300 font-medium italic">{problem.pause_prompt}</p>
         </div>
 
         {/* Paywall */}
@@ -95,7 +95,7 @@ export default function ScenarioTeaser({
           {/* Overlay CTA */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="bg-dark-800/95 backdrop-blur-sm border border-white/10 rounded-xl p-8 max-w-md text-center shadow-2xl">
-              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-maroon-900/40 flex items-center justify-center">
+              <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-accent-900/40 flex items-center justify-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -106,7 +106,7 @@ export default function ScenarioTeaser({
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  className="text-maroon-400"
+                  className="text-accent-400"
                 >
                   <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -120,7 +120,7 @@ export default function ScenarioTeaser({
               </p>
               <Link
                 href="/#pricing"
-                className="inline-block px-6 py-3 bg-maroon-700 hover:bg-maroon-600 text-white font-semibold rounded-lg transition mb-3 w-full"
+                className="inline-block px-6 py-3 bg-accent-700 hover:bg-accent-600 text-white font-semibold rounded-lg transition mb-3 w-full"
               >
                 Subscribe to Unlock
               </Link>
