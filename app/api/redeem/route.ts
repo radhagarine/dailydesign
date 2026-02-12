@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { accessCodes, subscribers, generateUnsubscribeToken } from '@/lib/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, isNull } from 'drizzle-orm';
 
 // POST /api/redeem — Redeem an access code
 // Body: { email: string, code: string }
@@ -49,19 +49,21 @@ export async function POST(request: NextRequest) {
             await db
                 .update(subscribers)
                 .set({ status: 'active', freeAccess: true })
-                .where(eq(subscribers.id, subscriber.id));
+                .where(eq(subscribers.id, subscriber.id))
+                .run();
         } else if (!subscriber) {
             // Auto-subscribe with freeAccess
             const token = generateUnsubscribeToken();
-            await db.insert(subscribers).values({
+            const result = await db.insert(subscribers).values({
                 email: trimmedEmail,
                 unsubscribeToken: token,
                 freeAccess: true,
-            });
+            }).run();
+            const newId = Number(result.lastInsertRowid);
             subscriber = await db
                 .select()
                 .from(subscribers)
-                .where(eq(subscribers.email, trimmedEmail))
+                .where(eq(subscribers.id, newId))
                 .get();
             isNewSubscriber = true;
         } else if (subscriber.freeAccess) {
@@ -71,14 +73,31 @@ export async function POST(request: NextRequest) {
             await db
                 .update(subscribers)
                 .set({ freeAccess: true })
-                .where(eq(subscribers.id, subscriber.id));
+                .where(eq(subscribers.id, subscriber.id))
+                .run();
         }
 
-        // Mark code as redeemed
-        await db
+        // Atomically mark code as redeemed (prevents race condition / double-redemption)
+        const redeemResult = await db
             .update(accessCodes)
             .set({ redeemedBy: subscriber!.id, redeemedAt: new Date() })
-            .where(eq(accessCodes.id, accessCode.id));
+            .where(and(
+                eq(accessCodes.id, accessCode.id),
+                isNull(accessCodes.redeemedBy)
+            ))
+            .run();
+
+        if (redeemResult.rowsAffected === 0) {
+            // Another request redeemed the code between our check and update — rollback freeAccess
+            if (!isNewSubscriber && subscriber) {
+                await db
+                    .update(subscribers)
+                    .set({ freeAccess: false })
+                    .where(eq(subscribers.id, subscriber.id))
+                    .run();
+            }
+            return NextResponse.json({ error: 'This code has already been redeemed' }, { status: 409 });
+        }
 
         const message = isNewSubscriber
             ? 'Welcome! Your account has been created with premium access. You will receive full daily scenarios.'

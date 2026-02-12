@@ -29,6 +29,24 @@ export async function GET(req: Request) {
     let preGenerated = false;
     let scenarioDbId: number | undefined;
 
+    // 0. Idempotency guard: skip if a scenario was already sent today
+    const alreadySent = await db.select({ id: scenarios.id, slug: scenarios.slug })
+      .from(scenarios)
+      .where(and(
+        gte(scenarios.generatedAt, todayStart),
+        lte(scenarios.generatedAt, todayEnd),
+        eq(scenarios.scenarioStatus, 'sent'),
+      ))
+      .get();
+
+    if (alreadySent) {
+      return NextResponse.json({
+        message: 'Scenario already sent today',
+        slug: alreadySent.slug,
+        skipped: true,
+      });
+    }
+
     // 1. Try to use a pre-generated scenario
     const preGen = await db.select()
       .from(scenarios)

@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import InterviewScenario from '@/components/InterviewScenario';
 import ScenarioTeaser from '@/components/ScenarioTeaser';
 import { validateScenarioAccess } from '@/lib/access';
-import { getSubscriberFromCookie } from '@/lib/cookies';
+import { getSubscriberFromCookie, isSubscriberPaid } from '@/lib/cookies';
 import type { Metadata } from 'next';
 
 interface PageProps {
@@ -35,12 +35,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         };
     }
 
-    const content = JSON.parse(scenario.content);
-
-    return {
-        title: `${scenario.title} | DailyDesign`,
-        description: content.problem?.statement || content.problem?.context?.substring(0, 160)
-    };
+    try {
+        const content = JSON.parse(scenario.content);
+        return {
+            title: `${scenario.title} | DailyDesign`,
+            description: content.problem?.statement || content.problem?.context?.substring(0, 160)
+        };
+    } catch {
+        return {
+            title: `${scenario.title} | DailyDesign`,
+        };
+    }
 }
 
 export default async function ScenarioPage({ params, searchParams }: PageProps) {
@@ -53,17 +58,29 @@ export default async function ScenarioPage({ params, searchParams }: PageProps) 
         notFound();
     }
 
-    const content = JSON.parse(scenario.content);
+    let content;
+    try {
+        content = JSON.parse(scenario.content);
+    } catch {
+        console.error(`Corrupted scenario content for slug: ${slug}`);
+        notFound();
+    }
 
     // Check access: cookie first, then fallback to ?token= param
     const cookieSubscriber = await getSubscriberFromCookie();
-    const { valid } = cookieSubscriber
-      ? { valid: true }
-      : token
-        ? await validateScenarioAccess(token)
-        : { valid: false };
+    let subscriber = cookieSubscriber;
 
-    if (!valid) {
+    if (!subscriber && token) {
+        const accessResult = await validateScenarioAccess(token);
+        if (accessResult.valid) {
+            subscriber = accessResult.subscriber ?? null;
+        }
+    }
+
+    // Must be an active subscriber AND paid to see full content
+    const isPaid = subscriber ? await isSubscriberPaid(subscriber) : false;
+
+    if (!isPaid) {
         return (
             <ScenarioTeaser
                 title={scenario.title}

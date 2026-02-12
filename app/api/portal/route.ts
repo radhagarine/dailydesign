@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { subscribers } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import { getBaseUrl } from '@/lib/utils';
+import { getSubscriberFromCookie } from '@/lib/cookies';
 
 export async function POST(req: Request) {
     if (!isStripeEnabled() || !stripe) {
@@ -21,11 +22,19 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
         }
 
+        const normalizedEmail = email.toLowerCase().trim();
+
+        // Authenticate: require cookie-based auth and ensure the email matches
+        const cookieSubscriber = await getSubscriberFromCookie();
+        if (!cookieSubscriber || cookieSubscriber.email !== normalizedEmail) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         // Look up subscriber
         const subscriber = await db
             .select()
             .from(subscribers)
-            .where(eq(subscribers.email, email))
+            .where(eq(subscribers.email, normalizedEmail))
             .get();
 
         if (!subscriber) {

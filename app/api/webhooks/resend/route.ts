@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { Webhook } from 'svix';
 import { db } from '@/lib/db';
-import { emailEvents } from '@/lib/schema';
+import { emailEvents, subscribers } from '@/lib/schema';
+import { eq } from 'drizzle-orm';
 
 const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
 
@@ -66,6 +67,26 @@ export async function POST(req: Request) {
                 eventType: eventType.replace('email.', ''), // 'delivered', 'opened', etc.
                 metadata: data.click ? JSON.stringify({ url: data.click.url }) : null,
             }).run();
+        }
+
+        // Suppress future emails on bounce or complaint (CAN-SPAM / deliverability)
+        if (eventType === 'email.bounced' || eventType === 'email.complained') {
+            for (const recipient of recipients) {
+                const sub = await db
+                    .select({ id: subscribers.id })
+                    .from(subscribers)
+                    .where(eq(subscribers.email, recipient.toLowerCase()))
+                    .get();
+
+                if (sub) {
+                    await db
+                        .update(subscribers)
+                        .set({ status: 'unsubscribed' })
+                        .where(eq(subscribers.id, sub.id))
+                        .run();
+                    console.log(`Suppressed subscriber ${recipient} due to ${eventType}`);
+                }
+            }
         }
 
         return NextResponse.json({ received: true, tracked: true });

@@ -7,7 +7,9 @@ export async function POST(req: Request) {
     try {
         const { email, ref } = await req.json();
 
-        if (!email || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+        const normalizedEmail = typeof email === 'string' ? email.toLowerCase().trim() : '';
+
+        if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail) || normalizedEmail.length > 254) {
             return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
         }
 
@@ -15,10 +17,25 @@ export async function POST(req: Request) {
         const existing = await db
             .select()
             .from(subscribers)
-            .where(eq(subscribers.email, email))
+            .where(eq(subscribers.email, normalizedEmail))
             .get();
 
         if (existing) {
+            // Handle resubscription: if previously unsubscribed, reactivate
+            if (existing.status === 'unsubscribed') {
+                await db
+                    .update(subscribers)
+                    .set({ status: 'active' })
+                    .where(eq(subscribers.id, existing.id))
+                    .run();
+                return NextResponse.json({
+                    success: true,
+                    message: 'Welcome back! Your subscription has been reactivated.',
+                    isNew: false,
+                    reactivated: true,
+                });
+            }
+
             return NextResponse.json({
                 success: true,
                 message: 'Already subscribed',
@@ -40,10 +57,10 @@ export async function POST(req: Request) {
             }
         }
 
-        // Create new subscriber with token
+        // Create new subscriber (token sent via email, NOT in API response)
         const token = generateUnsubscribeToken();
         await db.insert(subscribers).values({
-            email,
+            email: normalizedEmail,
             unsubscribeToken: token,
             referredBy: referrerId || null,
         }).run();
@@ -53,7 +70,7 @@ export async function POST(req: Request) {
             const newSubscriber = await db
                 .select({ id: subscribers.id })
                 .from(subscribers)
-                .where(eq(subscribers.email, email))
+                .where(eq(subscribers.email, normalizedEmail))
                 .get();
 
             if (newSubscriber) {
@@ -67,10 +84,17 @@ export async function POST(req: Request) {
 
         return NextResponse.json({
             success: true,
-            token,
             isNew: true
         });
-    } catch (error) {
+    } catch (error: any) {
+        // Handle race condition: concurrent insert with same email
+        if (error.message?.includes('UNIQUE constraint failed')) {
+            return NextResponse.json({
+                success: true,
+                message: 'Already subscribed',
+                isNew: false
+            });
+        }
         console.error('Subscription error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }

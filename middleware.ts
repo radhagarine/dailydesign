@@ -11,6 +11,7 @@ const RATE_LIMITS: Record<string, [number, number]> = {
   '/api/checkout/verify': [10, 60_000], // 10 per minute
   '/api/referral':       [10, 60_000], // 10 per minute
   '/api/auth/magic-link': [3, 300_000], // 3 per 5 minutes
+  '/api/redeem':           [5, 300_000], // 5 per 5 minutes (prevent brute-force)
 };
 
 const COOKIE_NAME = 'subscriber_token';
@@ -18,9 +19,11 @@ const COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days
 const TOKEN_PATTERN = /^[a-f0-9]{64}$/;
 
 function getClientIp(request: NextRequest): string {
+  // Prefer x-real-ip (set by Vercel/reverse proxy, not client-spoofable)
+  // over x-forwarded-for (can be spoofed by adding a header before the proxy)
   return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     request.headers.get('x-real-ip') ||
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     'unknown'
   );
 }

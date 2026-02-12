@@ -27,6 +27,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
         }
 
+        const normalizedEmail = email.toLowerCase().trim();
         const selectedPlan = PLANS[plan as keyof typeof PLANS];
 
         if (!selectedPlan.priceId) {
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
         let subscriber = await db
             .select()
             .from(subscribers)
-            .where(eq(subscribers.email, email))
+            .where(eq(subscribers.email, normalizedEmail))
             .get();
 
         let customerId = subscriber?.stripeCustomerId;
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
         // Create Stripe customer if needed
         if (!customerId) {
             const customer = await stripe.customers.create({
-                email,
+                email: normalizedEmail,
                 metadata: {
                     subscriberId: subscriber?.id?.toString() || 'pending',
                 },
@@ -62,7 +63,7 @@ export async function POST(req: Request) {
                 await db
                     .update(subscribers)
                     .set({ stripeCustomerId: customerId })
-                    .where(eq(subscribers.email, email))
+                    .where(eq(subscribers.email, normalizedEmail))
                     .run();
             }
         }
@@ -87,7 +88,7 @@ export async function POST(req: Request) {
             },
             metadata: {
                 plan,
-                email,
+                email: normalizedEmail,
             },
         });
 

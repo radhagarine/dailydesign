@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
         await db
             .update(subscribers)
             .set({ freeAccess: true })
-            .where(eq(subscribers.id, subscriber.id));
+            .where(eq(subscribers.id, subscriber.id))
+            .run();
 
         return NextResponse.json({
             success: true,
@@ -74,7 +75,8 @@ export async function DELETE(request: NextRequest) {
         await db
             .update(subscribers)
             .set({ freeAccess: false })
-            .where(eq(subscribers.id, subscriber.id));
+            .where(eq(subscribers.id, subscriber.id))
+            .run();
 
         return NextResponse.json({
             success: true,

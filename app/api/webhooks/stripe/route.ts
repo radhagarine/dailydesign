@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { stripe } from '@/lib/stripe';
 import { db } from '@/lib/db';
 import { subscribers, subscriptions } from '@/lib/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import type Stripe from 'stripe';
 
 // In-memory idempotency cache for processed webhook events.
@@ -209,12 +209,16 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     }
 
     // Update subscriber status based on subscription status
-    const isActive = ['active', 'trialing'].includes(subscription.status);
-    await db
-        .update(subscribers)
-        .set({ status: isActive ? 'active' : 'inactive' })
-        .where(eq(subscribers.id, subscriber.id))
-        .run();
+    // - Don't overwrite 'unsubscribed' (user explicitly opted out of emails)
+    // - Treat 'past_due' as still active (grace period while Stripe retries payment)
+    if (subscriber.status !== 'unsubscribed') {
+        const isActive = ['active', 'trialing', 'past_due'].includes(subscription.status);
+        await db
+            .update(subscribers)
+            .set({ status: isActive ? 'active' : 'inactive' })
+            .where(eq(subscribers.id, subscriber.id))
+            .run();
+    }
 
     console.log(`Subscription ${subscription.id} updated: ${subscription.status}`);
 }
@@ -242,13 +246,30 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
         .get();
 
     if (subscriber) {
-        // Check if they have any other active subscriptions
-        // For now, just mark as inactive
-        await db
-            .update(subscribers)
-            .set({ status: 'inactive' })
-            .where(eq(subscribers.id, subscriber.id))
-            .run();
+        // Don't overwrite 'unsubscribed' status
+        if (subscriber.status === 'unsubscribed') {
+            console.log(`Subscription ${subscription.id} canceled, subscriber already unsubscribed`);
+            return;
+        }
+
+        // Check if they have any other active subscriptions before revoking access
+        const otherActiveSubs = await db
+            .select({ id: subscriptions.id })
+            .from(subscriptions)
+            .where(and(
+                eq(subscriptions.subscriberId, subscriber.id),
+                inArray(subscriptions.status, ['active', 'trialing', 'past_due']),
+            ))
+            .all();
+
+        // Only mark inactive if no other active subs AND no freeAccess
+        if (otherActiveSubs.length === 0 && !subscriber.freeAccess) {
+            await db
+                .update(subscribers)
+                .set({ status: 'inactive' })
+                .where(eq(subscribers.id, subscriber.id))
+                .run();
+        }
     }
 
     console.log(`Subscription ${subscription.id} canceled`);
@@ -261,6 +282,17 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 
     if (!customerId) return;
 
-    console.log(`Payment failed for customer ${customerId}`);
-    // Could send notification email here
+    // Look up subscriber for actionable logging
+    const subscriber = await db
+        .select({ id: subscribers.id, email: subscribers.email })
+        .from(subscribers)
+        .where(eq(subscribers.stripeCustomerId, customerId))
+        .get();
+
+    console.error(`Payment failed for customer ${customerId}${subscriber ? ` (${subscriber.email})` : ''}, invoice: ${invoice.id}, attempt: ${invoice.attempt_count}`);
+
+    // Note: Stripe automatically retries failed payments (Smart Retries).
+    // The subscriber keeps access during 'past_due' status (grace period).
+    // If all retries fail, Stripe sends 'customer.subscription.deleted' which
+    // triggers handleSubscriptionDeleted to revoke access.
 }

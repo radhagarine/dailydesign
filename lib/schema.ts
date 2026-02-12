@@ -6,9 +6,9 @@ export function generateUnsubscribeToken(): string {
     return randomBytes(32).toString('hex');
 }
 
-// Generate an access code: DAILY- + 6 random hex chars (uppercase)
+// Generate an access code: DAILY- + 16 random hex chars (uppercase)
 export function generateAccessCode(): string {
-    return `DAILY-${randomBytes(3).toString('hex').toUpperCase()}`;
+    return `DAILY-${randomBytes(8).toString('hex').toUpperCase()}`;
 }
 
 // Generate a short referral code (8 chars, URL-safe)
@@ -45,7 +45,10 @@ export const subscribers = sqliteTable('subscribers', {
     // Referral
     referralCode: text('referral_code').unique().$defaultFn(() => generateReferralCode()),
     referredBy: integer('referred_by'), // subscriber ID of referrer
-});
+}, (table) => ({
+    statusIdx: index('subscriber_status_idx').on(table.status),
+    stripeCustomerIdx: index('subscriber_stripe_customer_idx').on(table.stripeCustomerId),
+}));
 
 export const emails = sqliteTable('emails', {
     id: integer('id').primaryKey(),
