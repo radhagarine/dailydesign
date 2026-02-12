@@ -50,7 +50,7 @@ export function getDailyStrategy(date: Date = new Date()) {
     // Simple rule: Alternate days, or randomize. 
     // Let's do: Mon/Wed/Fri = Tactical (Type B), Tue/Thu/Sat = System Design (Type A), Sun = Random
     // 0 = Sun, 1 = Mon, ...
-    const day = date.getDay();
+    const day = date.getUTCDay();
     let problemType: ProblemType = 'TACTICAL'; // Default
 
     if (day === 0) {
