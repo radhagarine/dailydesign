@@ -94,8 +94,8 @@ interface InterviewScenarioProps {
     generatedAt: Date;
 }
 
-const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
+const formatDate = () => {
+    return new Date().toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -178,8 +178,8 @@ function AnswerCard({
                     <div className={`rounded-lg p-4 border ${config.border}`}>
                         <h5 className={`${config.accent} font-semibold mb-2 text-sm`}>
                             {response.level === 'bad' ? 'Why this is weak:' :
-                             response.level === 'good' ? 'Why this passes senior bar:' :
-                             'Why this is principal-level:'}
+                                response.level === 'good' ? 'Why this passes senior bar:' :
+                                    'Why this is principal-level:'}
                         </h5>
                         <p className="text-gray-400 text-sm mb-3">{response.why_this_level}</p>
 
@@ -299,20 +299,18 @@ function SidebarNavItem({
     return (
         <button
             onClick={onClick}
-            className={`w-full text-left p-3 rounded-lg transition-all duration-200 group ${
-                isActive
-                    ? 'bg-accent-900/40 border border-accent-800'
-                    : 'hover:bg-dark-700/50 border border-transparent'
-            }`}
+            className={`w-full text-left p-3 rounded-lg transition-all duration-200 group ${isActive
+                ? 'bg-accent-900/40 border border-accent-800'
+                : 'hover:bg-dark-700/50 border border-transparent'
+                }`}
         >
             <div className="flex items-center gap-3">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
-                    isCompleted
-                        ? 'bg-green-600 text-white'
-                        : isActive
-                            ? 'bg-accent-600 text-white'
-                            : 'bg-dark-600 text-gray-400 group-hover:bg-dark-500'
-                }`}>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${isCompleted
+                    ? 'bg-green-600 text-white'
+                    : isActive
+                        ? 'bg-accent-600 text-white'
+                        : 'bg-dark-600 text-gray-400 group-hover:bg-dark-500'
+                    }`}>
                     {isCompleted ? (
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -345,19 +343,18 @@ function MobileNav({
     onStepClick: (index: number) => void;
 }) {
     return (
-        <div className="lg:hidden sticky top-16 z-20 bg-dark-900/95 backdrop-blur-lg border-b border-white/5 -mx-4 px-4 py-3">
+        <div className="lg:hidden sticky top-[7.75rem] z-20 bg-dark-900/95 backdrop-blur-lg border-b border-white/5 -mx-4 px-4 py-3">
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {steps.map((step, i) => (
                     <button
                         key={i}
                         onClick={() => onStepClick(i)}
-                        className={`flex items-center gap-2 px-3 py-2 rounded-full whitespace-nowrap text-sm transition-all ${
-                            currentStep === i
-                                ? 'bg-accent-600 text-white'
-                                : revealedSteps.has(i)
-                                    ? 'bg-green-900/30 text-green-300 border border-green-800'
-                                    : 'bg-dark-700 text-gray-400'
-                        }`}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-full whitespace-nowrap text-sm transition-all ${currentStep === i
+                            ? 'bg-accent-600 text-white'
+                            : revealedSteps.has(i)
+                                ? 'bg-green-900/30 text-green-300 border border-green-800'
+                                : 'bg-dark-700 text-gray-400'
+                            }`}
                     >
                         {revealedSteps.has(i) ? (
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -637,9 +634,9 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
     const totalSections = scenario.framework_steps.length + 2; // steps + simulation + summary
 
     return (
-        <div className="min-h-screen bg-dark-900 text-white">
+        <div className="min-h-screen bg-dark-900 text-white pt-16">
             {/* Sticky Header */}
-            <div className="bg-dark-800/95 border-b border-white/5 sticky top-0 z-30 backdrop-blur-xl">
+            <div className="bg-dark-800/95 border-b border-white/5 sticky top-16 z-30 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3 flex items-center justify-between">
                     <Link href="/archive" className="flex items-center gap-2 text-accent-400 hover:text-accent-300 transition">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -678,7 +675,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
 
             <div className="max-w-7xl mx-auto flex">
                 {/* Sidebar - Desktop Only */}
-                <aside className={`hidden lg:block sticky top-16 h-[calc(100vh-4rem)] transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-72'}`}>
+                <aside className={`hidden lg:block sticky top-[7.75rem] h-[calc(100vh-7.75rem)] transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-72'}`}>
                     <div className="h-full border-r border-white/5 p-4 overflow-y-auto">
                         {/* Collapse Toggle */}
                         <button
@@ -740,16 +737,14 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                     {allStepsRevealed && (
                                         <button
                                             onClick={scrollToSimulation}
-                                            className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
-                                                showSimulation
-                                                    ? 'bg-yellow-900/20 border border-yellow-800'
-                                                    : 'hover:bg-dark-700/50 border border-transparent'
-                                            }`}
+                                            className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${showSimulation
+                                                ? 'bg-yellow-900/20 border border-yellow-800'
+                                                : 'hover:bg-dark-700/50 border border-transparent'
+                                                }`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm ${
-                                                    showSimulation ? 'bg-yellow-600 text-white' : 'bg-dark-600 text-gray-400'
-                                                }`}>
+                                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm ${showSimulation ? 'bg-yellow-600 text-white' : 'bg-dark-600 text-gray-400'
+                                                    }`}>
                                                     ⚡
                                                 </div>
                                                 <div>
@@ -766,16 +761,14 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                     {showSimulation && (
                                         <button
                                             onClick={scrollToSummary}
-                                            className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${
-                                                showSummary
-                                                    ? 'bg-green-900/20 border border-green-800'
-                                                    : 'hover:bg-dark-700/50 border border-transparent'
-                                            }`}
+                                            className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${showSummary
+                                                ? 'bg-green-900/20 border border-green-800'
+                                                : 'hover:bg-dark-700/50 border border-transparent'
+                                                }`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm ${
-                                                    showSummary ? 'bg-green-600 text-white' : 'bg-dark-600 text-gray-400'
-                                                }`}>
+                                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm ${showSummary ? 'bg-green-600 text-white' : 'bg-dark-600 text-gray-400'
+                                                    }`}>
                                                     📋
                                                 </div>
                                                 <div>
@@ -798,19 +791,17 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                     <button
                                         key={i}
                                         onClick={() => scrollToStep(i)}
-                                        className={`w-full p-2 rounded-lg transition-all ${
-                                            currentStep === i
-                                                ? 'bg-accent-900/40'
-                                                : 'hover:bg-dark-700/50'
-                                        }`}
+                                        className={`w-full p-2 rounded-lg transition-all ${currentStep === i
+                                            ? 'bg-accent-900/40'
+                                            : 'hover:bg-dark-700/50'
+                                            }`}
                                     >
-                                        <div className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center text-sm font-bold ${
-                                            revealedSteps.has(i)
-                                                ? 'bg-green-600 text-white'
-                                                : currentStep === i
-                                                    ? 'bg-accent-600 text-white'
-                                                    : 'bg-dark-600 text-gray-400'
-                                        }`}>
+                                        <div className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center text-sm font-bold ${revealedSteps.has(i)
+                                            ? 'bg-green-600 text-white'
+                                            : currentStep === i
+                                                ? 'bg-accent-600 text-white'
+                                                : 'bg-dark-600 text-gray-400'
+                                            }`}>
                                             {revealedSteps.has(i) ? '✓' : step.step_number}
                                         </div>
                                     </button>
@@ -824,7 +815,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                 <main className="flex-1 min-w-0 px-4 lg:px-8 py-8">
                     {/* Title Section */}
                     <div className="mb-10">
-                        <p className="text-accent-400 text-sm font-mono mb-2">{formatDate(props.generatedAt)}</p>
+                        <p className="text-accent-400 text-sm font-mono mb-2">{formatDate()}</p>
                         <h1 className="text-3xl lg:text-4xl font-bold mb-4">{scenario.problem.title}</h1>
                         <p className="text-lg text-gray-400 leading-relaxed mb-4">{scenario.problem.statement}</p>
 

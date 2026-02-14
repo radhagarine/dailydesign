@@ -43,13 +43,8 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
 
             setStatus('success');
 
-            // Redirect to onboarding for new subscribers
-            if (redirectToOnboarding && data.isNew && data.token) {
-                setTimeout(() => {
-                    router.push(`/welcome?email=${encodeURIComponent(email)}&token=${data.token}`);
-                }, 500);
-            } else if (redirectToOnboarding && !data.isNew) {
-                // Already subscribed - show success and redirect to samples
+            // Redirect to samples for all subscribers (new and existing)
+            if (redirectToOnboarding) {
                 setTimeout(() => {
                     router.push('/samples/scenario-1');
                 }, 1000);
