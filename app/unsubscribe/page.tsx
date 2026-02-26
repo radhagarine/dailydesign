@@ -64,13 +64,13 @@ function UnsubscribeContent() {
     }, [token]);
 
     return (
-        <main className="min-h-screen bg-dark-900 text-white flex items-center justify-center px-4">
+        <main className="min-h-screen bg-theme-bg text-theme-text flex items-center justify-center px-4">
             <div className="max-w-md w-full text-center">
                 {(state === 'checking' || state === 'unsubscribing') && (
                     <div className="animate-pulse">
-                        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-white/10" />
-                        <div className="h-8 bg-white/10 rounded mb-4" />
-                        <div className="h-4 bg-white/5 rounded w-3/4 mx-auto" />
+                        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-surface-inset" />
+                        <div className="h-8 bg-surface-inset rounded mb-4" />
+                        <div className="h-4 bg-surface-faint rounded w-3/4 mx-auto" />
                     </div>
                 )}
 
@@ -82,7 +82,7 @@ function UnsubscribeContent() {
                             </svg>
                         </div>
                         <h1 className="text-2xl font-bold mb-4">Confirm Unsubscribe</h1>
-                        <p className="text-gray-400 mb-8">
+                        <p className="text-theme-muted mb-8">
                             Are you sure you want to unsubscribe from DailyDesign? You will stop receiving daily interview simulations.
                         </p>
                         <div className="flex flex-col gap-3 items-center">
@@ -94,9 +94,9 @@ function UnsubscribeContent() {
                             </button>
                             <Link
                                 href="/"
-                                className="text-gray-500 hover:text-gray-300 text-sm transition"
+                                className="text-theme-muted hover:text-theme-body text-sm transition"
                             >
-                                Cancel — keep my subscription
+                                Cancel &mdash; keep my subscription
                             </Link>
                         </div>
                     </>
@@ -110,10 +110,10 @@ function UnsubscribeContent() {
                             </svg>
                         </div>
                         <h1 className="text-2xl font-bold mb-4">Successfully Unsubscribed</h1>
-                        <p className="text-gray-500 mb-8">
+                        <p className="text-theme-muted mb-8">
                             You will not receive any more daily interview simulations from us.
                         </p>
-                        <p className="text-gray-600 text-sm mb-8">
+                        <p className="text-theme-muted text-sm mb-8">
                             Changed your mind? You can always re-subscribe on our homepage.
                         </p>
                         <Link
@@ -134,7 +134,7 @@ function UnsubscribeContent() {
                             </svg>
                         </div>
                         <h1 className="text-2xl font-bold mb-4">Already Unsubscribed</h1>
-                        <p className="text-gray-500 mb-8">
+                        <p className="text-theme-muted mb-8">
                             This email was already removed from our mailing list.
                         </p>
                         <Link
@@ -155,7 +155,7 @@ function UnsubscribeContent() {
                             </svg>
                         </div>
                         <h1 className="text-2xl font-bold mb-4">Invalid Unsubscribe Link</h1>
-                        <p className="text-gray-500 mb-8">
+                        <p className="text-theme-muted mb-8">
                             This unsubscribe link is invalid or has expired. If you are having trouble unsubscribing, please contact support.
                         </p>
                         <Link
@@ -176,7 +176,7 @@ function UnsubscribeContent() {
                             </svg>
                         </div>
                         <h1 className="text-2xl font-bold mb-4">Something Went Wrong</h1>
-                        <p className="text-gray-500 mb-8">
+                        <p className="text-theme-muted mb-8">
                             We could not process your unsubscribe request. Please try again later or contact support.
                         </p>
                         <Link
@@ -195,11 +195,11 @@ function UnsubscribeContent() {
 
 function LoadingFallback() {
     return (
-        <main className="min-h-screen bg-dark-900 text-white flex items-center justify-center px-4">
+        <main className="min-h-screen bg-theme-bg text-theme-text flex items-center justify-center px-4">
             <div className="max-w-md w-full text-center animate-pulse">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-white/10" />
-                <div className="h-8 bg-white/10 rounded mb-4" />
-                <div className="h-4 bg-white/5 rounded w-3/4 mx-auto" />
+                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-surface-inset" />
+                <div className="h-8 bg-surface-inset rounded mb-4" />
+                <div className="h-4 bg-surface-faint rounded w-3/4 mx-auto" />
             </div>
         </main>
     );

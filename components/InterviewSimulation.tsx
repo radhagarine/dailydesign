@@ -80,7 +80,7 @@ export default function InterviewSimulation({
                         The Question
                     </h2>
                     <Card className="border-l-4 border-[var(--accent-primary)]">
-                        <p className="text-xl font-semibold text-white leading-relaxed">
+                        <p className="text-xl font-semibold text-theme-text leading-relaxed">
                             {question}
                         </p>
                     </Card>
@@ -98,13 +98,13 @@ export default function InterviewSimulation({
                         </div>
                         <Card className="space-y-6">
                             <div>
-                                <h3 className="text-lg font-semibold mb-3 text-white">Response:</h3>
+                                <h3 className="text-lg font-semibold mb-3 text-theme-text">Response:</h3>
                                 <p className="text-[var(--text-secondary)] leading-relaxed whitespace-pre-line">
                                     {answer.content}
                                 </p>
                             </div>
                             <div className="border-t border-[var(--glass-border)] pt-6">
-                                <h3 className="text-lg font-semibold mb-3 text-white">
+                                <h3 className="text-lg font-semibold mb-3 text-theme-text">
                                     {answer.type === 'bad' ? '⚠️ Why This Fails' :
                                         answer.type === 'good' ? '💡 Why This Works (But Isn\'t Enough)' :
                                             '🌟 Why This Excels'}

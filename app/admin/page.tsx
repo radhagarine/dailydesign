@@ -134,16 +134,16 @@ export default function AdminPage() {
 
     if (loading && tables.length === 0) {
         return (
-            <div className="min-h-screen bg-dark-900 text-white flex items-center justify-center">
-                <div className="text-gray-400">Loading database info...</div>
+            <div className="min-h-screen bg-theme-bg text-theme-text flex items-center justify-center">
+                <div className="text-theme-muted">Loading database info...</div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-dark-900 text-white">
+        <div className="min-h-screen bg-theme-bg text-theme-text">
             {/* Header */}
-            <div className="bg-dark-800/80 border-b border-white/5">
+            <div className="bg-theme-panel/80 border-b border-theme-border-s">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Link href="/" className="flex items-center gap-2 text-accent-400 hover:text-accent-300 transition">
@@ -152,10 +152,10 @@ export default function AdminPage() {
                             </svg>
                             Home
                         </Link>
-                        <span className="text-gray-600">|</span>
+                        <span className="text-theme-muted">|</span>
                         <h1 className="text-xl font-semibold">Database Admin</h1>
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-theme-muted">
                         {tables.length} tables
                     </div>
                 </div>
@@ -171,8 +171,8 @@ export default function AdminPage() {
                 <div className="grid grid-cols-12 gap-6">
                     {/* Sidebar - Table List */}
                     <div className="col-span-3">
-                        <div className="bg-dark-800 border border-white/5 rounded-xl p-4">
-                            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Tables</h2>
+                        <div className="bg-theme-panel border border-theme-border-s rounded-xl p-4">
+                            <h2 className="text-sm font-semibold text-theme-muted uppercase tracking-wide mb-4">Tables</h2>
                             <div className="space-y-1">
                                 {tables.map(table => (
                                     <button
@@ -183,12 +183,12 @@ export default function AdminPage() {
                                         }}
                                         className={`w-full text-left px-3 py-2 rounded-lg transition flex items-center justify-between ${
                                             selectedTable === table.name
-                                                ? 'bg-accent-900/50 text-white'
-                                                : 'hover:bg-white/5 text-gray-400'
+                                                ? 'bg-accent-900/50 text-theme-text'
+                                                : 'hover:bg-surface-inset text-theme-muted'
                                         }`}
                                     >
                                         <span className="font-mono text-sm">{table.name}</span>
-                                        <span className="text-xs bg-white/10 px-2 py-0.5 rounded">
+                                        <span className="text-xs bg-surface-inset px-2 py-0.5 rounded">
                                             {table.rowCount}
                                         </span>
                                     </button>
@@ -198,16 +198,16 @@ export default function AdminPage() {
 
                         {/* Selected Table Schema */}
                         {selectedTable && (
-                            <div className="mt-4 bg-dark-800 border border-white/5 rounded-xl p-4">
-                                <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Schema</h2>
+                            <div className="mt-4 bg-theme-panel border border-theme-border-s rounded-xl p-4">
+                                <h2 className="text-sm font-semibold text-theme-muted uppercase tracking-wide mb-4">Schema</h2>
                                 <div className="space-y-2 text-sm">
                                     {tables.find(t => t.name === selectedTable)?.columns.map(col => (
                                         <div key={col.name} className="flex items-center gap-2 font-mono">
                                             {col.isPrimaryKey && (
                                                 <span className="text-yellow-500 text-xs">PK</span>
                                             )}
-                                            <span className="text-white">{col.name}</span>
-                                            <span className="text-gray-600">{col.type}</span>
+                                            <span className="text-theme-text">{col.name}</span>
+                                            <span className="text-theme-muted">{col.type}</span>
                                             {col.notNull && <span className="text-red-400 text-xs">NN</span>}
                                         </div>
                                     ))}
@@ -219,26 +219,26 @@ export default function AdminPage() {
                     {/* Main Content */}
                     <div className="col-span-9">
                         {!selectedTable ? (
-                            <div className="bg-dark-800 border border-white/5 rounded-xl p-8 text-center">
-                                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
-                                    <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="bg-theme-panel border border-theme-border-s rounded-xl p-8 text-center">
+                                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-surface-inset flex items-center justify-center">
+                                    <svg className="w-8 h-8 text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
                                     </svg>
                                 </div>
                                 <h2 className="text-lg font-semibold mb-2">Select a Table</h2>
-                                <p className="text-gray-500">Choose a table from the sidebar to view its data</p>
+                                <p className="text-theme-muted">Choose a table from the sidebar to view its data</p>
                             </div>
                         ) : loading ? (
-                            <div className="bg-dark-800 border border-white/5 rounded-xl p-8 text-center">
-                                <div className="text-gray-400">Loading table data...</div>
+                            <div className="bg-theme-panel border border-theme-border-s rounded-xl p-8 text-center">
+                                <div className="text-theme-muted">Loading table data...</div>
                             </div>
                         ) : tableData ? (
-                            <div className="bg-dark-800 border border-white/5 rounded-xl overflow-hidden">
+                            <div className="bg-theme-panel border border-theme-border-s rounded-xl overflow-hidden">
                                 {/* Table Header */}
-                                <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+                                <div className="px-4 py-3 border-b border-theme-border-s flex items-center justify-between">
                                     <div>
                                         <h2 className="font-semibold font-mono">{tableData.table}</h2>
-                                        <p className="text-sm text-gray-500">
+                                        <p className="text-sm text-theme-muted">
                                             {tableData.pagination.total} rows total
                                         </p>
                                     </div>
@@ -247,17 +247,17 @@ export default function AdminPage() {
                                         <button
                                             onClick={() => setPage(p => Math.max(1, p - 1))}
                                             disabled={page === 1}
-                                            className="px-3 py-1 text-sm bg-white/5 rounded hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="px-3 py-1 text-sm bg-surface-inset rounded hover:bg-theme-inset disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             Prev
                                         </button>
-                                        <span className="text-sm text-gray-400">
+                                        <span className="text-sm text-theme-muted">
                                             Page {tableData.pagination.page} of {tableData.pagination.totalPages}
                                         </span>
                                         <button
                                             onClick={() => setPage(p => Math.min(tableData.pagination.totalPages, p + 1))}
                                             disabled={page >= tableData.pagination.totalPages}
-                                            className="px-3 py-1 text-sm bg-white/5 rounded hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="px-3 py-1 text-sm bg-surface-inset rounded hover:bg-theme-inset disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             Next
                                         </button>
@@ -268,10 +268,10 @@ export default function AdminPage() {
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
                                         <thead>
-                                            <tr className="bg-white/5">
-                                                <th className="px-4 py-2 text-left text-gray-400 font-medium w-8">#</th>
+                                            <tr className="bg-surface-inset">
+                                                <th className="px-4 py-2 text-left text-theme-muted font-medium w-8">#</th>
                                                 {tableData.columns.map(col => (
-                                                    <th key={col} className="px-4 py-2 text-left text-gray-400 font-medium font-mono">
+                                                    <th key={col} className="px-4 py-2 text-left text-theme-muted font-medium font-mono">
                                                         {col}
                                                     </th>
                                                 ))}
@@ -282,10 +282,10 @@ export default function AdminPage() {
                                                 <>
                                                     <tr
                                                         key={idx}
-                                                        className="border-t border-white/5 hover:bg-white/5 cursor-pointer"
+                                                        className="border-t border-theme-border-s hover:bg-surface-inset cursor-pointer"
                                                         onClick={() => toggleRowExpand(idx)}
                                                     >
-                                                        <td className="px-4 py-2 text-gray-600">{(page - 1) * 50 + idx + 1}</td>
+                                                        <td className="px-4 py-2 text-theme-muted">{(page - 1) * 50 + idx + 1}</td>
                                                         {tableData.columns.map(col => (
                                                             <td key={col} className="px-4 py-2 font-mono">
                                                                 <span className={isLongValue(row[col]) ? 'text-accent-400' : ''}>
@@ -295,7 +295,7 @@ export default function AdminPage() {
                                                         ))}
                                                     </tr>
                                                     {expandedRows.has(idx) && (
-                                                        <tr key={`${idx}-expanded`} className="bg-dark-900">
+                                                        <tr key={`${idx}-expanded`} className="bg-theme-bg">
                                                             <td colSpan={tableData.columns.length + 1} className="px-4 py-4">
                                                                 <pre className="text-xs overflow-x-auto whitespace-pre-wrap bg-black/30 p-4 rounded-lg">
                                                                     {JSON.stringify(row, null, 2)}
@@ -310,7 +310,7 @@ export default function AdminPage() {
                                 </div>
 
                                 {tableData.rows.length === 0 && (
-                                    <div className="px-4 py-8 text-center text-gray-500">
+                                    <div className="px-4 py-8 text-center text-theme-muted">
                                         No data in this table
                                     </div>
                                 )}
@@ -318,14 +318,14 @@ export default function AdminPage() {
                         ) : null}
 
                         {/* Raw SQL Query */}
-                        <div className="mt-6 bg-dark-800 border border-white/5 rounded-xl p-4">
-                            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">Raw SQL Query</h2>
+                        <div className="mt-6 bg-theme-panel border border-theme-border-s rounded-xl p-4">
+                            <h2 className="text-sm font-semibold text-theme-muted uppercase tracking-wide mb-4">Raw SQL Query</h2>
                             <div className="space-y-4">
                                 <textarea
                                     value={sqlQuery}
                                     onChange={e => setSqlQuery(e.target.value)}
                                     placeholder="SELECT * FROM subscribers LIMIT 10"
-                                    className="w-full h-24 bg-black/30 border border-white/10 rounded-lg p-3 font-mono text-sm focus:outline-none focus:border-accent-900/50 resize-none"
+                                    className="w-full h-24 bg-black/30 border border-theme-border rounded-lg p-3 font-mono text-sm focus:outline-none focus:border-accent-900/50 resize-none"
                                 />
                                 <div className="flex items-center gap-4">
                                     <button
@@ -335,7 +335,7 @@ export default function AdminPage() {
                                     >
                                         {sqlLoading ? 'Running...' : 'Execute'}
                                     </button>
-                                    <span className="text-xs text-gray-500">Only SELECT queries allowed</span>
+                                    <span className="text-xs text-theme-muted">Only SELECT queries allowed</span>
                                 </div>
 
                                 {sqlError && (
@@ -346,7 +346,7 @@ export default function AdminPage() {
 
                                 {sqlResult && (
                                     <div className="bg-black/30 rounded-lg overflow-hidden">
-                                        <div className="px-3 py-2 border-b border-white/5 text-sm text-gray-400">
+                                        <div className="px-3 py-2 border-b border-theme-border-s text-sm text-theme-muted">
                                             {sqlResult.rowCount} rows returned
                                         </div>
                                         <pre className="p-4 text-xs overflow-x-auto max-h-96">

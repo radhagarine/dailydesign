@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function CompletePage() {
     return (
-        <main className="min-h-screen bg-dark-900 text-white flex items-center justify-center px-4">
+        <main className="min-h-screen bg-theme-bg text-theme-text flex items-center justify-center px-4">
             <div className="max-w-md w-full text-center">
                 {/* Success Icon */}
                 <div className="w-20 h-20 mx-auto mb-8 rounded-full bg-green-900/30 flex items-center justify-center border border-green-900/50">
@@ -18,28 +18,28 @@ export default function CompletePage() {
                 </div>
 
                 <h1 className="text-3xl font-bold mb-4">You are all set!</h1>
-                <p className="text-gray-400 mb-8">
+                <p className="text-theme-muted mb-8">
                     Your preferences have been saved. You will receive your first daily interview scenario in your inbox soon.
                 </p>
 
                 {/* What to expect */}
-                <div className="bg-dark-800 border border-white/10 rounded-xl p-6 mb-8 text-left">
+                <div className="bg-theme-panel border border-theme-border rounded-xl p-6 mb-8 text-left">
                     <h2 className="font-semibold mb-4">What to expect:</h2>
-                    <ul className="space-y-3 text-sm text-gray-400">
+                    <ul className="space-y-3 text-sm text-theme-muted">
                         <li className="flex gap-3">
-                            <span className="text-accent-500">→</span>
+                            <span className="text-accent-500">&rarr;</span>
                             <span>Daily emails with a new interview scenario</span>
                         </li>
                         <li className="flex gap-3">
-                            <span className="text-accent-500">→</span>
+                            <span className="text-accent-500">&rarr;</span>
                             <span>Bad/Good/Best answer analysis to calibrate your thinking</span>
                         </li>
                         <li className="flex gap-3">
-                            <span className="text-accent-500">→</span>
+                            <span className="text-accent-500">&rarr;</span>
                             <span>Interviewer rubrics showing what signals to hit</span>
                         </li>
                         <li className="flex gap-3">
-                            <span className="text-accent-500">→</span>
+                            <span className="text-accent-500">&rarr;</span>
                             <span>Key takeaways you can apply in real interviews</span>
                         </li>
                     </ul>
@@ -55,16 +55,16 @@ export default function CompletePage() {
                     </Link>
                     <Link
                         href="/archive"
-                        className="block w-full py-3 rounded-lg border border-white/10 hover:bg-white/5 transition font-medium"
+                        className="block w-full py-3 rounded-lg border border-theme-border hover:bg-surface-inset transition font-medium"
                     >
                         Browse All Scenarios
                     </Link>
                 </div>
 
                 {/* Tips */}
-                <div className="mt-12 pt-8 border-t border-white/5">
-                    <p className="text-gray-500 text-sm">
-                        <strong className="text-gray-400">Pro tip:</strong> Block 30 minutes each day for focused practice.
+                <div className="mt-12 pt-8 border-t border-theme-border-s">
+                    <p className="text-theme-muted text-sm">
+                        <strong className="text-theme-body">Pro tip:</strong> Block 30 minutes each day for focused practice.
                         Consistency beats intensity for interview preparation.
                     </p>
                 </div>

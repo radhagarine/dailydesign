@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+    darkMode: 'class',
     content: [
         "./pages/**/*.{js,ts,jsx,tsx,mdx}",
         "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -9,25 +10,39 @@ const config: Config = {
     theme: {
         extend: {
             colors: {
+                /* ── Semantic theme tokens (CSS-variable driven) ── */
+                'theme-bg': 'var(--bg-primary)',
+                'theme-panel': 'var(--bg-secondary)',
+                'theme-inset': 'var(--bg-tertiary)',
+                'theme-text': 'var(--text-primary)',
+                'theme-body': 'var(--text-secondary)',
+                'theme-muted': 'var(--text-tertiary)',
+                'theme-border': 'var(--border-default)',
+                'theme-border-s': 'var(--border-subtle)',
+                'theme-border-strong': 'var(--border-strong)',
+                'surface-inset': 'var(--surface-inset)',
+                'surface-faint': 'var(--surface-faint)',
+
+                /* ── Existing palette tokens (kept for signal colors) ── */
                 accent: {
-                    300: '#67e8f9', // Light cyan — subtle highlights
-                    400: '#22d3ee', // Cyan — links, interactive text
-                    500: '#06b6d4', // Primary — buttons, key highlights
-                    600: '#0891b2', // Hover state
-                    700: '#0e7490', // Deeper interactive
-                    800: '#155e75', // Subtle backgrounds
-                    900: '#083344', // Dark tints
+                    300: '#67e8f9',
+                    400: '#22d3ee',
+                    500: '#06b6d4',
+                    600: '#0891b2',
+                    700: '#0e7490',
+                    800: '#155e75',
+                    900: '#083344',
                 },
                 violet: {
-                    400: '#a78bfa', // Secondary text accents
-                    500: '#8b5cf6', // Gradient endpoints
-                    600: '#7c3aed', // Button alternatives
-                    900: '#1e1040', // Subtle bg tints
+                    400: '#a78bfa',
+                    500: '#8b5cf6',
+                    600: '#7c3aed',
+                    900: '#1e1040',
                 },
                 dark: {
-                    900: '#030712', // Bg Primary — blue-tinted black
-                    800: '#0a0f1a', // Bg Secondary
-                    700: '#111827', // Bg Tertiary
+                    900: '#030712',
+                    800: '#0a0f1a',
+                    700: '#111827',
                 },
             },
             fontFamily: {

@@ -38,7 +38,7 @@ export default function ArchiveAccessGate() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-900 text-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-theme-bg text-theme-text flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
         <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-accent-900/20 border border-accent-900/50 flex items-center justify-center">
           <svg className="w-8 h-8 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,7 +47,7 @@ export default function ArchiveAccessGate() {
         </div>
 
         <h1 className="text-2xl font-bold mb-3">Subscriber-Only Archive</h1>
-        <p className="text-gray-400 mb-8">
+        <p className="text-theme-muted mb-8">
           Enter your email to get an access link. If you arrived from an email, your access should be set automatically.
         </p>
 
@@ -63,7 +63,7 @@ export default function ArchiveAccessGate() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
-              className="w-full px-4 py-3 rounded-lg bg-dark-800 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-accent-500 transition"
+              className="w-full px-4 py-3 rounded-lg bg-theme-panel border border-theme-border text-theme-text placeholder:text-theme-muted focus:outline-none focus:border-accent-500 transition"
             />
             <button
               type="submit"
@@ -79,7 +79,7 @@ export default function ArchiveAccessGate() {
         )}
 
         <div className="mt-8">
-          <Link href="/" className="text-gray-500 hover:text-gray-300 text-sm transition">
+          <Link href="/" className="text-theme-muted hover:text-theme-body text-sm transition">
             Not a subscriber? Sign up here
           </Link>
         </div>

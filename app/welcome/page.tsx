@@ -2,7 +2,6 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
 
 type YearsExperience = '8-12' | '12-16' | '16-20' | '20+';
 type PrimaryRole = 'backend' | 'fullstack' | 'infrastructure';
@@ -93,7 +92,7 @@ function WelcomeContent() {
     };
 
     return (
-        <main className="min-h-screen bg-dark-900 text-white flex items-center justify-center px-4 py-12">
+        <main className="min-h-screen bg-theme-bg text-theme-text flex items-center justify-center px-4 py-12">
             <div className="max-w-lg w-full">
                 {/* Header */}
                 <div className="text-center mb-10">
@@ -102,8 +101,8 @@ function WelcomeContent() {
                         <span className="text-xs font-mono text-accent-400">QUICK SETUP</span>
                     </div>
                     <h1 className="text-3xl font-bold mb-3">Welcome aboard!</h1>
-                    <p className="text-gray-400">
-                        {email && <span className="text-white font-mono text-sm">{email}</span>}
+                    <p className="text-theme-muted">
+                        {email && <span className="text-theme-text font-mono text-sm">{email}</span>}
                         {email && <br />}
                         Help us personalize your experience with 3 quick questions.
                     </p>
@@ -111,15 +110,15 @@ function WelcomeContent() {
 
                 {/* Access Code Redemption */}
                 {email && codeStatus !== 'success' && (
-                    <div className="mb-8 p-4 rounded-lg border border-white/10 bg-dark-800">
-                        <p className="text-sm font-medium text-gray-300 mb-3">Have an access code?</p>
+                    <div className="mb-8 p-4 rounded-lg border border-theme-border bg-theme-panel">
+                        <p className="text-sm font-medium text-theme-body mb-3">Have an access code?</p>
                         <div className="flex gap-2">
                             <input
                                 type="text"
                                 value={accessCode}
                                 onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
                                 placeholder="DAILY-XXXXXX"
-                                className="flex-1 px-3 py-2 rounded-md bg-dark-900 border border-white/10 text-white font-mono text-sm placeholder:text-gray-600 focus:outline-none focus:border-accent-500"
+                                className="flex-1 px-3 py-2 rounded-md bg-theme-bg border border-theme-border text-theme-text font-mono text-sm placeholder:text-theme-muted focus:outline-none focus:border-accent-500"
                             />
                             <button
                                 onClick={handleRedeem}
@@ -147,7 +146,7 @@ function WelcomeContent() {
                         <div
                             key={s}
                             className={`h-1 flex-1 rounded-full transition-colors ${
-                                s <= step ? 'bg-accent-500' : 'bg-white/10'
+                                s <= step ? 'bg-accent-500' : 'bg-surface-inset'
                             }`}
                         />
                     ))}
@@ -157,7 +156,7 @@ function WelcomeContent() {
                 {step === 1 && (
                     <div className="space-y-6">
                         <h2 className="text-xl font-semibold">How many years of experience do you have?</h2>
-                        <p className="text-gray-500 text-sm">This helps us calibrate the content depth.</p>
+                        <p className="text-theme-muted text-sm">This helps us calibrate the content depth.</p>
                         <div className="grid gap-3">
                             {[
                                 { value: '8-12', label: '8-12 years', desc: 'Senior Engineer level' },
@@ -174,11 +173,11 @@ function WelcomeContent() {
                                     className={`p-4 rounded-lg border text-left transition-all ${
                                         preferences.yearsExperience === option.value
                                             ? 'border-accent-500 bg-accent-900/20'
-                                            : 'border-white/10 hover:border-white/30 bg-dark-800'
+                                            : 'border-theme-border hover:border-theme-border-strong bg-theme-panel'
                                     }`}
                                 >
                                     <div className="font-medium">{option.label}</div>
-                                    <div className="text-gray-500 text-sm">{option.desc}</div>
+                                    <div className="text-theme-muted text-sm">{option.desc}</div>
                                 </button>
                             ))}
                         </div>
@@ -189,7 +188,7 @@ function WelcomeContent() {
                 {step === 2 && (
                     <div className="space-y-6">
                         <h2 className="text-xl font-semibold">What is your primary focus area?</h2>
-                        <p className="text-gray-500 text-sm">This helps us prioritize relevant scenarios.</p>
+                        <p className="text-theme-muted text-sm">This helps us prioritize relevant scenarios.</p>
                         <div className="grid gap-3">
                             {[
                                 { value: 'backend', label: 'Backend Engineering', desc: 'APIs, services, databases, distributed systems' },
@@ -205,19 +204,19 @@ function WelcomeContent() {
                                     className={`p-4 rounded-lg border text-left transition-all ${
                                         preferences.primaryRole === option.value
                                             ? 'border-accent-500 bg-accent-900/20'
-                                            : 'border-white/10 hover:border-white/30 bg-dark-800'
+                                            : 'border-theme-border hover:border-theme-border-strong bg-theme-panel'
                                     }`}
                                 >
                                     <div className="font-medium">{option.label}</div>
-                                    <div className="text-gray-500 text-sm">{option.desc}</div>
+                                    <div className="text-theme-muted text-sm">{option.desc}</div>
                                 </button>
                             ))}
                         </div>
                         <button
                             onClick={() => setStep(1)}
-                            className="text-gray-500 hover:text-white text-sm transition"
+                            className="text-theme-muted hover:text-theme-text text-sm transition"
                         >
-                            ← Back
+                            &larr; Back
                         </button>
                     </div>
                 )}
@@ -226,7 +225,7 @@ function WelcomeContent() {
                 {step === 3 && (
                     <div className="space-y-6">
                         <h2 className="text-xl font-semibold">What is your interview prep status?</h2>
-                        <p className="text-gray-500 text-sm">This helps us understand your urgency level.</p>
+                        <p className="text-theme-muted text-sm">This helps us understand your urgency level.</p>
                         <div className="grid gap-3">
                             {[
                                 { value: 'starting', label: 'Just Starting', desc: 'Beginning to think about interview prep' },
@@ -241,11 +240,11 @@ function WelcomeContent() {
                                     className={`p-4 rounded-lg border text-left transition-all ${
                                         preferences.prepStage === option.value
                                             ? 'border-accent-500 bg-accent-900/20'
-                                            : 'border-white/10 hover:border-white/30 bg-dark-800'
+                                            : 'border-theme-border hover:border-theme-border-strong bg-theme-panel'
                                     }`}
                                 >
                                     <div className="font-medium">{option.label}</div>
-                                    <div className="text-gray-500 text-sm">{option.desc}</div>
+                                    <div className="text-theme-muted text-sm">{option.desc}</div>
                                 </button>
                             ))}
                         </div>
@@ -259,9 +258,9 @@ function WelcomeContent() {
                         <div className="flex gap-4">
                             <button
                                 onClick={() => setStep(2)}
-                                className="text-gray-500 hover:text-white text-sm transition"
+                                className="text-theme-muted hover:text-theme-text text-sm transition"
                             >
-                                ← Back
+                                &larr; Back
                             </button>
                             <button
                                 onClick={handleSubmit}
@@ -278,9 +277,9 @@ function WelcomeContent() {
                 <div className="text-center mt-8">
                     <button
                         onClick={skipOnboarding}
-                        className="text-gray-600 hover:text-gray-400 text-sm transition"
+                        className="text-theme-muted hover:text-theme-body text-sm transition"
                     >
-                        Skip for now →
+                        Skip for now &rarr;
                     </button>
                 </div>
             </div>
@@ -290,10 +289,10 @@ function WelcomeContent() {
 
 function LoadingFallback() {
     return (
-        <main className="min-h-screen bg-dark-900 text-white flex items-center justify-center">
+        <main className="min-h-screen bg-theme-bg text-theme-text flex items-center justify-center">
             <div className="animate-pulse text-center">
-                <div className="h-8 w-48 bg-white/10 rounded mb-4 mx-auto" />
-                <div className="h-4 w-64 bg-white/5 rounded mx-auto" />
+                <div className="h-8 w-48 bg-surface-inset rounded mb-4 mx-auto" />
+                <div className="h-4 w-64 bg-surface-faint rounded mx-auto" />
             </div>
         </main>
     );

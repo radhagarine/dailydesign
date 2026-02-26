@@ -68,7 +68,7 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="flex-1 px-3 py-2 bg-dark-800 border border-white/10 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-accent-500 transition-colors"
+                    className="flex-1 px-3 py-2 bg-theme-panel border border-theme-border rounded-lg text-theme-text placeholder-theme-muted text-sm focus:outline-none focus:border-accent-500 transition-colors"
                     disabled={status === 'loading' || status === 'success'}
                 />
                 <button
@@ -93,7 +93,7 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="work@company.com"
-                    className="flex-1 px-4 py-3 bg-dark-800 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-accent-500 transition-colors"
+                    className="flex-1 px-4 py-3 bg-theme-panel border border-theme-border rounded-lg text-theme-text placeholder-theme-muted focus:outline-none focus:border-accent-500 transition-colors"
                     disabled={status === 'loading' || status === 'success'}
                 />
                 <button
@@ -112,7 +112,7 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
                     {errorMessage}
                 </p>
             )}
-            <p className="mt-3 text-xs text-gray-500 text-center sm:text-left">
+            <p className="mt-3 text-xs text-theme-muted text-center sm:text-left">
                 Daily scenarios free for 7 days.
             </p>
         </div>

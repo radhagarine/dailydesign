@@ -28,7 +28,7 @@ const getThemeColor = (theme: string) => {
         'reliability': 'bg-red-900/30 text-red-400 border-red-900/50',
         'architecture': 'bg-blue-900/30 text-blue-400 border-blue-900/50'
     };
-    return colors[theme] || 'bg-gray-900/30 text-gray-400 border-gray-900/50';
+    return colors[theme] || 'bg-gray-900/30 text-theme-muted border-gray-900/50';
 };
 
 const formatDate = (date: Date | number | null) => {
@@ -54,7 +54,7 @@ export default async function ArchivePage() {
 
     if (!paid) {
         return (
-            <div className="min-h-screen bg-dark-900 text-white flex items-center justify-center px-4">
+            <div className="min-h-screen bg-theme-bg text-theme-text flex items-center justify-center px-4">
                 <div className="max-w-md w-full text-center">
                     <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-yellow-900/20 border border-yellow-900/50 flex items-center justify-center">
                         <svg className="w-8 h-8 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +62,7 @@ export default async function ArchivePage() {
                         </svg>
                     </div>
                     <h1 className="text-2xl font-bold mb-3">Upgrade to Access the Archive</h1>
-                    <p className="text-gray-400 mb-6">
+                    <p className="text-theme-muted mb-6">
                         The full scenario archive is available to paid subscribers. Upgrade to unlock all past interview simulations.
                     </p>
                     <Link
@@ -72,7 +72,7 @@ export default async function ArchivePage() {
                         View Plans
                     </Link>
                     <div className="mt-4">
-                        <Link href="/" className="text-gray-500 hover:text-gray-300 text-sm transition">
+                        <Link href="/" className="text-theme-muted hover:text-theme-body text-sm transition">
                             Back to home
                         </Link>
                     </div>
@@ -96,9 +96,9 @@ export default async function ArchivePage() {
         .all();
 
     return (
-        <div className="min-h-screen bg-dark-900 text-white">
+        <div className="min-h-screen bg-theme-bg text-theme-text">
             {/* Header */}
-            <div className="bg-dark-800/80 border-b border-white/5">
+            <div className="bg-theme-panel/80 border-b border-theme-border-s">
                 <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2 text-accent-400 hover:text-accent-300 transition">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -113,7 +113,7 @@ export default async function ArchivePage() {
                 {/* Title */}
                 <div className="mb-12 text-center">
                     <h1 className="text-4xl font-bold mb-4">Scenario Archive</h1>
-                    <p className="text-gray-400 text-lg">
+                    <p className="text-theme-muted text-lg">
                         {allScenarios.length} interview simulations available
                     </p>
                 </div>
@@ -121,13 +121,13 @@ export default async function ArchivePage() {
                 {/* Scenarios Grid */}
                 {allScenarios.length === 0 ? (
                     <div className="text-center py-16">
-                        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-white/5 flex items-center justify-center">
-                            <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-surface-inset flex items-center justify-center">
+                            <svg className="w-8 h-8 text-theme-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                             </svg>
                         </div>
                         <h2 className="text-xl font-semibold mb-2">No scenarios yet</h2>
-                        <p className="text-gray-500 mb-6">
+                        <p className="text-theme-muted mb-6">
                             Subscribe to receive daily interview simulations
                         </p>
                         <Link
@@ -144,13 +144,13 @@ export default async function ArchivePage() {
                                 <Link
                                     key={scenario.id}
                                     href={`/scenarios/${scenario.slug}`}
-                                    className="group bg-dark-800 border border-white/5 rounded-xl p-6 hover:border-accent-900/50 transition"
+                                    className="group bg-theme-panel border border-theme-border-s rounded-xl p-6 hover:border-accent-900/50 transition"
                                 >
                                     <div className="flex items-center gap-2 mb-3">
                                         <span className={`px-2 py-0.5 text-xs font-medium rounded border ${getThemeColor(scenario.theme)}`}>
                                             {getThemeLabel(scenario.theme)}
                                         </span>
-                                        <span className="text-xs text-gray-500">
+                                        <span className="text-xs text-theme-muted">
                                             {scenario.problemType === 'SYSTEM_DESIGN' ? 'Design' : 'Tactical'}
                                         </span>
                                     </div>
@@ -158,11 +158,11 @@ export default async function ArchivePage() {
                                         {scenario.title}
                                     </h2>
                                     {scenario.summary && (
-                                        <p className="text-gray-500 text-sm line-clamp-2 mb-4">
+                                        <p className="text-theme-muted text-sm line-clamp-2 mb-4">
                                             {scenario.summary}
                                         </p>
                                     )}
-                                    <div className="flex items-center justify-between text-xs text-gray-600">
+                                    <div className="flex items-center justify-between text-xs text-theme-muted">
                                         <span>{formatDate(scenario.generatedAt)}</span>
                                         <span className="group-hover:text-accent-400 transition flex items-center gap-1">
                                             Read
@@ -178,15 +178,15 @@ export default async function ArchivePage() {
                 )}
 
                 {/* Sample Scenarios Section */}
-                <div className="mt-16 pt-12 border-t border-white/5">
+                <div className="mt-16 pt-12 border-t border-theme-border-s">
                     <h2 className="text-2xl font-bold mb-6 text-center">Sample Scenarios</h2>
-                    <p className="text-gray-400 text-center mb-8">
+                    <p className="text-theme-muted text-center mb-8">
                         Try these curated examples to see the full interview simulation format
                     </p>
                     <div className="grid gap-6 md:grid-cols-3">
                         <Link
                             href="/samples/scenario-1"
-                            className="group bg-dark-800 border border-white/10 rounded-xl p-6 hover:border-accent-900/50 transition"
+                            className="group bg-theme-panel border border-theme-border rounded-xl p-6 hover:border-accent-900/50 transition"
                         >
                             <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-purple-900/30 text-purple-400 border border-purple-900/50 mb-3">
                                 System Design
@@ -194,13 +194,13 @@ export default async function ArchivePage() {
                             <h3 className="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">
                                 Distributed Rate Limiter
                             </h3>
-                            <p className="text-gray-500 text-sm">
+                            <p className="text-theme-muted text-sm">
                                 Design a rate limiting system for 5M RPS
                             </p>
                         </Link>
                         <Link
                             href="/samples/scenario-2"
-                            className="group bg-dark-800 border border-white/10 rounded-xl p-6 hover:border-accent-900/50 transition"
+                            className="group bg-theme-panel border border-theme-border rounded-xl p-6 hover:border-accent-900/50 transition"
                         >
                             <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-blue-900/30 text-blue-400 border border-blue-900/50 mb-3">
                                 Architecture
@@ -208,13 +208,13 @@ export default async function ArchivePage() {
                             <h3 className="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">
                                 Microservices vs Monolith
                             </h3>
-                            <p className="text-gray-500 text-sm">
+                            <p className="text-theme-muted text-sm">
                                 Make the build vs migrate decision
                             </p>
                         </Link>
                         <Link
                             href="/samples/scenario-3"
-                            className="group bg-dark-800 border border-white/10 rounded-xl p-6 hover:border-accent-900/50 transition"
+                            className="group bg-theme-panel border border-theme-border rounded-xl p-6 hover:border-accent-900/50 transition"
                         >
                             <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-red-900/30 text-red-400 border border-red-900/50 mb-3">
                                 Tactical
@@ -222,7 +222,7 @@ export default async function ArchivePage() {
                             <h3 className="text-lg font-semibold mb-2 group-hover:text-accent-400 transition">
                                 API Performance Crisis
                             </h3>
-                            <p className="text-gray-500 text-sm">
+                            <p className="text-theme-muted text-sm">
                                 Debug latency spikes in production
                             </p>
                         </Link>

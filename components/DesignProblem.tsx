@@ -63,9 +63,9 @@ export default function DesignProblem(props: DesignProblemProps) {
     const [showAnswers, setShowAnswers] = useState(false);
 
     return (
-        <div className="min-h-screen bg-dark-900 text-white pb-20">
+        <div className="min-h-screen bg-theme-bg text-theme-text pb-20">
             {/* Header */}
-            <div className="bg-dark-800/80 border-b border-white/5 sticky top-0 z-10 backdrop-blur-xl">
+            <div className="bg-theme-panel/80 border-b border-theme-border-s sticky top-0 z-10 backdrop-blur-xl">
                 <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-2 text-accent-400 hover:text-accent-300 transition">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -75,9 +75,9 @@ export default function DesignProblem(props: DesignProblemProps) {
                     </Link>
                     <div className="flex gap-4 items-center text-sm">
                         <span className="text-accent-400">{props.category}</span>
-                        <span className="w-1 h-1 rounded-full bg-gray-600"></span>
-                        <span className="text-gray-400">{props.estimatedTime}</span>
-                        <span className="w-1 h-1 rounded-full bg-gray-600"></span>
+                        <span className="w-1 h-1 rounded-full bg-theme-muted"></span>
+                        <span className="text-theme-muted">{props.estimatedTime}</span>
+                        <span className="w-1 h-1 rounded-full bg-theme-muted"></span>
                         <Badge type="neutral">{props.difficulty}</Badge>
                     </div>
                 </div>
@@ -87,7 +87,7 @@ export default function DesignProblem(props: DesignProblemProps) {
                 {/* Title Section */}
                 <div className="mb-8 text-center">
                     <h1 className="text-4xl font-bold mb-4">{props.title}</h1>
-                    <p className="text-xl text-gray-400 leading-relaxed max-w-3xl mx-auto">
+                    <p className="text-xl text-theme-muted leading-relaxed max-w-3xl mx-auto">
                         {props.summary}
                     </p>
                 </div>
@@ -95,7 +95,7 @@ export default function DesignProblem(props: DesignProblemProps) {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2 space-y-8">
                         {/* Problem Context */}
-                        <div className="bg-dark-800 border border-white/10 rounded-xl p-8">
+                        <div className="bg-theme-panel border border-theme-border rounded-xl p-8">
                             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                                 <span className="text-accent-500">00</span> The Challenge
                             </h2>
@@ -103,7 +103,7 @@ export default function DesignProblem(props: DesignProblemProps) {
 
                             <div className="bg-accent-900/20 border border-accent-900/40 rounded-lg p-6">
                                 <h3 className="text-lg font-bold text-accent-400 mb-2">Your Task</h3>
-                                <p className="text-lg text-white">{props.question}</p>
+                                <p className="text-lg text-theme-text">{props.question}</p>
                             </div>
                         </div>
 
@@ -114,7 +114,7 @@ export default function DesignProblem(props: DesignProblemProps) {
                         <ExpandableSection title="Guiding Questions" defaultExpanded={true}>
                             <ul className="space-y-3">
                                 {props.guidingQuestions.map((q, i) => (
-                                    <li key={i} className="flex gap-3 text-gray-300">
+                                    <li key={i} className="flex gap-3 text-theme-body">
                                         <span className="text-accent-500 font-bold">?</span>
                                         <span>{q}</span>
                                     </li>
@@ -123,7 +123,7 @@ export default function DesignProblem(props: DesignProblemProps) {
                         </ExpandableSection>
 
                         {/* Common Pitfalls */}
-                        <div className="bg-dark-800 border border-red-900/30 rounded-xl p-6">
+                        <div className="bg-theme-panel border border-red-900/30 rounded-xl p-6">
                             <h3 className="text-red-400 font-bold mb-4 flex items-center gap-2">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -132,7 +132,7 @@ export default function DesignProblem(props: DesignProblemProps) {
                             </h3>
                             <ul className="space-y-2">
                                 {props.pitfalls.map((pitfall, i) => (
-                                    <li key={i} className="flex gap-2 text-gray-300">
+                                    <li key={i} className="flex gap-2 text-theme-body">
                                         <span className="text-red-500">•</span>
                                         {pitfall}
                                     </li>
@@ -143,7 +143,7 @@ export default function DesignProblem(props: DesignProblemProps) {
                         {/* Timer & Active Practice */}
                         <div className="space-y-6">
                             <h2 className="text-2xl font-bold">Your Turn</h2>
-                            <p className="text-gray-400">
+                            <p className="text-theme-muted">
                                 Before revealing the answers, take 30 minutes to sketch your own solution.
                                 Principal engineers don&apos;t just read—they solve.
                             </p>
@@ -152,9 +152,9 @@ export default function DesignProblem(props: DesignProblemProps) {
                             {!showAnswers ? (
                                 <button
                                     onClick={() => setShowAnswers(true)}
-                                    className="w-full py-4 mt-4 bg-dark-800 border border-white/10 rounded-xl hover:border-accent-900/50 transition-all font-semibold flex flex-col items-center gap-2 group"
+                                    className="w-full py-4 mt-4 bg-theme-panel border border-theme-border rounded-xl hover:border-accent-900/50 transition-all font-semibold flex flex-col items-center gap-2 group"
                                 >
-                                    <span className="text-gray-300">Ready to compare your solution?</span>
+                                    <span className="text-theme-body">Ready to compare your solution?</span>
                                     <span className="text-accent-400 group-hover:text-accent-300">Reveal Answers & Analysis</span>
                                 </button>
                             ) : (
@@ -164,7 +164,7 @@ export default function DesignProblem(props: DesignProblemProps) {
                                     {/* Answers */}
                                     <div className="space-y-8">
                                         {props.answers.map((answer, index) => (
-                                            <div key={index} className={`bg-dark-800 border rounded-xl overflow-hidden ${getBadgeColor(answer.type)}`}>
+                                            <div key={index} className={`bg-theme-panel border rounded-xl overflow-hidden ${getBadgeColor(answer.type)}`}>
                                                 {/* Answer Header */}
                                                 <div className={`px-6 py-4 border-b ${getHeaderColor(answer.type)}`}>
                                                     <h4 className="font-bold flex items-center gap-2">
@@ -173,7 +173,7 @@ export default function DesignProblem(props: DesignProblemProps) {
                                                             {answer.type === 'good' && '✓'}
                                                             {answer.type === 'best' && '⭐'}
                                                         </span>
-                                                        <span className="text-white">{answer.title}</span>
+                                                        <span className="text-theme-text">{answer.title}</span>
                                                     </h4>
                                                 </div>
 
@@ -220,17 +220,17 @@ export default function DesignProblem(props: DesignProblemProps) {
                                     />
 
                                     {/* Key Takeaways */}
-                                    <div className="bg-dark-800 border border-white/10 rounded-xl p-8">
+                                    <div className="bg-theme-panel border border-theme-border rounded-xl p-8">
                                         <h3 className="text-2xl font-bold mb-6 flex items-center gap-3">
                                             <span className="text-accent-500">📚</span> Key Takeaways
                                         </h3>
                                         <ul className="space-y-4">
                                             {props.keyTakeaways.map((takeaway, i) => (
-                                                <li key={i} className="flex gap-4 items-start p-3 rounded-lg hover:bg-white/5 transition-colors">
+                                                <li key={i} className="flex gap-4 items-start p-3 rounded-lg hover:bg-surface-inset transition-colors">
                                                     <span className="flex-shrink-0 w-6 h-6 rounded-full bg-accent-900/30 text-accent-400 flex items-center justify-center font-bold text-sm border border-accent-900/50">
                                                         {i + 1}
                                                     </span>
-                                                    <span className="text-gray-300 leading-relaxed">{takeaway}</span>
+                                                    <span className="text-theme-body leading-relaxed">{takeaway}</span>
                                                 </li>
                                             ))}
                                         </ul>
@@ -243,9 +243,9 @@ export default function DesignProblem(props: DesignProblemProps) {
                     {/* Sticky Sidebar */}
                     <div className="hidden lg:block">
                         <div className="sticky top-24 space-y-6">
-                            <div className="bg-dark-800 border border-white/10 rounded-xl p-6">
+                            <div className="bg-theme-panel border border-theme-border rounded-xl p-6">
                                 <h3 className="font-bold mb-4 text-accent-400">Progress</h3>
-                                <div className="space-y-2 text-sm text-gray-400">
+                                <div className="space-y-2 text-sm text-theme-muted">
                                     <div className="flex justify-between">
                                         <span>Problem Analysis</span>
                                         <span className="text-green-500">✓</span>
@@ -256,22 +256,22 @@ export default function DesignProblem(props: DesignProblemProps) {
                                     </div>
                                     <div className="flex justify-between">
                                         <span>Solution Comparison</span>
-                                        <span>{showAnswers ? <span className="text-green-500">✓</span> : <span className="text-gray-600">○</span>}</span>
+                                        <span>{showAnswers ? <span className="text-green-500">✓</span> : <span className="text-theme-muted">○</span>}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span>Self-Evaluation</span>
-                                        <span className="text-gray-600">○</span>
+                                        <span className="text-theme-muted">○</span>
                                     </div>
                                 </div>
                             </div>
 
                             {props.relatedChallenges && (
-                                <div className="bg-dark-800 border border-white/10 rounded-xl p-6">
-                                    <h3 className="font-bold mb-4 text-white">Related Challenges</h3>
+                                <div className="bg-theme-panel border border-theme-border rounded-xl p-6">
+                                    <h3 className="font-bold mb-4 text-theme-text">Related Challenges</h3>
                                     <ul className="space-y-3">
                                         {props.relatedChallenges.map((challenge, i) => (
                                             <li key={i}>
-                                                <Link href={challenge.href} className="text-sm text-gray-400 hover:text-accent-400 transition-colors flex items-center gap-2">
+                                                <Link href={challenge.href} className="text-sm text-theme-muted hover:text-accent-400 transition-colors flex items-center gap-2">
                                                     <span className="text-accent-500">→</span>
                                                     {challenge.title}
                                                 </Link>

@@ -26,13 +26,13 @@ export default function ScenarioTeaser({
   problemType,
 }: ScenarioTeaserProps) {
   return (
-    <div className="min-h-screen bg-dark-900 text-white">
+    <div className="min-h-screen bg-theme-bg text-theme-text">
       <div className="max-w-4xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="mb-8">
           <Link
             href="/"
-            className="text-sm text-gray-500 hover:text-white transition"
+            className="text-sm text-theme-muted hover:text-theme-text transition"
           >
             &larr; Back to DailyDesign
           </Link>
@@ -43,10 +43,10 @@ export default function ScenarioTeaser({
           <span className="inline-flex items-center px-3 py-1 rounded-full bg-accent-900/30 text-accent-400 border border-accent-800/50 text-xs font-semibold uppercase tracking-wider">
             {problemType.replace('_', ' ')}
           </span>
-          <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/5 text-gray-400 border border-white/10 text-xs">
+          <span className="inline-flex items-center px-3 py-1 rounded-full bg-surface-inset text-theme-muted border border-theme-border text-xs">
             {metadata.difficulty}
           </span>
-          <span className="inline-flex items-center px-3 py-1 rounded-full bg-white/5 text-gray-400 border border-white/10 text-xs">
+          <span className="inline-flex items-center px-3 py-1 rounded-full bg-surface-inset text-theme-muted border border-theme-border text-xs">
             {metadata.estimated_time_minutes} min
           </span>
         </div>
@@ -64,10 +64,10 @@ export default function ScenarioTeaser({
         </div>
 
         {/* Problem statement */}
-        <div className="bg-dark-800 rounded-lg border border-white/10 p-6 mb-6">
-          <h2 className="text-lg font-semibold text-white mb-3">The Scenario</h2>
-          <p className="text-gray-300 leading-relaxed mb-4">{problem.statement}</p>
-          <p className="text-gray-400 leading-relaxed">{problem.context}</p>
+        <div className="bg-theme-panel rounded-lg border border-theme-border p-6 mb-6">
+          <h2 className="text-lg font-semibold text-theme-text mb-3">The Scenario</h2>
+          <p className="text-theme-body leading-relaxed mb-4">{problem.statement}</p>
+          <p className="text-theme-muted leading-relaxed">{problem.context}</p>
         </div>
 
         {/* Pause prompt (the question) */}
@@ -79,11 +79,11 @@ export default function ScenarioTeaser({
         <div className="relative">
           {/* Blurred placeholder */}
           <div className="select-none pointer-events-none" aria-hidden="true">
-            <div className="bg-dark-800 rounded-lg border border-white/10 p-6 blur-sm opacity-40">
-              <div className="h-4 bg-white/10 rounded w-3/4 mb-3" />
-              <div className="h-4 bg-white/10 rounded w-full mb-3" />
-              <div className="h-4 bg-white/10 rounded w-5/6 mb-3" />
-              <div className="h-4 bg-white/10 rounded w-2/3 mb-6" />
+            <div className="bg-theme-panel rounded-lg border border-theme-border p-6 blur-sm opacity-40">
+              <div className="h-4 bg-surface-inset rounded w-3/4 mb-3" />
+              <div className="h-4 bg-surface-inset rounded w-full mb-3" />
+              <div className="h-4 bg-surface-inset rounded w-5/6 mb-3" />
+              <div className="h-4 bg-surface-inset rounded w-2/3 mb-6" />
               <div className="grid grid-cols-3 gap-4">
                 <div className="h-24 bg-red-500/10 rounded" />
                 <div className="h-24 bg-blue-500/10 rounded" />
@@ -94,7 +94,7 @@ export default function ScenarioTeaser({
 
           {/* Overlay CTA */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="bg-dark-800/95 backdrop-blur-sm border border-white/10 rounded-xl p-8 max-w-md text-center shadow-2xl">
+            <div className="bg-theme-panel/95 backdrop-blur-sm border border-theme-border rounded-xl p-8 max-w-md text-center shadow-2xl">
               <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-accent-900/40 flex items-center justify-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -112,10 +112,10 @@ export default function ScenarioTeaser({
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">
+              <h3 className="text-xl font-bold text-theme-text mb-2">
                 Full Analysis Locked
               </h3>
-              <p className="text-gray-400 text-sm mb-6">
+              <p className="text-theme-muted text-sm mb-6">
                 Subscribe to unlock the complete bad/good/best answer comparison, framework steps, interview simulation, and reflection prompts.
               </p>
               <Link
@@ -124,7 +124,7 @@ export default function ScenarioTeaser({
               >
                 Subscribe to Unlock
               </Link>
-              <p className="text-gray-500 text-xs mt-4">
+              <p className="text-theme-muted text-xs mt-4">
                 Already subscribed? Check your email for the access link.
               </p>
             </div>

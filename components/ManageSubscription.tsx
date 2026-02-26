@@ -45,7 +45,7 @@ export default function ManageSubscription() {
         return (
             <button
                 onClick={() => { setShowInput(true); setError(''); }}
-                className="text-sm text-gray-500 hover:text-gray-300 underline transition"
+                className="text-sm text-theme-muted hover:text-theme-body underline transition"
             >
                 Manage Subscription
             </button>
@@ -59,7 +59,7 @@ export default function ManageSubscription() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Your email"
-                className="px-3 py-1.5 bg-dark-900 border border-white/10 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:border-accent-500 w-52"
+                className="px-3 py-1.5 bg-theme-bg border border-theme-border rounded text-sm text-theme-text placeholder-theme-muted focus:outline-none focus:border-accent-500 w-52"
                 disabled={isLoading}
                 autoFocus
             />
@@ -73,7 +73,7 @@ export default function ManageSubscription() {
             <button
                 type="button"
                 onClick={() => { setShowInput(false); setEmail(''); setError(''); }}
-                className="px-2 py-1.5 text-gray-500 hover:text-gray-300 text-sm transition"
+                className="px-2 py-1.5 text-theme-muted hover:text-theme-body text-sm transition"
             >
                 Cancel
             </button>

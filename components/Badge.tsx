@@ -10,7 +10,7 @@ export default function Badge({ children, type }: BadgeProps) {
         bad: 'bg-red-500/20 text-red-400 border-red-500/50',
         good: 'bg-amber-500/20 text-amber-400 border-amber-500/50',
         best: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50',
-        neutral: 'bg-gray-500/20 text-gray-400 border-gray-500/50'
+        neutral: 'bg-gray-500/20 text-theme-muted border-gray-500/50'
     };
 
     const icons: Record<string, string | null> = {

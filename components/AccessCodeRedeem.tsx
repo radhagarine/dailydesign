@@ -55,7 +55,7 @@ export default function AccessCodeRedeem() {
             <div className="text-center">
                 <button
                     onClick={() => setIsOpen(true)}
-                    className="text-slate-500 hover:text-accent-400 text-sm transition"
+                    className="text-theme-muted hover:text-accent-400 text-sm transition"
                 >
                     Have an access code? Redeem it here.
                 </button>
@@ -64,22 +64,22 @@ export default function AccessCodeRedeem() {
     }
 
     return (
-        <div className="max-w-md mx-auto p-5 rounded-xl border border-white/10 bg-dark-800/80">
-            <p className="text-sm font-medium text-gray-300 mb-4">Redeem access code</p>
+        <div className="max-w-md mx-auto p-5 rounded-xl border border-theme-border bg-theme-panel/80">
+            <p className="text-sm font-medium text-theme-body mb-4">Redeem access code</p>
             <div className="space-y-3">
                 <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="w-full px-3 py-2 rounded-md bg-dark-900 border border-white/10 text-white text-sm placeholder:text-gray-600 focus:outline-none focus:border-accent-500"
+                    className="w-full px-3 py-2 rounded-md bg-theme-bg border border-theme-border text-theme-text text-sm placeholder:text-theme-muted focus:outline-none focus:border-accent-500"
                 />
                 <input
                     type="text"
                     value={code}
                     onChange={(e) => setCode(e.target.value.toUpperCase())}
                     placeholder="DAILY-XXXXXX"
-                    className="w-full px-3 py-2 rounded-md bg-dark-900 border border-white/10 text-white font-mono text-sm placeholder:text-gray-600 focus:outline-none focus:border-accent-500"
+                    className="w-full px-3 py-2 rounded-md bg-theme-bg border border-theme-border text-theme-text font-mono text-sm placeholder:text-theme-muted focus:outline-none focus:border-accent-500"
                 />
                 <button
                     onClick={handleRedeem}

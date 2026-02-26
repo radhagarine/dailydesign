@@ -154,13 +154,13 @@ function AnswerCard({
             >
                 <div className="flex items-center gap-3">
                     <span className="text-lg">{response.icon}</span>
-                    <span className="text-white font-medium">{levelLabels[response.level]}</span>
+                    <span className="text-theme-text font-medium">{levelLabels[response.level]}</span>
                     <span className={`px-2 py-0.5 rounded text-xs font-medium ${config.badgeBg}`}>
                         {config.badge}
                     </span>
                 </div>
                 <svg
-                    className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                    className={`w-5 h-5 text-theme-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -181,13 +181,13 @@ function AnswerCard({
                                 response.level === 'good' ? 'Why this passes senior bar:' :
                                     'Why this is principal-level:'}
                         </h5>
-                        <p className="text-gray-400 text-sm mb-3">{response.why_this_level}</p>
+                        <p className="text-theme-muted text-sm mb-3">{response.why_this_level}</p>
 
                         {/* Red Flags (Bad) */}
                         {response.red_flags && response.red_flags.length > 0 && (
                             <div className="mt-3">
                                 <h6 className="text-red-400 text-sm font-medium mb-1">Red Flags:</h6>
-                                <ul className="list-disc list-inside text-gray-400 text-sm space-y-1">
+                                <ul className="list-disc list-inside text-theme-muted text-sm space-y-1">
                                     {response.red_flags.map((flag, i) => (
                                         <li key={i}>{flag}</li>
                                     ))}
@@ -199,7 +199,7 @@ function AnswerCard({
                         {response.strengths && response.strengths.length > 0 && (
                             <div className="mt-3">
                                 <h6 className={`${config.accent} text-sm font-medium mb-1`}>Strengths:</h6>
-                                <ul className="list-disc list-inside text-gray-400 text-sm space-y-1">
+                                <ul className="list-disc list-inside text-theme-muted text-sm space-y-1">
                                     {response.strengths.map((strength, i) => (
                                         <li key={i}>{strength}</li>
                                     ))}
@@ -211,7 +211,7 @@ function AnswerCard({
                         {response.what_is_missing && (
                             <div className="mt-3">
                                 <h6 className="text-yellow-400 text-sm font-medium mb-1">What&apos;s missing for principal:</h6>
-                                <p className="text-gray-400 text-sm">{response.what_is_missing}</p>
+                                <p className="text-theme-muted text-sm">{response.what_is_missing}</p>
                             </div>
                         )}
 
@@ -219,7 +219,7 @@ function AnswerCard({
                         {response.principal_engineer_signals && response.principal_engineer_signals.length > 0 && (
                             <div className="mt-3">
                                 <h6 className="text-green-400 text-sm font-medium mb-1">Principal Engineer Signals:</h6>
-                                <ul className="list-disc list-inside text-gray-400 text-sm space-y-1">
+                                <ul className="list-disc list-inside text-theme-muted text-sm space-y-1">
                                     {response.principal_engineer_signals.map((signal, i) => (
                                         <li key={i}>{signal}</li>
                                     ))}
@@ -254,7 +254,7 @@ function AnswerLevelsSection({
             {table.interviewer_question && (
                 <div className="bg-accent-900/20 border border-accent-900/40 rounded-lg p-4 mb-4">
                     <p className="text-accent-200 font-medium text-sm">Interviewer Question:</p>
-                    <p className="text-white mt-1">{table.interviewer_question}</p>
+                    <p className="text-theme-text mt-1">{table.interviewer_question}</p>
                 </div>
             )}
 
@@ -301,7 +301,7 @@ function SidebarNavItem({
             onClick={onClick}
             className={`w-full text-left p-3 rounded-lg transition-all duration-200 group ${isActive
                 ? 'bg-accent-900/40 border border-accent-800'
-                : 'hover:bg-dark-700/50 border border-transparent'
+                : 'hover:bg-theme-inset/50 border border-transparent'
                 }`}
         >
             <div className="flex items-center gap-3">
@@ -309,7 +309,7 @@ function SidebarNavItem({
                     ? 'bg-green-600 text-white'
                     : isActive
                         ? 'bg-accent-600 text-white'
-                        : 'bg-dark-600 text-gray-400 group-hover:bg-dark-500'
+                        : 'bg-theme-inset text-theme-muted group-hover:bg-theme-inset'
                     }`}>
                     {isCompleted ? (
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -320,10 +320,10 @@ function SidebarNavItem({
                     )}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className={`font-medium truncate text-sm ${isActive ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>
+                    <p className={`font-medium truncate text-sm ${isActive ? 'text-theme-text' : 'text-theme-body group-hover:text-theme-text'}`}>
                         {step.step_name}
                     </p>
-                    <p className="text-xs text-gray-500">{step.time_allocation}</p>
+                    <p className="text-xs text-theme-muted">{step.time_allocation}</p>
                 </div>
             </div>
         </button>
@@ -343,7 +343,7 @@ function MobileNav({
     onStepClick: (index: number) => void;
 }) {
     return (
-        <div className="lg:hidden sticky top-[7.75rem] z-20 bg-dark-900/95 backdrop-blur-lg border-b border-white/5 -mx-4 px-4 py-3">
+        <div className="lg:hidden sticky top-[7.75rem] z-20 bg-theme-bg/95 backdrop-blur-lg border-b border-theme-border-s -mx-4 px-4 py-3">
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
                 {steps.map((step, i) => (
                     <button
@@ -353,7 +353,7 @@ function MobileNav({
                             ? 'bg-accent-600 text-white'
                             : revealedSteps.has(i)
                                 ? 'bg-green-900/30 text-green-300 border border-green-800'
-                                : 'bg-dark-700 text-gray-400'
+                                : 'bg-theme-inset text-theme-muted'
                             }`}
                     >
                         {revealedSteps.has(i) ? (
@@ -361,7 +361,7 @@ function MobileNav({
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                         ) : (
-                            <span className="w-5 h-5 rounded-full bg-dark-600 flex items-center justify-center text-xs">
+                            <span className="w-5 h-5 rounded-full bg-theme-inset flex items-center justify-center text-xs">
                                 {step.step_number}
                             </span>
                         )}
@@ -389,18 +389,18 @@ function StepContent({
     return (
         <div className="space-y-6">
             {/* Step Header */}
-            <div className="flex items-center gap-4 pb-4 border-b border-white/10">
+            <div className="flex items-center gap-4 pb-4 border-b border-theme-border">
                 <span className="w-10 h-10 flex items-center justify-center bg-accent-900 text-white rounded-full text-lg font-bold">
                     {step.step_number}
                 </span>
                 <div>
-                    <h2 className="text-xl font-bold text-white">{step.step_name}</h2>
-                    <p className="text-sm text-gray-400">{step.time_allocation}</p>
+                    <h2 className="text-xl font-bold text-theme-text">{step.step_name}</h2>
+                    <p className="text-sm text-theme-muted">{step.time_allocation}</p>
                 </div>
             </div>
 
             {/* Description */}
-            <p className="text-gray-300 leading-relaxed">{step.description}</p>
+            <p className="text-theme-body leading-relaxed">{step.description}</p>
 
             {/* Pause Prompt - Always visible but styled differently based on reveal state */}
             <div className={`bg-accent-900/20 border border-accent-900/40 rounded-lg p-4 transition-all ${isRevealed ? 'opacity-60' : ''}`}>
@@ -432,7 +432,7 @@ function StepContent({
 
             {/* Interviewer Response */}
             {isRevealed && step.interviewer_response && (
-                <div className="bg-dark-700/50 rounded-lg p-4 border border-white/5">
+                <div className="bg-theme-inset/50 rounded-lg p-4 border border-theme-border-s">
                     <h5 className="text-accent-400 font-semibold mb-3 flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -441,14 +441,14 @@ function StepContent({
                     </h5>
                     <ul className="space-y-2">
                         {step.interviewer_response.clarifications.map((clarification, i) => (
-                            <li key={i} className="text-gray-300 text-sm flex gap-2">
+                            <li key={i} className="text-theme-body text-sm flex gap-2">
                                 <span className="text-accent-500">•</span>
                                 {clarification}
                             </li>
                         ))}
                     </ul>
                     {step.interviewer_response.additional_context && (
-                        <p className="text-gray-400 text-sm mt-3 italic border-t border-white/5 pt-3">
+                        <p className="text-theme-muted text-sm mt-3 italic border-t border-theme-border-s pt-3">
                             {step.interviewer_response.additional_context}
                         </p>
                     )}
@@ -457,7 +457,7 @@ function StepContent({
 
             {/* Calculations Breakdown */}
             {isRevealed && step.calculations_breakdown && (
-                <div className="bg-dark-700/50 rounded-lg p-4 border border-white/5">
+                <div className="bg-theme-inset/50 rounded-lg p-4 border border-theme-border-s">
                     <h5 className="text-accent-400 font-semibold mb-3 flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -465,28 +465,28 @@ function StepContent({
                         Calculations Breakdown
                     </h5>
                     <div className="grid md:grid-cols-3 gap-4">
-                        <div className="bg-dark-800 rounded-lg p-3">
-                            <h6 className="text-gray-400 text-xs uppercase mb-2 font-medium">Storage</h6>
+                        <div className="bg-theme-panel rounded-lg p-3">
+                            <h6 className="text-theme-muted text-xs uppercase mb-2 font-medium">Storage</h6>
                             <ul className="text-sm space-y-1">
-                                <li className="text-gray-300">Total: <span className="text-white font-mono">{step.calculations_breakdown.storage.total_data}</span></li>
-                                <li className="text-gray-300">Working Set: <span className="text-white font-mono">{step.calculations_breakdown.storage.working_set}</span></li>
-                                <li className="text-gray-300">Per Region: <span className="text-white font-mono">{step.calculations_breakdown.storage.per_region}</span></li>
+                                <li className="text-theme-body">Total: <span className="text-theme-text font-mono">{step.calculations_breakdown.storage.total_data}</span></li>
+                                <li className="text-theme-body">Working Set: <span className="text-theme-text font-mono">{step.calculations_breakdown.storage.working_set}</span></li>
+                                <li className="text-theme-body">Per Region: <span className="text-theme-text font-mono">{step.calculations_breakdown.storage.per_region}</span></li>
                             </ul>
                         </div>
-                        <div className="bg-dark-800 rounded-lg p-3">
-                            <h6 className="text-gray-400 text-xs uppercase mb-2 font-medium">Throughput</h6>
+                        <div className="bg-theme-panel rounded-lg p-3">
+                            <h6 className="text-theme-muted text-xs uppercase mb-2 font-medium">Throughput</h6>
                             <ul className="text-sm space-y-1">
-                                <li className="text-gray-300">Global: <span className="text-white font-mono">{step.calculations_breakdown.throughput.global_qps}</span></li>
-                                <li className="text-gray-300">Per Region: <span className="text-white font-mono">{step.calculations_breakdown.throughput.per_region_qps}</span></li>
-                                <li className="text-gray-300">Cache Hit: <span className="text-white font-mono">{step.calculations_breakdown.throughput.cache_hit_qps}</span></li>
-                                <li className="text-gray-300">Database: <span className="text-white font-mono">{step.calculations_breakdown.throughput.database_qps}</span></li>
+                                <li className="text-theme-body">Global: <span className="text-theme-text font-mono">{step.calculations_breakdown.throughput.global_qps}</span></li>
+                                <li className="text-theme-body">Per Region: <span className="text-theme-text font-mono">{step.calculations_breakdown.throughput.per_region_qps}</span></li>
+                                <li className="text-theme-body">Cache Hit: <span className="text-theme-text font-mono">{step.calculations_breakdown.throughput.cache_hit_qps}</span></li>
+                                <li className="text-theme-body">Database: <span className="text-theme-text font-mono">{step.calculations_breakdown.throughput.database_qps}</span></li>
                             </ul>
                         </div>
-                        <div className="bg-dark-800 rounded-lg p-3">
-                            <h6 className="text-gray-400 text-xs uppercase mb-2 font-medium">Bandwidth</h6>
+                        <div className="bg-theme-panel rounded-lg p-3">
+                            <h6 className="text-theme-muted text-xs uppercase mb-2 font-medium">Bandwidth</h6>
                             <ul className="text-sm space-y-1">
-                                <li className="text-gray-300">Peak: <span className="text-white font-mono">{step.calculations_breakdown.bandwidth.peak_bandwidth}</span></li>
-                                <li className="text-gray-300">Per Region: <span className="text-white font-mono">{step.calculations_breakdown.bandwidth.per_region_bandwidth}</span></li>
+                                <li className="text-theme-body">Peak: <span className="text-theme-text font-mono">{step.calculations_breakdown.bandwidth.peak_bandwidth}</span></li>
+                                <li className="text-theme-body">Per Region: <span className="text-theme-text font-mono">{step.calculations_breakdown.bandwidth.per_region_bandwidth}</span></li>
                             </ul>
                         </div>
                     </div>
@@ -495,7 +495,7 @@ function StepContent({
 
             {/* Architecture Diagram Description */}
             {isRevealed && step.architecture_diagram_description && (
-                <div className="bg-dark-700/50 rounded-lg p-4 border border-white/5">
+                <div className="bg-theme-inset/50 rounded-lg p-4 border border-theme-border-s">
                     <h5 className="text-accent-400 font-semibold mb-3 flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -517,8 +517,8 @@ function StepContent({
                         Component Decisions
                     </h5>
                     {step.component_decisions.map((decision, i) => (
-                        <div key={i} className="bg-dark-800/50 rounded-lg p-4 border border-white/5">
-                            <h6 className="text-white font-medium mb-3">{decision.component}</h6>
+                        <div key={i} className="bg-theme-panel/50 rounded-lg p-4 border border-theme-border-s">
+                            <h6 className="text-theme-text font-medium mb-3">{decision.component}</h6>
                             <AnswerLevelsSection table={decision.comparison_table} showResponses={true} />
                         </div>
                     ))}
@@ -527,7 +527,7 @@ function StepContent({
 
             {/* Other Failure Scenarios */}
             {isRevealed && step.other_failure_scenarios && step.other_failure_scenarios.length > 0 && (
-                <div className="bg-dark-700/50 rounded-lg p-4 border border-white/5">
+                <div className="bg-theme-inset/50 rounded-lg p-4 border border-theme-border-s">
                     <h5 className="text-accent-400 font-semibold mb-3 flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -537,7 +537,7 @@ function StepContent({
                     <div className="space-y-3">
                         {step.other_failure_scenarios.map((scenario, i) => (
                             <div key={i} className="border-l-2 border-yellow-600 pl-4 py-2">
-                                <p className="text-white font-medium">{scenario.scenario}</p>
+                                <p className="text-theme-text font-medium">{scenario.scenario}</p>
                                 <p className="text-red-400 text-sm mt-1">
                                     <span className="font-medium">Impact:</span> {scenario.impact}
                                 </p>
@@ -559,7 +559,7 @@ function StepContent({
                     </h5>
                     <ul className="space-y-2">
                         {step.key_takeaways.map((takeaway, i) => (
-                            <li key={i} className="flex gap-3 text-gray-300 text-sm">
+                            <li key={i} className="flex gap-3 text-theme-body text-sm">
                                 <span className="text-accent-500 font-bold">{i + 1}.</span>
                                 <span>{takeaway}</span>
                             </li>
@@ -634,9 +634,9 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
     const totalSections = scenario.framework_steps.length + 2; // steps + simulation + summary
 
     return (
-        <div className="min-h-screen bg-dark-900 text-white pt-16">
+        <div className="min-h-screen bg-theme-bg text-theme-text pt-16">
             {/* Sticky Header */}
-            <div className="bg-dark-800/95 border-b border-white/5 sticky top-16 z-30 backdrop-blur-xl">
+            <div className="bg-theme-panel/95 border-b border-theme-border-s sticky top-16 z-30 backdrop-blur-xl">
                 <div className="max-w-7xl mx-auto px-4 lg:px-6 py-3 flex items-center justify-between">
                     <Link href="/archive" className="flex items-center gap-2 text-accent-400 hover:text-accent-300 transition">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -646,11 +646,11 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                     </Link>
 
                     <div className="flex-1 mx-4 max-w-md">
-                        <div className="flex items-center justify-between text-xs text-gray-400 mb-1">
+                        <div className="flex items-center justify-between text-xs text-theme-muted mb-1">
                             <span>{scenario.problem.title}</span>
                             <span>{completedCount}/{totalSections}</span>
                         </div>
-                        <div className="h-1.5 bg-dark-700 rounded-full overflow-hidden">
+                        <div className="h-1.5 bg-theme-inset rounded-full overflow-hidden">
                             <div
                                 className="h-full bg-gradient-to-r from-accent-600 to-accent-500 transition-all duration-500"
                                 style={{ width: `${(completedCount / totalSections) * 100}%` }}
@@ -659,7 +659,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                     </div>
 
                     <div className="flex gap-3 items-center text-sm">
-                        <span className="hidden md:inline text-gray-400">{scenario.metadata.estimated_time_minutes} min</span>
+                        <span className="hidden md:inline text-theme-muted">{scenario.metadata.estimated_time_minutes} min</span>
                         <Badge type="neutral">{scenario.metadata.difficulty}</Badge>
                     </div>
                 </div>
@@ -676,11 +676,11 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
             <div className="max-w-7xl mx-auto flex">
                 {/* Sidebar - Desktop Only */}
                 <aside className={`hidden lg:block sticky top-[7.75rem] h-[calc(100vh-7.75rem)] transition-all duration-300 ${sidebarCollapsed ? 'w-16' : 'w-72'}`}>
-                    <div className="h-full border-r border-white/5 p-4 overflow-y-auto">
+                    <div className="h-full border-r border-theme-border-s p-4 overflow-y-auto">
                         {/* Collapse Toggle */}
                         <button
                             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                            className="w-full flex items-center justify-center p-2 mb-4 rounded-lg hover:bg-dark-700 transition text-gray-400"
+                            className="w-full flex items-center justify-center p-2 mb-4 rounded-lg hover:bg-theme-inset transition text-theme-muted"
                         >
                             <svg
                                 className={`w-5 h-5 transition-transform ${sidebarCollapsed ? 'rotate-180' : ''}`}
@@ -696,28 +696,28 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                             <>
                                 {/* Framework Title */}
                                 <div className="mb-6">
-                                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">Framework</h3>
-                                    <p className="text-xs text-gray-500">{getThemeLabel(props.theme)}</p>
+                                    <h3 className="text-sm font-bold text-theme-muted uppercase tracking-wider mb-1">Framework</h3>
+                                    <p className="text-xs text-theme-muted">{getThemeLabel(props.theme)}</p>
                                 </div>
 
                                 {/* Progress Circle */}
-                                <div className="flex items-center gap-3 mb-6 p-3 bg-dark-800 rounded-lg">
+                                <div className="flex items-center gap-3 mb-6 p-3 bg-theme-panel rounded-lg">
                                     <div className="relative w-12 h-12">
                                         <svg className="w-12 h-12 -rotate-90">
-                                            <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="4" className="text-dark-600" />
+                                            <circle cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="4" className="text-theme-inset" />
                                             <circle
                                                 cx="24" cy="24" r="20" fill="none" stroke="currentColor" strokeWidth="4"
                                                 className="text-accent-500"
                                                 strokeDasharray={`${(completedCount / totalSections) * 125.6} 125.6`}
                                             />
                                         </svg>
-                                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+                                        <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-theme-text">
                                             {Math.round((completedCount / totalSections) * 100)}%
                                         </span>
                                     </div>
                                     <div>
-                                        <p className="text-sm font-medium text-white">{completedCount} of {totalSections}</p>
-                                        <p className="text-xs text-gray-400">sections done</p>
+                                        <p className="text-sm font-medium text-theme-text">{completedCount} of {totalSections}</p>
+                                        <p className="text-xs text-theme-muted">sections done</p>
                                     </div>
                                 </div>
 
@@ -739,19 +739,19 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                             onClick={scrollToSimulation}
                                             className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${showSimulation
                                                 ? 'bg-yellow-900/20 border border-yellow-800'
-                                                : 'hover:bg-dark-700/50 border border-transparent'
+                                                : 'hover:bg-theme-inset/50 border border-transparent'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm ${showSimulation ? 'bg-yellow-600 text-white' : 'bg-dark-600 text-gray-400'
+                                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm ${showSimulation ? 'bg-yellow-600 text-white' : 'bg-theme-inset text-theme-muted'
                                                     }`}>
                                                     ⚡
                                                 </div>
                                                 <div>
-                                                    <p className={`font-medium text-sm ${showSimulation ? 'text-white' : 'text-gray-300'}`}>
+                                                    <p className={`font-medium text-sm ${showSimulation ? 'text-theme-text' : 'text-theme-body'}`}>
                                                         Curveball
                                                     </p>
-                                                    <p className="text-xs text-gray-500">Interview simulation</p>
+                                                    <p className="text-xs text-theme-muted">Interview simulation</p>
                                                 </div>
                                             </div>
                                         </button>
@@ -763,19 +763,19 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                             onClick={scrollToSummary}
                                             className={`w-full text-left p-3 rounded-lg transition-all duration-200 ${showSummary
                                                 ? 'bg-green-900/20 border border-green-800'
-                                                : 'hover:bg-dark-700/50 border border-transparent'
+                                                : 'hover:bg-theme-inset/50 border border-transparent'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm ${showSummary ? 'bg-green-600 text-white' : 'bg-dark-600 text-gray-400'
+                                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-sm ${showSummary ? 'bg-green-600 text-white' : 'bg-theme-inset text-theme-muted'
                                                     }`}>
                                                     📋
                                                 </div>
                                                 <div>
-                                                    <p className={`font-medium text-sm ${showSummary ? 'text-white' : 'text-gray-300'}`}>
+                                                    <p className={`font-medium text-sm ${showSummary ? 'text-theme-text' : 'text-theme-body'}`}>
                                                         Summary
                                                     </p>
-                                                    <p className="text-xs text-gray-500">Reflection & review</p>
+                                                    <p className="text-xs text-theme-muted">Reflection & review</p>
                                                 </div>
                                             </div>
                                         </button>
@@ -793,14 +793,14 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                         onClick={() => scrollToStep(i)}
                                         className={`w-full p-2 rounded-lg transition-all ${currentStep === i
                                             ? 'bg-accent-900/40'
-                                            : 'hover:bg-dark-700/50'
+                                            : 'hover:bg-theme-inset/50'
                                             }`}
                                     >
                                         <div className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center text-sm font-bold ${revealedSteps.has(i)
                                             ? 'bg-green-600 text-white'
                                             : currentStep === i
                                                 ? 'bg-accent-600 text-white'
-                                                : 'bg-dark-600 text-gray-400'
+                                                : 'bg-theme-inset text-theme-muted'
                                             }`}>
                                             {revealedSteps.has(i) ? '✓' : step.step_number}
                                         </div>
@@ -817,12 +817,12 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                     <div className="mb-10">
                         <p className="text-accent-400 text-sm font-mono mb-2">{formatDate()}</p>
                         <h1 className="text-3xl lg:text-4xl font-bold mb-4">{scenario.problem.title}</h1>
-                        <p className="text-lg text-gray-400 leading-relaxed mb-4">{scenario.problem.statement}</p>
+                        <p className="text-lg text-theme-muted leading-relaxed mb-4">{scenario.problem.statement}</p>
 
                         {/* Topics */}
                         <div className="flex flex-wrap gap-2 mb-4">
                             {scenario.metadata.topics.map((topic, i) => (
-                                <span key={i} className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs text-gray-400">
+                                <span key={i} className="px-3 py-1 bg-surface-inset border border-theme-border rounded-full text-xs text-theme-muted">
                                     {topic}
                                 </span>
                             ))}
@@ -831,7 +831,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
 
                     {/* Problem Context */}
                     <section className="mb-10">
-                        <div className="bg-dark-800 border border-white/10 rounded-xl p-6">
+                        <div className="bg-theme-panel border border-theme-border rounded-xl p-6">
                             <h2 className="text-xl font-bold mb-4 flex items-center gap-3">
                                 <span className="w-8 h-8 rounded-full bg-accent-900 flex items-center justify-center text-sm font-mono">00</span>
                                 The Situation
@@ -853,7 +853,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                             ref={el => { stepRefs.current[i] = el; }}
                             className="mb-10 scroll-mt-24"
                         >
-                            <div className="bg-dark-800 border border-white/10 rounded-xl p-6">
+                            <div className="bg-theme-panel border border-theme-border rounded-xl p-6">
                                 <StepContent
                                     step={step}
                                     stepIndex={i}
@@ -882,25 +882,25 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                     {/* Interview Simulation Section */}
                     {allStepsRevealed && (
                         <section ref={simulationRef} className="mb-10 scroll-mt-24">
-                            <div className="bg-dark-800 border border-yellow-900/30 rounded-xl overflow-hidden">
+                            <div className="bg-theme-panel border border-yellow-900/30 rounded-xl overflow-hidden">
                                 <div className="px-6 py-4 bg-yellow-900/20 border-b border-yellow-900/30 flex items-center gap-3">
                                     <span className="w-10 h-10 rounded-full bg-yellow-900 flex items-center justify-center text-xl">⚡</span>
                                     <div>
-                                        <h3 className="text-lg font-bold text-white">{scenario.interview_simulation.title}</h3>
+                                        <h3 className="text-lg font-bold text-theme-text">{scenario.interview_simulation.title}</h3>
                                         <p className="text-sm text-yellow-200/70">Interview simulation</p>
                                     </div>
                                 </div>
                                 <div className="p-6">
-                                    <p className="text-gray-300 mb-4">{scenario.interview_simulation.description}</p>
+                                    <p className="text-theme-body mb-4">{scenario.interview_simulation.description}</p>
 
                                     <div className="bg-yellow-900/10 border border-yellow-900/30 rounded-lg p-4 mb-4">
                                         <p className="text-yellow-200 font-medium mb-2">Interviewer asks:</p>
-                                        <p className="text-white">{scenario.interview_simulation.scenario.interviewer_question}</p>
+                                        <p className="text-theme-text">{scenario.interview_simulation.scenario.interviewer_question}</p>
                                     </div>
 
                                     {!showSimulation ? (
                                         <div className="text-center py-4">
-                                            <p className="text-gray-400 mb-4 italic">{scenario.interview_simulation.scenario.pause_prompt}</p>
+                                            <p className="text-theme-muted mb-4 italic">{scenario.interview_simulation.scenario.pause_prompt}</p>
                                             <button
                                                 onClick={() => setShowSimulation(true)}
                                                 className="px-6 py-3 bg-yellow-700 hover:bg-yellow-600 text-white rounded-lg font-medium transition inline-flex items-center gap-2"
@@ -926,7 +926,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                                     </h5>
                                                     <ul className="space-y-2">
                                                         {scenario.interview_simulation.key_takeaways.map((takeaway, i) => (
-                                                            <li key={i} className="flex gap-3 text-gray-300 text-sm">
+                                                            <li key={i} className="flex gap-3 text-theme-body text-sm">
                                                                 <span className="text-yellow-500 font-bold">{i + 1}.</span>
                                                                 {takeaway}
                                                             </li>
@@ -959,14 +959,14 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                             ) : (
                                 <div className="space-y-6">
                                     {/* Critical Concepts */}
-                                    <div className="bg-dark-800 border border-white/10 rounded-xl p-6">
+                                    <div className="bg-theme-panel border border-theme-border rounded-xl p-6">
                                         <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
                                             <span className="text-2xl">📚</span>
                                             Critical Concepts Covered
                                         </h3>
                                         <div className="flex flex-wrap gap-2">
                                             {scenario.summary.critical_concepts_covered.map((concept, i) => (
-                                                <span key={i} className="px-3 py-2 bg-accent-900/30 border border-accent-900/50 rounded-lg text-sm text-gray-300">
+                                                <span key={i} className="px-3 py-2 bg-accent-900/30 border border-accent-900/50 rounded-lg text-sm text-theme-body">
                                                     {concept}
                                                 </span>
                                             ))}
@@ -974,14 +974,14 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                     </div>
 
                                     {/* Patterns Demonstrated */}
-                                    <div className="bg-dark-800 border border-white/10 rounded-xl p-6">
+                                    <div className="bg-theme-panel border border-theme-border rounded-xl p-6">
                                         <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
                                             <span className="text-2xl">🎯</span>
                                             Patterns Demonstrated
                                         </h3>
                                         <ul className="space-y-2">
                                             {scenario.summary.patterns_demonstrated.map((pattern, i) => (
-                                                <li key={i} className="flex gap-3 text-gray-300">
+                                                <li key={i} className="flex gap-3 text-theme-body">
                                                     <span className="text-accent-500">•</span>
                                                     {pattern}
                                                 </li>
@@ -990,14 +990,14 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                     </div>
 
                                     {/* What Made Responses Best */}
-                                    <div className="bg-dark-800 border border-green-900/30 rounded-xl p-6">
+                                    <div className="bg-theme-panel border border-green-900/30 rounded-xl p-6">
                                         <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
                                             <span className="text-2xl">⭐</span>
                                             What Made Responses Principal-Level
                                         </h3>
                                         <ul className="space-y-2">
                                             {scenario.summary.what_made_responses_best_level.map((reason, i) => (
-                                                <li key={i} className="flex gap-3 text-gray-300">
+                                                <li key={i} className="flex gap-3 text-theme-body">
                                                     <span className="text-green-500 font-bold">{i + 1}.</span>
                                                     {reason}
                                                 </li>
@@ -1006,7 +1006,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                     </div>
 
                                     {/* Reflection Prompts */}
-                                    <div className="bg-dark-800 border border-white/10 rounded-xl p-6">
+                                    <div className="bg-theme-panel border border-theme-border rounded-xl p-6">
                                         <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
                                             <span className="text-2xl">🤔</span>
                                             Self-Reflection
@@ -1016,7 +1016,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                                 <h4 className="text-accent-400 font-semibold mb-3">Self-Assessment Questions</h4>
                                                 <ul className="space-y-3">
                                                     {scenario.reflection_prompts.self_assessment.map((question, i) => (
-                                                        <li key={i} className="text-gray-300 text-sm bg-dark-700/50 p-3 rounded-lg">
+                                                        <li key={i} className="text-theme-body text-sm bg-theme-inset/50 p-3 rounded-lg">
                                                             {question}
                                                         </li>
                                                     ))}
@@ -1026,7 +1026,7 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                                 <h4 className="text-accent-400 font-semibold mb-3">Practice Suggestions</h4>
                                                 <ul className="space-y-3">
                                                     {scenario.reflection_prompts.practice_next.map((suggestion, i) => (
-                                                        <li key={i} className="text-gray-300 text-sm bg-dark-700/50 p-3 rounded-lg">
+                                                        <li key={i} className="text-theme-body text-sm bg-theme-inset/50 p-3 rounded-lg">
                                                             {suggestion}
                                                         </li>
                                                     ))}
@@ -1040,10 +1040,10 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                     )}
 
                     {/* Navigation */}
-                    <div className="mt-12 pt-8 border-t border-white/5 flex justify-between items-center">
+                    <div className="mt-12 pt-8 border-t border-theme-border-s flex justify-between items-center">
                         <Link
                             href="/archive"
-                            className="text-gray-400 hover:text-white transition flex items-center gap-2"
+                            className="text-theme-muted hover:text-theme-text transition flex items-center gap-2"
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M19 12H5M12 19l-7-7 7-7" />
