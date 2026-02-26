@@ -86,7 +86,7 @@ function SuccessContent() {
 
                 <h1 className="text-3xl font-bold mb-4">Welcome to DailyDesign!</h1>
                 <p className="text-gray-400 mb-8">
-                    Your subscription is now active. You will receive your first daily interview scenario in your inbox soon.
+                    Your subscription is now active. Check your email for a welcome message with your personal archive access link.
                 </p>
 
                 {/* What you get */}

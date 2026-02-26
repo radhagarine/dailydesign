@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { emails, scenarios, generateScenarioSlug } from '@/lib/schema';
 import { generateDailyScenario, InterviewScenario } from '@/lib/ai';
 import { sendEmailWithTracking } from '@/lib/email-retry';
-import { eq, and, gte, lte } from 'drizzle-orm';
+import { eq, and, or, gte, lte } from 'drizzle-orm';
 import { getDailyStrategy } from '@/lib/content-strategy';
 import { getBaseUrl } from '@/lib/utils';
 import { verifyBearerToken } from '@/lib/auth';
@@ -30,12 +30,15 @@ export async function GET(req: Request) {
     let scenarioDbId: number | undefined;
 
     // 0. Idempotency guard: skip if a scenario was already sent today
+    //    Check both generatedAt (on-the-fly) and scheduledFor (pre-generated)
     const alreadySent = await db.select({ id: scenarios.id, slug: scenarios.slug })
       .from(scenarios)
       .where(and(
-        gte(scenarios.generatedAt, todayStart),
-        lte(scenarios.generatedAt, todayEnd),
         eq(scenarios.scenarioStatus, 'sent'),
+        or(
+          and(gte(scenarios.generatedAt, todayStart), lte(scenarios.generatedAt, todayEnd)),
+          and(gte(scenarios.scheduledFor, todayStart), lte(scenarios.scheduledFor, todayEnd)),
+        ),
       ))
       .get();
 

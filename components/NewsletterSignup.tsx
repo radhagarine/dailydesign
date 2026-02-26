@@ -113,7 +113,7 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
                 </p>
             )}
             <p className="mt-3 text-xs text-gray-500 text-center sm:text-left">
-                Free daily scenarios.
+                Daily scenarios free for 7 days.
             </p>
         </div>
     );

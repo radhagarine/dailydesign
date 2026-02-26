@@ -4,6 +4,8 @@ import { stripe } from '@/lib/stripe';
 import { db } from '@/lib/db';
 import { subscribers, subscriptions } from '@/lib/schema';
 import { eq, and, inArray } from 'drizzle-orm';
+import { sendEmail } from '@/lib/email';
+import { getBaseUrl } from '@/lib/utils';
 import type Stripe from 'stripe';
 
 // In-memory idempotency cache for processed webhook events.
@@ -150,6 +152,33 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     }
 
     console.log(`Checkout completed for ${metadata.email}, subscription: ${subscriptionId}`);
+
+    // Fire-and-forget welcome email with archive access link
+    if (subscriber?.unsubscribeToken) {
+        const baseUrl = getBaseUrl();
+        const archiveUrl = `${baseUrl}/archive?token=${subscriber.unsubscribeToken}`;
+        sendEmail({
+            to: metadata.email,
+            subject: 'Welcome to DailyDesign — your subscription is active!',
+            html: `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #1a1a1a; color: #e5e5e5;">
+  <div style="background-color: #262626; border-radius: 8px; padding: 32px; border: 1px solid #333;">
+    <h1 style="color: #ffffff; font-size: 24px; margin-bottom: 16px; text-align: center;">Welcome to DailyDesign!</h1>
+    <p style="color: #d1d5db; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">Your subscription is now active. You'll receive daily system design interview scenarios crafted for experienced engineers targeting Staff/Principal roles.</p>
+    <div style="text-align: center; margin-bottom: 24px;">
+      <a href="${archiveUrl}" style="display: inline-block; padding: 14px 28px; background-color: #0e7490; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Browse the Full Archive</a>
+    </div>
+    <p style="color: #9ca3af; font-size: 13px; text-align: center;">Click the link above to access the archive — it will log you in automatically.</p>
+  </div>
+  <div style="text-align: center; margin-top: 24px;">
+    <p style="color: #6b7280; font-size: 12px;">DailyDesign</p>
+  </div>
+</body>
+</html>`,
+        }).catch((err) => console.error('Paid welcome email failed:', err));
+    }
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
