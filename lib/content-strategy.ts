@@ -31,6 +31,12 @@ export const THEMES: Theme[] = [
         title: 'Architecture Tradeoffs & Evolution',
         description: 'Making hard choices between technologies (SQL vs NoSQL) and managing system evolution.',
         focusAreas: ['Monolith vs Microservices', 'Sync vs Async', 'Consistency vs Availability', 'Migration Strategy', 'Event-Driven Architecture', 'API Design & Evolution']
+    },
+    {
+        id: 'product',
+        title: 'Product System Design',
+        description: 'End-to-end design of real-world products — the classic "Design X" problems that dominate FAANG interviews.',
+        focusAreas: ['Video Streaming', 'Social Platform', 'Messaging & Chat', 'Ride Sharing & Geo', 'Search & Discovery', 'E-Commerce Platform']
     }
 ];
 
@@ -42,7 +48,7 @@ export function getDailyStrategy(date: Date = new Date()) {
     const current = date.getTime();
     const weekIndex = Math.floor((current - epoch) / oneWeekMs);
 
-    // Rotate through the 4 themes
+    // Rotate through themes (5-week cycle)
     const themeIndex = weekIndex % THEMES.length;
     const theme = THEMES[themeIndex];
 

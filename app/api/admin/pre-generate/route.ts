@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { scenarios, generateScenarioSlug } from '@/lib/schema';
 import { generateDailyScenario } from '@/lib/ai';
 import { getDailyStrategy } from '@/lib/content-strategy';
-import { and, gte, lte } from 'drizzle-orm';
+import { and, gte, lte, desc } from 'drizzle-orm';
 import { verifyBearerToken } from '@/lib/auth';
 
 export const maxDuration = 300; // 5 min for generating multiple scenarios
@@ -26,6 +26,17 @@ function addDays(date: Date, days: number): Date {
     return d;
 }
 
+async function getRecentScenarioTitles(days: number): Promise<string[]> {
+    const since = new Date();
+    since.setUTCDate(since.getUTCDate() - days);
+    const rows = await db.select({ title: scenarios.title })
+        .from(scenarios)
+        .where(gte(scenarios.generatedAt, since))
+        .orderBy(desc(scenarios.generatedAt))
+        .all();
+    return rows.map(r => r.title);
+}
+
 // POST: Generate scenarios for upcoming days
 export async function POST(req: Request) {
     if (!verifyBearerToken(req.headers.get('authorization'), process.env.CRON_SECRET)) {
@@ -39,6 +50,7 @@ export async function POST(req: Request) {
         const force = body.force || false;
 
         const results: Array<{ date: string; status: string; title?: string; slug?: string; error?: string }> = [];
+        const recentTitles = await getRecentScenarioTitles(30);
 
         for (let i = 0; i < days; i++) {
             const targetDate = addDays(startDate, i);
@@ -64,8 +76,9 @@ export async function POST(req: Request) {
 
             try {
                 const strategy = getDailyStrategy(targetDate);
-                const scenario = await generateDailyScenario(strategy, targetDate);
+                const scenario = await generateDailyScenario(strategy, targetDate, recentTitles);
                 const slug = generateScenarioSlug(scenario.problem.title, targetDate);
+                recentTitles.push(scenario.problem.title);
 
                 await db.insert(scenarios).values({
                     slug,

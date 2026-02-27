@@ -238,7 +238,12 @@ Consider: circuit breakers, bulkheads, graceful degradation, disaster recovery, 
 
     'architecture': `Focus on architectural decisions and system evolution over time.
 Include specific tradeoffs: monolith vs microservices, sync vs async, SQL vs NoSQL, build vs buy.
-Consider: migration strategies, technical debt, organizational structure, team boundaries, backwards compatibility.`
+Consider: migration strategies, technical debt, organizational structure, team boundaries, backwards compatibility.`,
+
+    'product': `Focus on end-to-end product system design — the classic "Design X" interview problems.
+The candidate must design the FULL product, not just one infrastructure component. Cover: functional requirements (core user flows), non-functional requirements (scale, latency, availability), data model, API design, high-level architecture, and deep dives into 2-3 interesting components.
+Include specific product metrics: DAU/MAU, peak concurrent users, content volume, read/write ratios, geographic distribution.
+Consider: product-specific domain challenges, user experience constraints, real-time vs eventual consistency tradeoffs, content delivery, recommendation/ranking systems, abuse prevention.`
 };
 
 // ── Focus Area Hints — per-area context for richer, more specific generation ──
@@ -528,11 +533,92 @@ const FOCUS_AREA_HINTS: Record<string, {
             'Thin vs thick API gateway — thin gateways are simple but push logic to services; thick gateways centralize concerns but become bottlenecks',
         ],
     },
+
+    // Product System Design theme (6 focus areas)
+    'Video Streaming': {
+        problemSeeds: [
+            'Design YouTube — a video sharing platform supporting 2B MAU, 500 hours of video uploaded per minute, and adaptive bitrate streaming',
+            'Design Netflix — a subscription video streaming service with personalized recommendations, 200M subscribers, and global CDN delivery',
+            'Design a live streaming platform like Twitch supporting 10M concurrent viewers with <3s glass-to-glass latency',
+        ],
+        technicalContext: 'Video encoding pipelines (FFmpeg, transcoding DAG), adaptive bitrate streaming (HLS, DASH), CDN edge caching for video segments, video chunking and manifest files, thumbnail generation, content recommendation engines, watch history and resume playback, content moderation (NSFW detection), DRM (Widevine, FairPlay), pre-signed URLs for secure delivery.',
+        keyTradeoffs: [
+            'Encoding quality vs cost — more bitrate variants improve user experience but multiply storage and encoding costs',
+            'Live latency vs reliability — ultra-low latency (WebRTC) sacrifices adaptive bitrate; HLS/DASH adds 5-30s delay but handles network variability',
+            'Recommendation freshness vs compute — real-time personalization requires expensive inference; batch models are cheaper but miss recent signals',
+        ],
+    },
+    'Social Platform': {
+        problemSeeds: [
+            'Design Instagram — a photo/video sharing social network with 2B MAU, news feed, stories, and real-time notifications',
+            'Design Twitter/X — a microblogging platform supporting 500M MAU with real-time timelines, trending topics, and fan-out on write vs read',
+            'Design a LinkedIn-like professional network with feed ranking, connection recommendations, and job matching for 900M members',
+        ],
+        technicalContext: 'Fan-out on write vs fan-out on read (hybrid for celebrity accounts), news feed ranking (EdgeRank, ML-based), social graph storage (adjacency list, graph DB), real-time notifications (WebSocket, SSE, push), content moderation pipeline, image/video processing pipeline, hashtag and mention indexing, trending topic detection (count-min sketch, sliding window).',
+        keyTradeoffs: [
+            'Fan-out on write vs read — write fan-out gives fast reads but is expensive for users with millions of followers; read fan-out is cheaper but slower at read time',
+            'Chronological vs ranked feed — chronological is simple and transparent but engagement drops; ranked feeds increase engagement but require ML infrastructure',
+            'Real-time vs batched notifications — real-time improves engagement but increases infrastructure cost and can overwhelm users',
+        ],
+    },
+    'Messaging & Chat': {
+        problemSeeds: [
+            'Design WhatsApp — an end-to-end encrypted messaging platform supporting 2B users, group chats up to 1024 members, and media sharing',
+            'Design Slack — a workplace messaging platform with channels, threads, search across message history, and real-time presence for 20M DAU',
+            'Design a Discord-like platform supporting voice/video channels with 150 concurrent users per channel and text chat with 200M MAU',
+        ],
+        technicalContext: 'WebSocket connection management (millions of persistent connections), message ordering (Lamport timestamps, vector clocks), end-to-end encryption (Signal Protocol, key exchange), offline message queuing and delivery receipts, read receipts, typing indicators, presence system (heartbeat-based), message search (inverted index), group messaging fan-out, push notification delivery (APNS, FCM).',
+        keyTradeoffs: [
+            'Connection-based vs polling — persistent WebSockets give real-time delivery but are expensive to maintain at scale; long-polling is simpler but adds latency',
+            'Message ordering guarantees vs throughput — strict global ordering limits throughput; per-conversation ordering is sufficient for most UX',
+            'End-to-end encryption vs server-side features — E2EE protects privacy but prevents server-side search, moderation, and spam filtering',
+        ],
+    },
+    'Ride Sharing & Geo': {
+        problemSeeds: [
+            'Design Uber — a ride-sharing platform matching 5M rides/day with real-time driver tracking, dynamic pricing, and ETA estimation',
+            'Design DoorDash — a food delivery platform with real-time order tracking, driver dispatch optimization, and restaurant availability for 30M MAU',
+            'Design Google Maps — a mapping and navigation platform with real-time traffic, route optimization, and place search for 1B MAU',
+        ],
+        technicalContext: 'Geospatial indexing (geohash, S2 cells, R-trees, QuadTrees), real-time location tracking (GPS updates every 3-5s), ride matching algorithms (Hungarian algorithm, greedy nearest), dynamic/surge pricing models, ETA prediction (ML + graph-based routing), geofencing, map tile serving, route optimization (Dijkstra, A*, contraction hierarchies), spatial databases (PostGIS, H3).',
+        keyTradeoffs: [
+            'Matching optimality vs latency — global optimal matching (batch) gives better assignments but riders wait longer; greedy nearest is faster but suboptimal',
+            'Location update frequency vs infrastructure cost — frequent GPS pings improve tracking accuracy but multiply message volume and processing load',
+            'Geohash precision vs query flexibility — higher precision reduces false positives but increases index size and requires more cells for radius queries',
+        ],
+    },
+    'Search & Discovery': {
+        problemSeeds: [
+            'Design a web search engine like Google handling 8.5B searches/day with index freshness <1 hour for breaking news and sub-200ms P99 latency',
+            'Design Airbnb Search — a listing search and ranking system with personalized results, availability filtering, and map-based exploration for 150M users',
+            'Design an e-commerce product search like Amazon with faceted filtering, spell correction, and personalized ranking across 350M products',
+        ],
+        technicalContext: 'Inverted index (posting lists, skip lists), index sharding (document-based vs term-based), query parsing and intent detection, BM25 and TF-IDF scoring, learning-to-rank (LambdaMART, neural ranking), spell correction (edit distance, n-gram), autocomplete (trie, prefix index), faceted search, index freshness (incremental updates vs full rebuild), result caching, federated search across verticals.',
+        keyTradeoffs: [
+            'Index freshness vs query performance — real-time indexing ensures fresh results but fragments the index and degrades query speed',
+            'Relevance vs latency — ML re-ranking improves relevance but adds inference latency; simpler scoring is faster but less accurate',
+            'Recall vs precision — casting a wider net finds more relevant results but increases noise and computation; narrow queries miss edge cases',
+        ],
+    },
+    'E-Commerce Platform': {
+        problemSeeds: [
+            'Design Amazon Checkout — an order processing system handling 50K orders/minute during Prime Day with inventory consistency and payment orchestration',
+            'Design a flash sale system like Shopify handling 100K concurrent buyers for a limited-inventory product with fairness guarantees',
+            'Design an e-commerce marketplace like Etsy with seller onboarding, product catalog management, order fulfillment, and review system for 90M active buyers',
+        ],
+        technicalContext: 'Inventory management (optimistic vs pessimistic locking, reservation pattern), shopping cart (stateless vs server-side), checkout pipeline (payment, inventory, fraud check orchestration), payment processing (idempotency, two-phase commit), order state machine, catalog service (hierarchical categories, attribute-based filtering), pricing engine (dynamic pricing, coupons, tax calculation), fraud detection (rule engine + ML scoring).',
+        keyTradeoffs: [
+            'Inventory accuracy vs checkout speed — strong consistency (pessimistic lock) prevents overselling but increases latency; reservation with TTL is faster but risks abandoned reservations',
+            'Monolithic checkout vs microservice pipeline — monolithic is simpler to reason about but hard to scale; pipeline enables independent scaling but adds orchestration complexity',
+            'Real-time fraud scoring vs checkout conversion — aggressive fraud checks reduce losses but increase false positives and cart abandonment',
+        ],
+    },
 };
 
 export async function generateDailyScenario(
     strategy: { theme: Theme, problemType: ProblemType, focusArea: string },
-    targetDate?: Date
+    targetDate?: Date,
+    recentTitles?: string[]
 ): Promise<InterviewScenario> {
     const date = targetDate || new Date();
     const generatedDate = date.toISOString().split('T')[0];
@@ -559,6 +645,10 @@ Key Tradeoffs to Explore: ${hints.keyTradeoffs.map((t, i) => `${i + 1}. ${t}`).j
 Possible Problem Angles (choose one or invent a novel variant): ${hints.problemSeeds.map((s, i) => `${i + 1}. ${s}`).join('\n')}`
         : '';
 
+    const recentTitlesSection = recentTitles && recentTitles.length > 0
+        ? `Recent scenarios already delivered — do NOT repeat or closely resemble these topics:\n${recentTitles.map((t, i) => `${i + 1}. ${t}`).join('\n')}\n\nGenerate something substantially different from all of the above.\n`
+        : '';
+
     const userMessage = `Generate a complete ${strategy.problemType === 'SYSTEM_DESIGN' ? 'system design' : 'tactical/incident response'} interview scenario.
 
 Theme: ${strategy.theme.title}
@@ -568,7 +658,7 @@ ${themeContext}
 
 ${focusAreaSection}
 
-Important:
+${recentTitlesSection}Important:
 - The problem must be specific to "${strategy.focusArea}" within "${strategy.theme.title}"
 - Include concrete numbers and metrics throughout
 - Bad/good/best responses must be CLEARLY different in quality and depth

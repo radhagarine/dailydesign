@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { emails, scenarios, generateScenarioSlug } from '@/lib/schema';
 import { generateDailyScenario, InterviewScenario } from '@/lib/ai';
 import { sendEmailWithTracking } from '@/lib/email-retry';
-import { eq, and, or, gte, lte } from 'drizzle-orm';
+import { eq, and, or, gte, lte, desc } from 'drizzle-orm';
 import { getDailyStrategy } from '@/lib/content-strategy';
 import { getBaseUrl } from '@/lib/utils';
 import { verifyBearerToken } from '@/lib/auth';
@@ -72,7 +72,17 @@ export async function GET(req: Request) {
       const strategy = getDailyStrategy(today);
       console.log(`Using strategy: ${strategy.theme.title} / ${strategy.problemType} / ${strategy.focusArea}`);
 
-      scenario = await generateDailyScenario(strategy);
+      // Fetch recent titles so the AI avoids repeating topics
+      const thirtyDaysAgo = new Date(today);
+      thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 30);
+      const recentRows = await db.select({ title: scenarios.title })
+        .from(scenarios)
+        .where(gte(scenarios.generatedAt, thirtyDaysAgo))
+        .orderBy(desc(scenarios.generatedAt))
+        .all();
+      const recentTitles = recentRows.map(r => r.title);
+
+      scenario = await generateDailyScenario(strategy, undefined, recentTitles);
       slug = generateScenarioSlug(scenario.problem.title, today);
 
       const result = await db.insert(scenarios).values({
