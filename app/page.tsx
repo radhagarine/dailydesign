@@ -14,10 +14,8 @@ export default function Home() {
 
             {/* 1. HERO */}
             <section className="relative pt-32 pb-20 border-b border-theme-border-s overflow-hidden">
-                {/* Layered background: radial glow + grid pattern */}
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent-900/30 via-theme-bg to-theme-bg"></div>
-                <div className="absolute inset-0 bg-grid-pattern"></div>
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-accent-500/8 blur-[120px] rounded-full"></div>
+                {/* Subtle background texture */}
+                <div className="absolute inset-0 bg-grid-pattern opacity-40"></div>
 
                 <div className="container-wide text-center relative">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-900/30 border border-accent-700/30 mb-8 animate-fade-in-up">
