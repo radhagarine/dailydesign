@@ -22,17 +22,18 @@ export default function Home() {
                 <div className="container-wide text-center relative">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-900/30 border border-accent-700/30 mb-8 animate-fade-in-up">
                         <div className="w-2 h-2 rounded-full bg-accent-400 animate-glow-pulse"></div>
-                        <span className="text-xs font-mono font-medium tracking-wide text-accent-300">NEW SCENARIOS DAILY</span>
+                        <span className="text-xs font-mono font-medium tracking-wide text-accent-300">NEW SCENARIO EVERY MORNING</span>
                     </div>
 
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 animate-fade-in-up [animation-delay:100ms]">
-                        Calibrate Your Answers<br />
-                        <span className="text-gradient-accent">To the Principal Bar</span>
+                        Daily system design calibration<br />
+                        <span className="text-gradient-accent">for Senior engineers.</span>
                     </h1>
 
                     <p className="max-w-2xl mx-auto text-lg text-theme-muted mb-10 leading-relaxed animate-fade-in-up [animation-delay:200ms]">
-                        Compare bad, good, and best responses to real system design scenarios.
-                        30 minutes a day. No interaction, no fluff—just calibration.
+                        Read a high-stakes architecture scenario over coffee. Think through your tradeoffs,
+                        then instantly see the precise breakdown of flawed, Senior, and Principal-level responses.
+                        No fluff, just daily signal training.
                     </p>
 
                     <div className="flex flex-col items-center animate-fade-in-up [animation-delay:300ms]">
@@ -50,7 +51,7 @@ export default function Home() {
 
                     <div className="mt-16 pt-8 border-t border-theme-border-s max-w-2xl mx-auto">
                         <p className="text-sm text-theme-muted">
-                            Built for backend engineers with <strong className="text-theme-body">8-20+ years</strong> of experience targeting <strong className="text-theme-body">Staff &amp; Principal</strong> roles at top tech companies.
+                            For senior backend engineers who can build the system but want to <strong className="text-theme-body">nail the Staff &amp; Principal interview</strong>.
                         </p>
                     </div>
                 </div>
