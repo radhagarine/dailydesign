@@ -18,6 +18,7 @@ const FrameworkStepResponseSchema = z.object({
     strengths: z.array(z.string()).nullable(),
     what_is_missing: z.string().nullable(),
     principal_engineer_signals: z.array(z.string()).nullable(),
+    cost_awareness: z.string().nullable(),
 });
 
 const ComparisonTableSchema = z.object({
@@ -29,6 +30,19 @@ const ComparisonTableSchema = z.object({
 const ComponentDecisionSchema = z.object({
     component: z.string(),
     comparison_table: ComparisonTableSchema,
+});
+
+const CostAnalysisSchema = z.object({
+    infrastructure_cost: z.string(),
+    operational_cost: z.string(),
+    cost_vs_alternative: z.string(),
+    roi_justification: z.string(),
+});
+
+const AlternativeRejectedSchema = z.object({
+    alternative: z.string(),
+    why_rejected: z.string(),
+    when_it_would_be_better: z.string(),
 });
 
 const FrameworkStepSchema = z.object({
@@ -54,6 +68,8 @@ const FrameworkStepSchema = z.object({
         impact: z.string(),
         mitigation: z.string(),
     })).nullable(),
+    cost_analysis: CostAnalysisSchema.nullable(),
+    alternatives_rejected: z.array(AlternativeRejectedSchema).nullable(),
     key_takeaways: z.array(z.string()),
 });
 
@@ -85,6 +101,8 @@ const InterviewScenarioSchema = z.object({
         critical_concepts_covered: z.array(z.string()),
         patterns_demonstrated: z.array(z.string()),
         what_made_responses_best_level: z.array(z.string()),
+        cost_summary: z.string().nullable(),
+        organizational_considerations: z.array(z.string()).nullable(),
     }),
     reflection_prompts: z.object({
         self_assessment: z.array(z.string()),
@@ -97,6 +115,8 @@ const InterviewScenarioSchema = z.object({
 export type FrameworkStepResponse = z.infer<typeof FrameworkStepResponseSchema>;
 export type ComparisonTable = z.infer<typeof ComparisonTableSchema>;
 export type ComponentDecision = z.infer<typeof ComponentDecisionSchema>;
+export type CostAnalysis = z.infer<typeof CostAnalysisSchema>;
+export type AlternativeRejected = z.infer<typeof AlternativeRejectedSchema>;
 export type FrameworkStep = z.infer<typeof FrameworkStepSchema>;
 export type InterviewScenario = z.infer<typeof InterviewScenarioSchema>;
 
@@ -128,6 +148,7 @@ const SHARED_PREAMBLE = `You are an expert system design interviewer and princip
 - Jumps to solutions without clarifying requirements
 - Vague language ("a lot", "probably", "should be fine")
 - No trade-offs discussed
+- No awareness of infrastructure costs or business justification
 
 ### Good Response Characteristics (Competent Senior Engineer)
 - Shows calculations with units
@@ -136,6 +157,7 @@ const SHARED_PREAMBLE = `You are an expert system design interviewer and princip
 - Mentions trade-offs
 - Asks clarifying questions
 - Quantifies impact
+- Mentions cost exists but doesn't quantify it precisely
 
 ### Best Response Characteristics (Principal Engineer Level)
 - Structured frameworks (functional vs non-functional, decision matrices)
@@ -147,11 +169,19 @@ const SHARED_PREAMBLE = `You are an expert system design interviewer and princip
 - Includes monitoring/validation strategies
 - Makes complexity trade-offs explicit
 - Demonstrates experience-based intuition (cache hit rates, typical failure modes)
+- Quantifies infrastructure costs ($X/month), compares ROI across alternatives, considers team/operational overhead
+- Explains why rejected alternatives are wrong for THIS context but right for others
 
 ### For Each Comparison Table
-1. Bad Response: Write as if a mid-level engineer with 3-4 years experience who hasn't prepared is responding. Show common anti-patterns. Length: 1-2 paragraphs.
-2. Good Response: Write as if a prepared senior engineer with solid fundamentals is responding. Show improvement over bad, but missing depth. Length: 3-4 paragraphs.
-3. Best Response: Write as if a staff/principal engineer with 10+ years and interview preparation is responding. This should be 2-3x longer than good, showing structured thinking, trade-offs, and adaptability. Length: 5-7+ paragraphs with clear structure.`;
+1. Bad Response: Write as if a mid-level engineer with 3-4 years experience who hasn't prepared is responding. Show common anti-patterns. No cost mention. Length: 1-2 paragraphs.
+2. Good Response: Write as if a prepared senior engineer with solid fundamentals is responding. Show improvement over bad, but missing depth. Mentions cost exists but doesn't quantify. Length: 3-4 paragraphs.
+3. Best Response: Write as if a staff/principal engineer with 10+ years and interview preparation is responding. This should be 2-3x longer than good, showing structured thinking, trade-offs, and adaptability. Includes dollar estimates and ROI justification. Length: 5-7+ paragraphs with clear structure.
+
+### Cost Awareness Per Response
+For each response, populate cost_awareness:
+- Bad: null (no cost thinking)
+- Good: Brief mention of cost consideration without numbers
+- Best: Specific dollar amounts, ROI calculation, or cost comparison with alternatives`;
 
 const SYSTEM_DESIGN_STRUCTURE = `## Structural Requirements (System Design)
 - Generate 4 framework steps: **Clarify Requirements**, **Estimate Scale**, **High-Level Architecture**, **Failures & Bottlenecks**
@@ -166,10 +196,13 @@ const SYSTEM_DESIGN_STRUCTURE = `## Structural Requirements (System Design)
 - **Step 3 (High-Level Architecture)** MUST include:
   - architecture_diagram_description: detailed text description of the architecture
   - component_decisions: at least 2 decisions, each comparing alternatives with trade-offs
+  - cost_analysis: MUST be populated with infrastructure costs (e.g., "$12K/month for 3-node Redis cluster"), operational costs (FTE overhead, on-call burden), cost comparison with the main rejected alternative, and ROI justification for the chosen architecture
+  - alternatives_rejected: MUST have at least 2 rejected architectural approaches, each with clear reasoning why it was rejected AND conditions under which it would be the better choice
 - **Step 4 (Failures & Bottlenecks)** MUST include:
   - other_failure_scenarios: at least 3 failure scenarios with timeline-based breakdown (immediate impact, detection/failover, recovery)
   - Each scenario must quantify impact (QPS changes, latency degradation) and propose mitigations
   - Consider cascading effects across components
+  - cost_analysis: should cover cost-of-failure (revenue lost, SLA penalties) vs cost-of-mitigation (redundancy, monitoring infrastructure)
 - Include interview_simulation with a dynamic requirements change scenario`;
 
 const TACTICAL_STRUCTURE = `## Structural Requirements (Tactical / Incident Response)
@@ -185,9 +218,12 @@ const TACTICAL_STRUCTURE = `## Structural Requirements (Tactical / Incident Resp
   - architecture_diagram_description: description of the resolution approach and system changes
   - Focus on: immediate mitigation vs permanent fix, rollback strategies, safe deployment
   - component_decisions: at least 2 decisions about resolution approach trade-offs
+  - cost_analysis: MUST cover cost-of-incident (revenue lost, engineering hours spent), cost-of-fix (implementation effort, infrastructure changes), and ROI of permanent fix vs repeated manual mitigation
+  - alternatives_rejected: MUST have at least 2 rejected resolution approaches with reasoning and when they'd be preferable
 - **Step 4 (Prevention & Process Improvement)** MUST include:
   - Focus on: monitoring gaps, alerting improvements, runbook updates, process changes, blameless postmortem
   - other_failure_scenarios: at least 3 related scenarios that the same root cause could trigger
+  - alternatives_rejected: for prevention strategies considered but rejected (e.g., why not automated remediation vs runbook, why not full rewrite vs targeted fix)
 - Include interview_simulation with a scenario escalation (e.g., the fix didn't work, scope expanded)
 - Emphasize: systematic debugging methodology, incident command structure, communication during outages`;
 
@@ -217,33 +253,40 @@ Below is an excerpt from a hand-crafted best response for a CDN design problem. 
 2. Cache invalidation model — time-based TTL only, or do we need instant purge (adds significant complexity)?
 3. Do we need origin shielding? This changes our cache hierarchy from 2-tier to 3-tier
 
-This framework lets me make **explicit trade-offs** later. For example, if we need instant purge, I'll propose a push-based invalidation system over polling, accepting higher operational complexity for correctness."
+This framework lets me make **explicit trade-offs** later. For example, if we need instant purge, I'll propose a push-based invalidation system over polling, accepting higher operational complexity for correctness.
+
+**Cost & ROI thinking:** At 10M+ RPS across 40 PoPs, we're looking at $150-200K/month for edge infrastructure. Origin shielding drops origin load by 90%, saving $8-12K/month in origin compute. The 3-tier cache hierarchy adds $3K/month in operational complexity (monitoring, config management) but the latency improvement from P50 80ms to P50 20ms directly impacts conversion — at our scale, that's worth $500K+/year in revenue. I'd reject a single-tier edge-only approach because without origin shielding, a cache stampede during a purge event could 10x origin costs for minutes."
 
 ---
-Use this as your minimum bar for "best" responses: structured frameworks, specific numbers with reasoning, explicit trade-offs, and anticipation of downstream design decisions.`;
+Use this as your minimum bar for "best" responses: structured frameworks, specific numbers with reasoning, explicit trade-offs, cost estimates with ROI justification, and anticipation of downstream design decisions.`;
 
 // Additional context prompts for specific themes
 const THEME_CONTEXT: Record<string, string> = {
     'scale': `Focus on systems that handle massive scale: 100M+ users, billions of events, petabyte-scale data.
 Include specific numbers like "500K concurrent connections", "10TB daily data ingestion", "sub-50ms p99 latency requirement".
-Consider: horizontal scaling, sharding strategies, caching layers, async processing, eventual consistency tradeoffs.`,
+Consider: horizontal scaling, sharding strategies, caching layers, async processing, eventual consistency tradeoffs.
+Cost dimension: Include per-request costs at scale, reserved vs on-demand pricing tradeoffs, cost-per-user at different scale tiers, and how costs change non-linearly as you scale (e.g., cross-region data transfer costs, storage tiering economics).`,
 
     'performance': `Focus on performance bottlenecks, optimization decisions, and capacity planning.
 Include specific metrics: latency percentiles (p50/p95/p99), throughput, CPU/memory utilization, query execution times.
-Consider: profiling approaches, database optimization, caching strategies, connection pooling, resource contention.`,
+Consider: profiling approaches, database optimization, caching strategies, connection pooling, resource contention.
+Cost dimension: Include engineering hours for optimization vs brute-force scaling ROI, cost of over-provisioning vs right-sizing, when to invest in custom optimization vs throwing hardware at the problem.`,
 
     'reliability': `Focus on failure modes, incident response, chaos engineering, and building resilient systems.
 Include specific failure scenarios: cascading failures, split-brain, data corruption, dependency outages.
-Consider: circuit breakers, bulkheads, graceful degradation, disaster recovery, SLO/SLA tradeoffs.`,
+Consider: circuit breakers, bulkheads, graceful degradation, disaster recovery, SLO/SLA tradeoffs.
+Cost dimension: Include revenue lost per minute of downtime, SLA penalty costs, cost of redundancy infrastructure, insurance cost of chaos engineering investment, ROI of moving from 99.9% to 99.99% availability.`,
 
     'architecture': `Focus on architectural decisions and system evolution over time.
 Include specific tradeoffs: monolith vs microservices, sync vs async, SQL vs NoSQL, build vs buy.
-Consider: migration strategies, technical debt, organizational structure, team boundaries, backwards compatibility.`,
+Consider: migration strategies, technical debt, organizational structure, team boundaries, backwards compatibility.
+Cost dimension: Include team cost (how many engineers to operate), migration cost (engineering quarters), operational overhead of the chosen architecture, total cost of ownership over 3 years, Conway's Law implications for team structure.`,
 
     'product': `Focus on end-to-end product system design — the classic "Design X" interview problems.
 The candidate must design the FULL product, not just one infrastructure component. Cover: functional requirements (core user flows), non-functional requirements (scale, latency, availability), data model, API design, high-level architecture, and deep dives into 2-3 interesting components.
 Include specific product metrics: DAU/MAU, peak concurrent users, content volume, read/write ratios, geographic distribution.
-Consider: product-specific domain challenges, user experience constraints, real-time vs eventual consistency tradeoffs, content delivery, recommendation/ranking systems, abuse prevention.`
+Consider: product-specific domain challenges, user experience constraints, real-time vs eventual consistency tradeoffs, content delivery, recommendation/ranking systems, abuse prevention.
+Cost dimension: Include unit economics (infrastructure cost per user), cost at different scale points (1K, 100K, 10M users), how cost structure changes with product evolution, revenue-to-infrastructure-cost ratios.`
 };
 
 // ── Focus Area Hints — per-area context for richer, more specific generation ──
@@ -681,7 +724,7 @@ ${recentTitlesSection}Important:
                 model: 'gpt-4o',
                 response_format: zodResponseFormat(InterviewScenarioSchema, 'interview_scenario'),
                 temperature: 0.5,
-                max_tokens: 16000,
+                max_tokens: 24000,
             });
 
             const message = completion.choices[0].message;

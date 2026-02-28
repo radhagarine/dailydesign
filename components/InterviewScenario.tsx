@@ -15,6 +15,7 @@ interface FrameworkStepResponse {
     strengths?: string[];
     what_is_missing?: string;
     principal_engineer_signals?: string[];
+    cost_awareness?: string;
 }
 
 interface ComparisonTable {
@@ -26,6 +27,19 @@ interface ComparisonTable {
 interface ComponentDecision {
     component: string;
     comparison_table: ComparisonTable;
+}
+
+interface CostAnalysis {
+    infrastructure_cost: string;
+    operational_cost: string;
+    cost_vs_alternative: string;
+    roi_justification: string;
+}
+
+interface AlternativeRejected {
+    alternative: string;
+    why_rejected: string;
+    when_it_would_be_better: string;
 }
 
 interface FrameworkStep {
@@ -47,6 +61,8 @@ interface FrameworkStep {
     architecture_diagram_description?: string;
     component_decisions?: ComponentDecision[];
     other_failure_scenarios?: Array<{ scenario: string; impact: string; mitigation: string }>;
+    cost_analysis?: CostAnalysis;
+    alternatives_rejected?: AlternativeRejected[];
     key_takeaways: string[];
 }
 
@@ -78,6 +94,8 @@ interface InterviewScenarioData {
         critical_concepts_covered: string[];
         patterns_demonstrated: string[];
         what_made_responses_best_level: string[];
+        cost_summary?: string;
+        organizational_considerations?: string[];
     };
     reflection_prompts: {
         self_assessment: string[];
@@ -224,6 +242,14 @@ function AnswerCard({
                                         <li key={i}>{signal}</li>
                                     ))}
                                 </ul>
+                            </div>
+                        )}
+
+                        {/* Cost Awareness */}
+                        {response.cost_awareness && (
+                            <div className="mt-3">
+                                <h6 className="text-amber-400 text-sm font-medium mb-1">Cost Awareness:</h6>
+                                <p className="text-theme-muted text-sm">{response.cost_awareness}</p>
                             </div>
                         )}
                     </div>
@@ -543,6 +569,59 @@ function StepContent({
                                 </p>
                                 <p className="text-green-400 text-sm mt-1">
                                     <span className="font-medium">Mitigation:</span> {scenario.mitigation}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Cost Analysis */}
+            {isRevealed && step.cost_analysis && (
+                <div className="bg-theme-inset/50 rounded-lg p-4 border border-theme-border-s">
+                    <h5 className="text-accent-400 font-semibold mb-3 flex items-center gap-2">
+                        <span className="text-lg">💰</span>
+                        Cost Analysis
+                    </h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-theme-panel rounded-lg p-3">
+                            <h6 className="text-amber-400 text-sm font-medium mb-1">Infrastructure Cost</h6>
+                            <p className="text-theme-body text-sm">{step.cost_analysis.infrastructure_cost}</p>
+                        </div>
+                        <div className="bg-theme-panel rounded-lg p-3">
+                            <h6 className="text-amber-400 text-sm font-medium mb-1">Operational Cost</h6>
+                            <p className="text-theme-body text-sm">{step.cost_analysis.operational_cost}</p>
+                        </div>
+                        <div className="bg-theme-panel rounded-lg p-3">
+                            <h6 className="text-amber-400 text-sm font-medium mb-1">Cost vs Alternative</h6>
+                            <p className="text-theme-body text-sm">{step.cost_analysis.cost_vs_alternative}</p>
+                        </div>
+                        <div className="bg-theme-panel rounded-lg p-3">
+                            <h6 className="text-amber-400 text-sm font-medium mb-1">ROI Justification</h6>
+                            <p className="text-theme-body text-sm">{step.cost_analysis.roi_justification}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Alternatives Rejected */}
+            {isRevealed && step.alternatives_rejected && step.alternatives_rejected.length > 0 && (
+                <div className="bg-theme-inset/50 rounded-lg p-4 border border-theme-border-s">
+                    <h5 className="text-accent-400 font-semibold mb-3 flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        Alternatives Rejected
+                    </h5>
+                    <div className="space-y-3">
+                        {step.alternatives_rejected.map((alt, i) => (
+                            <div key={i} className="border-l-2 border-amber-600 pl-4 py-2">
+                                <p className="text-theme-text font-medium">{alt.alternative}</p>
+                                <p className="text-red-400 text-sm mt-1">
+                                    <span className="font-medium">Why rejected:</span> {alt.why_rejected}
+                                </p>
+                                <p className="text-green-400 text-sm mt-1">
+                                    <span className="font-medium">When it would be better:</span> {alt.when_it_would_be_better}
                                 </p>
                             </div>
                         ))}
@@ -1004,6 +1083,35 @@ export default function InterviewScenario(props: InterviewScenarioProps) {
                                             ))}
                                         </ul>
                                     </div>
+
+                                    {/* Cost Summary */}
+                                    {scenario.summary.cost_summary && (
+                                        <div className="bg-theme-panel border border-amber-900/30 rounded-xl p-6">
+                                            <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
+                                                <span className="text-2xl">💰</span>
+                                                Cost Summary
+                                            </h3>
+                                            <p className="text-theme-body">{scenario.summary.cost_summary}</p>
+                                        </div>
+                                    )}
+
+                                    {/* Organizational Considerations */}
+                                    {scenario.summary.organizational_considerations && scenario.summary.organizational_considerations.length > 0 && (
+                                        <div className="bg-theme-panel border border-theme-border rounded-xl p-6">
+                                            <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
+                                                <span className="text-2xl">🏢</span>
+                                                Organizational Considerations
+                                            </h3>
+                                            <ul className="space-y-2">
+                                                {scenario.summary.organizational_considerations.map((consideration, i) => (
+                                                    <li key={i} className="flex gap-3 text-theme-body">
+                                                        <span className="text-accent-500">•</span>
+                                                        {consideration}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
 
                                     {/* Reflection Prompts */}
                                     <div className="bg-theme-panel border border-theme-border rounded-xl p-6">
