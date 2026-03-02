@@ -286,7 +286,12 @@ Cost dimension: Include team cost (how many engineers to operate), migration cos
 The candidate must design the FULL product, not just one infrastructure component. Cover: functional requirements (core user flows), non-functional requirements (scale, latency, availability), data model, API design, high-level architecture, and deep dives into 2-3 interesting components.
 Include specific product metrics: DAU/MAU, peak concurrent users, content volume, read/write ratios, geographic distribution.
 Consider: product-specific domain challenges, user experience constraints, real-time vs eventual consistency tradeoffs, content delivery, recommendation/ranking systems, abuse prevention.
-Cost dimension: Include unit economics (infrastructure cost per user), cost at different scale points (1K, 100K, 10M users), how cost structure changes with product evolution, revenue-to-infrastructure-cost ratios.`
+Cost dimension: Include unit economics (infrastructure cost per user), cost at different scale points (1K, 100K, 10M users), how cost structure changes with product evolution, revenue-to-infrastructure-cost ratios.`,
+
+    'genai': `Focus on production AI/ML systems: LLM serving infrastructure, RAG architectures, AI agent orchestration, model evaluation, and AI-native system design.
+Include specific AI metrics: tokens/second throughput, time-to-first-token (TTFT), inter-token latency, retrieval recall@k, groundedness scores, inference cost-per-request.
+Consider: GPU scheduling and memory management, KV-cache optimization, model quantization tradeoffs, embedding model selection, prompt engineering at scale, guardrails and safety layers, evaluation pipelines.
+Cost dimension: Include GPU compute costs (A100/H100 pricing per hour), inference cost-per-request at different model sizes, self-hosted vs API provider tradeoffs (OpenAI/Anthropic pricing vs own infrastructure), token economics, cost-per-quality tradeoffs when choosing smaller/quantized models.`
 };
 
 // ── Focus Area Hints — per-area context for richer, more specific generation ──
@@ -654,6 +659,86 @@ const FOCUS_AREA_HINTS: Record<string, {
             'Inventory accuracy vs checkout speed — strong consistency (pessimistic lock) prevents overselling but increases latency; reservation with TTL is faster but risks abandoned reservations',
             'Monolithic checkout vs microservice pipeline — monolithic is simpler to reason about but hard to scale; pipeline enables independent scaling but adds orchestration complexity',
             'Real-time fraud scoring vs checkout conversion — aggressive fraud checks reduce losses but increase false positives and cart abandonment',
+        ],
+    },
+
+    // GenAI & AI Engineering theme (6 focus areas)
+    'LLM Serving & Inference': {
+        problemSeeds: [
+            'Design an LLM serving platform handling 50K concurrent inference requests with <200ms time-to-first-token and 100+ tokens/sec throughput on a fleet of 64 H100 GPUs',
+            'Design a multi-model serving infrastructure that dynamically routes requests across GPT-4, Claude, Llama, and Mistral models based on cost, latency, and quality requirements',
+            'Design a batching and scheduling system for LLM inference that maximizes GPU utilization while meeting SLA latency targets for 10K QPS',
+        ],
+        technicalContext: 'GPU scheduling and memory management, KV-cache optimization (paged attention, vLLM), continuous batching vs static batching, dynamic batching with padding, model quantization (GPTQ, AWQ, GGUF, INT4/INT8), speculative decoding, streaming token delivery (SSE/WebSocket), tensor parallelism vs pipeline parallelism, serving frameworks (vLLM, TGI, TensorRT-LLM, Triton), prefill vs decode phase optimization.',
+        keyTradeoffs: [
+            'Batch size vs latency — larger batches improve GPU throughput but increase per-request latency; smaller batches are responsive but waste compute',
+            'Quantization level vs quality — INT4 halves memory and doubles throughput but degrades output quality on reasoning tasks; FP16 preserves quality but limits concurrent requests',
+            'Self-hosted vs API provider — self-hosted gives control and lower per-token cost at scale but requires GPU ops expertise; APIs are simpler but have rate limits and higher marginal cost',
+        ],
+    },
+    'RAG & Knowledge Systems': {
+        problemSeeds: [
+            'Design a RAG system for a legal research platform indexing 10M court documents with hybrid search, citation verification, and hallucination detection',
+            'Design a knowledge retrieval pipeline for an enterprise chatbot that searches across 500K internal documents with access control, freshness ranking, and multi-hop reasoning',
+            'Design a RAG architecture for a medical Q&A system that must achieve >95% factual accuracy with source attribution and handle conflicting information across 2M clinical papers',
+        ],
+        technicalContext: 'Chunking strategies (fixed-size, semantic, recursive, document-aware), embedding models (OpenAI ada-002, Cohere, BGE, E5), vector databases (Pinecone, Weaviate, Qdrant, pgvector), hybrid search (dense embeddings + sparse BM25), reranking (cross-encoders, Cohere Rerank), context window management and compression, metadata filtering, hallucination detection (NLI-based, self-consistency), retrieval evaluation (recall@k, MRR, NDCG).',
+        keyTradeoffs: [
+            'Chunk size vs retrieval precision — smaller chunks improve precision but lose context; larger chunks preserve context but dilute relevance signal',
+            'Embedding model size vs latency — larger embedding models give better retrieval quality but increase indexing time and query latency',
+            'Retrieval recall vs context window cost — retrieving more chunks improves answer coverage but increases token cost and risks confusing the LLM with noise',
+        ],
+    },
+    'Local LLM & Edge AI': {
+        problemSeeds: [
+            'Design an on-device AI assistant for a mobile app that runs a 7B parameter model with <500ms TTFT on consumer hardware (iPhone 15, Pixel 8)',
+            'Design a privacy-preserving AI system for a healthcare provider that processes patient records locally without sending data to external APIs, running on a fleet of M2 Mac Minis',
+            'Design a hybrid local/cloud inference system that routes queries to on-device models for simple tasks and cloud models for complex reasoning, with seamless fallback',
+        ],
+        technicalContext: 'On-device inference runtimes (llama.cpp, MLX, ONNX Runtime, Core ML, TensorFlow Lite), model compression (quantization, pruning, distillation, LoRA merging), memory constraints (4-8GB on mobile, 16-64GB on desktop), GGUF format and k-quant variants, Metal/CUDA/Vulkan acceleration, offline-capable AI, model caching and lazy loading, token throughput on consumer GPUs/NPUs.',
+        keyTradeoffs: [
+            'Model size vs quality — smaller quantized models fit on device but produce lower quality outputs; larger models need more RAM and are slower',
+            'Privacy vs capability — local inference ensures data never leaves the device but limits model size and capability; cloud offloading enables stronger models but risks data exposure',
+            'Startup latency vs memory — keeping models loaded enables instant inference but consumes RAM permanently; lazy loading saves memory but adds cold-start delay',
+        ],
+    },
+    'AI Agent Orchestration': {
+        problemSeeds: [
+            'Design a multi-agent system for automated code review that coordinates planning, code analysis, security scanning, and review summary agents with human-in-the-loop approval',
+            'Design an AI agent orchestration platform for customer support that handles 100K tickets/day with tool use, escalation, and cost control per agent run',
+            'Design a ReAct-based research agent that can browse the web, query databases, and synthesize findings — with failure recovery, cost budgets, and audit trails',
+        ],
+        technicalContext: 'Multi-agent architectures (supervisor, hierarchical, peer-to-peer), tool use and function calling, planning loops (ReAct, chain-of-thought, tree-of-thought), agent memory (short-term scratchpad, long-term vector store), failure recovery and retry strategies, cost control (token budgets, step limits), human-in-the-loop patterns, agent evaluation benchmarks, guardrails (content filtering, action validation), tracing and observability for agent runs.',
+        keyTradeoffs: [
+            'Agent autonomy vs control — more autonomous agents complete tasks faster but risk expensive runaway loops; tighter guardrails are safer but slower',
+            'Single powerful agent vs multi-agent — a single agent is simpler to debug but hits context limits; multi-agent enables specialization but adds coordination overhead',
+            'Tool breadth vs security — more tools increase agent capability but expand the attack surface and risk unintended side effects',
+        ],
+    },
+    'LLM Observability & Monitoring': {
+        problemSeeds: [
+            'Design an observability platform for a production LLM application that monitors latency (TTFT, inter-token, total), quality (groundedness, relevance), and cost across 1M requests/day',
+            'Design an evaluation and drift detection pipeline for a RAG system that catches quality regressions within 1 hour of deployment, with automated rollback',
+            'Design a prompt/completion logging and analytics system for a multi-tenant AI platform that supports cost attribution, quality tracking, and compliance auditing across 500 customers',
+        ],
+        technicalContext: 'Prompt/completion logging (structured traces), token usage tracking and cost attribution, latency monitoring (TTFT, inter-token latency, total generation time), quality metrics (groundedness via NLI, relevance scoring, faithfulness), LLM evaluation frameworks (RAGAS, DeepEval, LangSmith), guardrail monitoring (toxicity, PII detection), drift detection (embedding drift, output distribution shift), A/B testing for prompts, eval pipelines (golden set, LLM-as-judge).',
+        keyTradeoffs: [
+            'Logging completeness vs cost — logging all prompts/completions enables debugging but multiplies storage costs; sampling reduces cost but misses rare failures',
+            'Automated eval vs human review — automated metrics scale but miss nuanced quality issues; human review is accurate but expensive and slow',
+            'Real-time monitoring vs batch evaluation — real-time catches issues immediately but requires streaming infrastructure; batch is simpler but delays detection',
+        ],
+    },
+    'Real-Time ML & Streaming Models': {
+        problemSeeds: [
+            'Design a real-time recommendation system for a streaming platform that personalizes content for 50M users with <100ms serving latency and updates within 5 minutes of user interaction',
+            'Design a real-time fraud detection system for a payment processor handling 10K transactions/second with <50ms inference latency and online model updates',
+            'Design a feature store and streaming inference pipeline for an e-commerce platform that serves ML features from both batch (daily) and real-time (sub-second) sources',
+        ],
+        technicalContext: 'Online learning and incremental model updates, feature stores (Feast, Tecton, batch + streaming features), streaming inference pipelines (Kafka + Flink + model serving), concept drift detection (PSI, KL divergence, DDM), model hot-swapping (blue-green for models), A/B testing and multi-armed bandit for models, shadow deployment (logging predictions without serving), real-time feature engineering (sliding window aggregations), model versioning and rollback.',
+        keyTradeoffs: [
+            'Model freshness vs stability — frequently retrained models capture recent patterns but risk instability from noise; stable models are predictable but may miss emerging trends',
+            'Batch vs streaming features — batch features are cheaper and simpler but stale; streaming features are fresh but require complex real-time infrastructure',
+            'Shadow deployment vs direct rollout — shadow deployment validates safely but doubles inference cost; direct rollout is cheaper but risks serving bad predictions',
         ],
     },
 };

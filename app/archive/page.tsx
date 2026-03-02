@@ -16,7 +16,9 @@ const getThemeLabel = (theme: string) => {
         'scale': 'Massive Scale',
         'performance': 'Performance',
         'reliability': 'Reliability',
-        'architecture': 'Architecture'
+        'architecture': 'Architecture',
+        'product': 'Product System Design',
+        'genai': 'GenAI & AI Engineering'
     };
     return labels[theme] || theme;
 };
@@ -26,7 +28,9 @@ const getThemeColor = (theme: string) => {
         'scale': 'bg-purple-900/30 text-purple-400 border-purple-900/50',
         'performance': 'bg-orange-900/30 text-orange-400 border-orange-900/50',
         'reliability': 'bg-red-900/30 text-red-400 border-red-900/50',
-        'architecture': 'bg-blue-900/30 text-blue-400 border-blue-900/50'
+        'architecture': 'bg-blue-900/30 text-blue-400 border-blue-900/50',
+        'product': 'bg-emerald-900/30 text-emerald-400 border-emerald-900/50',
+        'genai': 'bg-cyan-900/30 text-cyan-400 border-cyan-900/50'
     };
     return colors[theme] || 'bg-gray-900/30 text-theme-muted border-gray-900/50';
 };

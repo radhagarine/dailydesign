@@ -37,42 +37,46 @@ export const THEMES: Theme[] = [
         title: 'Product System Design',
         description: 'End-to-end design of real-world products — the classic "Design X" problems that dominate FAANG interviews.',
         focusAreas: ['Video Streaming', 'Social Platform', 'Messaging & Chat', 'Ride Sharing & Geo', 'Search & Discovery', 'E-Commerce Platform']
+    },
+    {
+        id: 'genai',
+        title: 'GenAI & AI Engineering',
+        description: 'Design and operate production AI/ML systems — LLM serving, RAG pipelines, model evaluation, and AI-native architectures.',
+        focusAreas: [
+            'LLM Serving & Inference',
+            'RAG & Knowledge Systems',
+            'Local LLM & Edge AI',
+            'AI Agent Orchestration',
+            'LLM Observability & Monitoring',
+            'Real-Time ML & Streaming Models'
+        ]
     }
 ];
 
 export function getDailyStrategy(date: Date = new Date()) {
-    // 1. Determine Week Index (Simple epoch math)
-    // Epoch week allows consistent rotation regardless of year boundaries
-    const oneWeekMs = 1000 * 60 * 60 * 24 * 7;
     const epoch = new Date('2024-01-01T00:00:00Z').getTime(); // Reference point
     const current = date.getTime();
-    const weekIndex = Math.floor((current - epoch) / oneWeekMs);
+    const daysSinceEpoch = Math.floor((current - epoch) / (1000 * 60 * 60 * 24));
 
-    // Rotate through themes (5-week cycle)
-    const themeIndex = weekIndex % THEMES.length;
+    // 1. Rotate theme daily (6-day cycle) for even spread across all themes
+    const themeIndex = daysSinceEpoch % THEMES.length;
     const theme = THEMES[themeIndex];
 
     // 2. Determine Problem Type
-    // Simple rule: Alternate days, or randomize. 
-    // Let's do: Mon/Wed/Fri = Tactical (Type B), Tue/Thu/Sat = System Design (Type A), Sun = Random
-    // 0 = Sun, 1 = Mon, ...
+    // Mon/Wed/Fri = Tactical, Tue/Thu/Sat = System Design, Sun = alternating
     const day = date.getUTCDay();
-    let problemType: ProblemType = 'TACTICAL'; // Default
+    let problemType: ProblemType = 'TACTICAL';
 
     if (day === 0) {
-        // Deterministic: alternate Sundays based on week index (even weeks = SYSTEM_DESIGN)
-        problemType = weekIndex % 2 === 0 ? 'SYSTEM_DESIGN' : 'TACTICAL';
+        problemType = daysSinceEpoch % 2 === 0 ? 'SYSTEM_DESIGN' : 'TACTICAL';
     } else if (day % 2 === 0) {
-        // Tue (2), Thu (4), Sat (6) -> System Design (More time to read?)
         problemType = 'SYSTEM_DESIGN';
     } else {
-        // Mon (1), Wed (3), Fri (5) -> Tactical
         problemType = 'TACTICAL';
     }
 
-    // 3. Pick a specific focus area for variety
-    // Use (weekIndex * 7 + day) to avoid bias — day % length favors indices 0-1
-    const focusArea = theme.focusAreas[(weekIndex * 7 + day) % theme.focusAreas.length];
+    // 3. Pick a specific focus area — rotate within each theme using daysSinceEpoch
+    const focusArea = theme.focusAreas[Math.floor(daysSinceEpoch / THEMES.length) % theme.focusAreas.length];
 
     return {
         theme,

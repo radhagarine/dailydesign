@@ -13,6 +13,8 @@ export const THEME_LABELS: Record<string, string> = {
     'performance': 'Performance & Capacity',
     'reliability': 'Reliability & Incidents',
     'architecture': 'Architecture Tradeoffs',
+    'product': 'Product System Design',
+    'genai': 'GenAI & AI Engineering',
 };
 
 export function getThemeLabel(theme: string): string {

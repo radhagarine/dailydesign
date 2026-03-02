@@ -296,7 +296,7 @@ export default function Home() {
                                 <span className="transition-transform group-open:rotate-180 text-theme-muted"><ChevronDown /></span>
                             </summary>
                             <p className="mt-3 text-theme-muted text-sm leading-relaxed">
-                                No. We focus exclusively on System Design, Architecture, Tradeoffs, and Operational Reality (Reliability, Scaling, Failure Modes).
+                                No. We focus exclusively on System Design, Architecture, Tradeoffs, Operational Reality, and GenAI/AI Engineering.
                             </p>
                         </details>
 
