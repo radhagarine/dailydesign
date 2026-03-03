@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation';
 import InterviewScenario from '@/components/InterviewScenario';
 import ScenarioTeaser from '@/components/ScenarioTeaser';
 import { validateScenarioAccess } from '@/lib/access';
-import { getSubscriberFromCookie, isSubscriberPaid } from '@/lib/cookies';
+import { getSubscriberFromCookie, getSubscriberAccessDate, isSubscriberPaid } from '@/lib/cookies';
 import type { Metadata } from 'next';
 
 interface PageProps {
@@ -81,6 +81,20 @@ export default async function ScenarioPage({ params, searchParams }: PageProps) 
     const isPaid = subscriber ? await isSubscriberPaid(subscriber) : false;
 
     if (!isPaid) {
+        return (
+            <ScenarioTeaser
+                title={scenario.title}
+                metadata={content.metadata}
+                problem={content.problem}
+                theme={scenario.theme}
+                problemType={scenario.problemType}
+            />
+        );
+    }
+
+    // Check if scenario was generated before subscriber's access date
+    const accessDate = await getSubscriberAccessDate(subscriber!);
+    if (accessDate && scenario.generatedAt && scenario.generatedAt < accessDate) {
         return (
             <ScenarioTeaser
                 title={scenario.title}

@@ -1,9 +1,9 @@
 import { db } from '@/lib/db';
 import { scenarios } from '@/lib/schema';
-import { desc, sql } from 'drizzle-orm';
+import { desc, gte, sql } from 'drizzle-orm';
 import Link from 'next/link';
 import type { Metadata } from 'next';
-import { getSubscriberFromCookie, isSubscriberPaid } from '@/lib/cookies';
+import { getSubscriberFromCookie, getSubscriberAccessDate, isSubscriberPaid } from '@/lib/cookies';
 import ArchiveAccessGate from '@/components/ArchiveAccessGate';
 
 export const metadata: Metadata = {
@@ -85,7 +85,9 @@ export default async function ArchivePage() {
         );
     }
 
-    const allScenarios = await db
+    const accessDate = await getSubscriberAccessDate(subscriber);
+
+    const query = db
         .select({
             id: scenarios.id,
             slug: scenarios.slug,
@@ -95,9 +97,15 @@ export default async function ArchivePage() {
             generatedAt: scenarios.generatedAt,
             summary: sql<string | null>`json_extract(${scenarios.content}, '$.problem.statement')`,
         })
-        .from(scenarios)
-        .orderBy(desc(scenarios.generatedAt))
-        .all();
+        .from(scenarios);
+
+    const allScenarios = accessDate
+        ? await query.where(gte(scenarios.generatedAt, accessDate)).orderBy(desc(scenarios.generatedAt)).all()
+        : await query.orderBy(desc(scenarios.generatedAt)).all();
+
+    const accessSinceLabel = accessDate
+        ? formatDate(accessDate)
+        : null;
 
     return (
         <div className="min-h-screen bg-theme-bg text-theme-text">
@@ -118,7 +126,7 @@ export default async function ArchivePage() {
                 <div className="mb-12 text-center">
                     <h1 className="text-4xl font-bold mb-4">Scenario Archive</h1>
                     <p className="text-theme-muted text-lg">
-                        {allScenarios.length} interview simulations available
+                        {allScenarios.length} interview simulation{allScenarios.length !== 1 ? 's' : ''} available{accessSinceLabel ? ` since ${accessSinceLabel}` : ''}
                     </p>
                 </div>
 

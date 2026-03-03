@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
 import { subscribers, subscriptions } from '@/lib/schema';
-import { and, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray } from 'drizzle-orm';
 
 export const COOKIE_NAME = 'subscriber_token';
 export const COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
@@ -23,6 +23,22 @@ export async function getSubscriberFromCookie(): Promise<Subscriber | null> {
   if (!subscriber || subscriber.status !== 'active') return null;
 
   return subscriber;
+}
+
+export async function getSubscriberAccessDate(subscriber: Subscriber): Promise<Date | null> {
+  if (subscriber.freeAccess) {
+    return subscriber.joinedAt || null;
+  }
+
+  const earliestSub = await db
+    .select({ createdAt: subscriptions.createdAt })
+    .from(subscriptions)
+    .where(eq(subscriptions.subscriberId, subscriber.id))
+    .orderBy(asc(subscriptions.createdAt))
+    .limit(1)
+    .get();
+
+  return earliestSub?.createdAt || null;
 }
 
 export async function isSubscriberPaid(subscriber: Subscriber): Promise<boolean> {
