@@ -245,8 +245,26 @@ This generates 4 codes by default and prints them. Edit `NUM_CODES` and `EXPIRES
 Send each person a pre-filled link — they only need to enter their email:
 
 ```
-https://your-app.vercel.app/redeem?code=DAILY-XXXXXXXXXXXXXXXX
+https://dailydesign.radhagarine.com/redeem?code=DAILY-XXXXXXXXXXXXXXXX
 ```
+
+### User instructions
+
+**For new users (no account):**
+
+1. Open the link shared with you (e.g. `https://dailydesign.radhagarine.com/redeem?code=DAILY-XXX`)
+2. Enter your email address
+3. Click "Activate Premium Access"
+4. You now have 15 days of full premium access — browse the archive and receive full daily scenarios via email
+
+**For existing subscribers:**
+
+1. Go to `https://dailydesign.radhagarine.com/redeem`
+2. Enter your registered email and the access code
+3. Click "Activate Premium Access"
+4. Your account is upgraded to premium for 15 days
+
+**Alternative redemption points:** You can also enter an access code on the homepage (click "Have an access code?" below the signup form), on the archive page, or on any locked scenario page.
 
 ### Where users can redeem
 
