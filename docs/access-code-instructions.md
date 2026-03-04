@@ -10,14 +10,6 @@ npx tsx scripts/generate-codes.ts
 
 Generates 4 codes with a 2-day redemption window. Edit `NUM_CODES` and `EXPIRES_IN_DAYS` in the script to customize.
 
-### Share links
-
-Send each person a pre-filled link:
-
-```
-https://dailydesign.radhagarine.com/redeem?code=DAILY-XXXXXXXXXXXXXXXX
-```
-
 ### Access model
 
 | | Duration | Detail |
@@ -34,12 +26,16 @@ https://dailydesign.radhagarine.com/redeem?code=DAILY-XXXXXXXXXXXXXXXX
 Hey! I built a daily system design interview prep tool for senior engineers
 targeting Staff/Principal roles. Want to try it out?
 
-Here's your free access code (valid for 15 days):
+Here's your free 15-day access code: DAILY-XXXXXXXXXXXXXXXX
 
-https://dailydesign.radhagarine.com/redeem?code=DAILY-XXXXXXXXXXXXXXXX
+To activate:
+1. Go to https://dailydesign.radhagarine.com
+2. Enter your email and sign up
+3. Click "Have an access code?" below the signup form
+4. Paste your code and hit Redeem
 
-Just enter your email and you're in. You'll get full daily scenarios with
-bad/good/best answer breakdowns. Code expires in 2 days so grab it soon!
+You'll get full daily scenarios with bad/good/best answer breakdowns.
+Code expires in 2 days so grab it soon!
 ```
 
 ---
@@ -78,16 +74,22 @@ I'm giving you free access to DailyDesign -- daily system design
 interview scenarios built for senior engineers targeting Staff/Principal
 roles.
 
-Here's how to activate your access:
+Here's your access code: DAILY-XXXXXXXXXXXXXXXX
 
-1. Click this link:
-   https://dailydesign.radhagarine.com/redeem?code=DAILY-XXXXXXXXXXXXXXXX
+To activate:
 
-2. Enter your email address
+1. Go to https://dailydesign.radhagarine.com
+2. Enter your email and sign up
+3. You'll receive a welcome email -- click "Have an access code?
+   Redeem it here" at the bottom
+4. Enter your code to unlock 15 days of premium access
 
-3. Click "Activate Premium Access"
+Or, you can also enter the code directly on the homepage:
+- Sign up with your email
+- Click "Have an access code?" below the signup form
+- Paste your code and hit Redeem
 
-That's it! You'll get 15 days of full premium access:
+What you get for 15 days:
 
   - Full daily scenarios delivered to your inbox at 6 AM UTC
   - Bad/Good/Best answer comparisons for every scenario
@@ -97,41 +99,44 @@ That's it! You'll get 15 days of full premium access:
 This code expires in 2 days, so activate it soon.
 
 After 15 days, you can subscribe to keep full access or continue
-with the free tier (daily problem statements without solutions).
-
-Browse the archive: https://dailydesign.radhagarine.com/archive
+receiving daily problem statements for free.
 
 -- [Your name]
 ```
 
 ---
 
-## User Instructions (for new users)
+## User Instructions
 
-### With a pre-filled link
+### How to activate your access code
 
-1. Open the link shared with you (e.g. `https://dailydesign.radhagarine.com/redeem?code=DAILY-XXX`)
-2. Enter your email address
-3. Click **Activate Premium Access**
-4. You now have 15 days of full premium access
+You've received an access code (format: `DAILY-XXXXXXXXXXXXXXXX`). Here are three ways to use it:
 
-### Without a link (just a code)
+#### Option 1: On the homepage
 
 1. Go to https://dailydesign.radhagarine.com
 2. Enter your email in the signup form
-3. Click **Have an access code?** below the form
+3. Click **"Have an access code?"** that appears below the form
 4. Enter your code and click **Redeem**
 
-### Alternative redemption points
+#### Option 2: From the welcome email
 
-You can enter an access code from any of these places:
+1. Sign up at https://dailydesign.radhagarine.com with your email
+2. Open the welcome email you receive
+3. Click **"Have an access code? Redeem it here"** at the bottom of the email
+4. Enter your code and click **Activate Premium Access**
 
-- **Homepage signup** -- "Have an access code?" below the email field
-- **Pricing section** -- "Have an access code?" below the pricing cards
-- **Archive page** -- "Have an access code?" on the subscriber gate
-- **Locked scenario** -- "Have an access code?" on the paywall overlay
-- **Welcome email** -- "Redeem it here" link at the bottom
-- **Direct link** -- `https://dailydesign.radhagarine.com/redeem`
+#### Option 3: On any locked page
+
+If you're already signed up and see a locked scenario or the archive upgrade page:
+
+1. Look for the **"Have an access code?"** link
+2. Click it, enter your code, and hit **Redeem**
+
+This link appears on:
+- The archive page (when showing "Upgrade to Access the Archive")
+- Any locked scenario page (below "Subscribe to Unlock")
+- The pricing section on the homepage
 
 ### What you get with premium access
 
@@ -143,4 +148,4 @@ You can enter an access code from any of these places:
 
 ### After your access expires
 
-After 15 days, you'll still receive daily emails with the problem statement (teaser). To see full solutions and the archive, subscribe at https://dailydesign.radhagarine.com/#pricing.
+After 15 days, you'll still receive daily emails with the problem statement. To see full solutions and the archive, subscribe at https://dailydesign.radhagarine.com/#pricing.
