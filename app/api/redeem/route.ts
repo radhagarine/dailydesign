@@ -35,6 +35,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'This code has expired' }, { status: 400 });
         }
 
+        // Free access expires 15 days from redemption
+        const freeAccessExpiresAt = new Date();
+        freeAccessExpiresAt.setDate(freeAccessExpiresAt.getDate() + 15);
+
         // Look up existing subscriber
         let subscriber = await db
             .select()
@@ -48,7 +52,7 @@ export async function POST(request: NextRequest) {
             // Reactivate unsubscribed user
             await db
                 .update(subscribers)
-                .set({ status: 'active', freeAccess: true })
+                .set({ status: 'active', freeAccess: true, freeAccessExpiresAt })
                 .where(eq(subscribers.id, subscriber.id))
                 .run();
         } else if (!subscriber) {
@@ -58,6 +62,7 @@ export async function POST(request: NextRequest) {
                 email: trimmedEmail,
                 unsubscribeToken: token,
                 freeAccess: true,
+                freeAccessExpiresAt,
             }).run();
             const newId = Number(result.lastInsertRowid);
             subscriber = await db
@@ -72,7 +77,7 @@ export async function POST(request: NextRequest) {
             // Existing active subscriber — grant freeAccess
             await db
                 .update(subscribers)
-                .set({ freeAccess: true })
+                .set({ freeAccess: true, freeAccessExpiresAt })
                 .where(eq(subscribers.id, subscriber.id))
                 .run();
         }
@@ -92,16 +97,17 @@ export async function POST(request: NextRequest) {
             if (!isNewSubscriber && subscriber) {
                 await db
                     .update(subscribers)
-                    .set({ freeAccess: false })
+                    .set({ freeAccess: false, freeAccessExpiresAt: null })
                     .where(eq(subscribers.id, subscriber.id))
                     .run();
             }
             return NextResponse.json({ error: 'This code has already been redeemed' }, { status: 409 });
         }
 
+        const expiryDate = freeAccessExpiresAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
         const message = isNewSubscriber
-            ? 'Welcome! Your account has been created with premium access. You will receive full daily scenarios.'
-            : 'Premium access activated! You will now receive full daily scenarios.';
+            ? `Welcome! Your account has been created with premium access until ${expiryDate}.`
+            : `Premium access activated until ${expiryDate}!`;
 
         return NextResponse.json({ success: true, message });
     } catch (error) {

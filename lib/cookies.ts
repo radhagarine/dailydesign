@@ -42,7 +42,12 @@ export async function getSubscriberAccessDate(subscriber: Subscriber): Promise<D
 }
 
 export async function isSubscriberPaid(subscriber: Subscriber): Promise<boolean> {
-  if (subscriber.freeAccess) return true;
+  if (subscriber.freeAccess) {
+    if (subscriber.freeAccessExpiresAt && subscriber.freeAccessExpiresAt < new Date()) {
+      return false;
+    }
+    return true;
+  }
 
   const activeSubs = await db
     .select({ id: subscriptions.id })

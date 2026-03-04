@@ -8,6 +8,40 @@ export default function ArchiveAccessGate() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
+  const [showCodeField, setShowCodeField] = useState(false);
+  const [accessCode, setAccessCode] = useState('');
+  const [redeemStatus, setRedeemStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [redeemMessage, setRedeemMessage] = useState('');
+
+  const handleRedeem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !accessCode.trim()) return;
+
+    setRedeemStatus('loading');
+    setRedeemMessage('');
+
+    try {
+      const response = await fetch('/api/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), code: accessCode.trim() }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        setRedeemStatus('success');
+        setRedeemMessage(data.message || 'Premium access activated!');
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setRedeemStatus('error');
+        setRedeemMessage(data.error || 'Failed to redeem code');
+      }
+    } catch {
+      setRedeemStatus('error');
+      setRedeemMessage('Something went wrong. Please try again.');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
@@ -78,7 +112,46 @@ export default function ArchiveAccessGate() {
           </form>
         )}
 
-        <div className="mt-8">
+        <div className="mt-6">
+          {redeemStatus === 'success' ? (
+            <div className="p-4 rounded-lg border border-green-500/30 bg-green-900/20">
+              <p className="text-green-400 text-sm">{redeemMessage}</p>
+            </div>
+          ) : !showCodeField ? (
+            <button
+              type="button"
+              onClick={() => setShowCodeField(true)}
+              className="text-accent-500 hover:text-accent-400 text-sm transition"
+            >
+              Have an access code?
+            </button>
+          ) : (
+            <form onSubmit={handleRedeem} className="space-y-3">
+              <input
+                type="text"
+                value={accessCode}
+                onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
+                placeholder="DAILY-XXXXXXXXXXXXXXXX"
+                className="w-full px-4 py-3 rounded-lg bg-theme-panel border border-theme-border text-theme-text font-mono text-sm placeholder:text-theme-muted focus:outline-none focus:border-accent-500 transition"
+              />
+              <button
+                type="submit"
+                disabled={redeemStatus === 'loading' || !email.trim() || !accessCode.trim()}
+                className="w-full py-3 rounded-lg bg-accent-600 hover:bg-accent-500 disabled:opacity-50 disabled:cursor-not-allowed transition text-white font-semibold"
+              >
+                {redeemStatus === 'loading' ? 'Redeeming...' : 'Redeem Code'}
+              </button>
+              {redeemStatus === 'error' && redeemMessage && (
+                <p className="text-red-400 text-sm">{redeemMessage}</p>
+              )}
+              {!email.trim() && (
+                <p className="text-theme-muted text-xs">Enter your email above first</p>
+              )}
+            </form>
+          )}
+        </div>
+
+        <div className="mt-6">
           <Link href="/" className="text-theme-muted hover:text-theme-body text-sm transition">
             Not a subscriber? Sign up here
           </Link>

@@ -124,7 +124,13 @@ export default function ScenarioTeaser({
               >
                 Subscribe to Unlock
               </Link>
-              <p className="text-theme-muted text-xs mt-4">
+              <Link
+                href="/redeem"
+                className="text-accent-500 hover:text-accent-400 text-xs transition"
+              >
+                Have an access code?
+              </Link>
+              <p className="text-theme-muted text-xs mt-3">
                 Already subscribed? Check your email for the access link.
               </p>
             </div>

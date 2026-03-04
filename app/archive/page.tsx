@@ -75,9 +75,13 @@ export default async function ArchivePage() {
                     >
                         View Plans
                     </Link>
-                    <div className="mt-4">
+                    <div className="mt-4 flex items-center justify-center gap-3">
                         <Link href="/" className="text-theme-muted hover:text-theme-body text-sm transition">
                             Back to home
+                        </Link>
+                        <span className="text-theme-muted text-sm">|</span>
+                        <Link href="/redeem" className="text-accent-500 hover:text-accent-400 text-sm transition">
+                            Have an access code?
                         </Link>
                     </div>
                 </div>

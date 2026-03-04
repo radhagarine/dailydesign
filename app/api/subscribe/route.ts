@@ -34,10 +34,11 @@ export async function POST(req: Request) {
                 // Fire-and-forget welcome-back email
                 const baseUrl = getBaseUrl();
                 const archiveUrl = `${baseUrl}/archive?token=${existing.unsubscribeToken}`;
+                const redeemUrl = `${baseUrl}/redeem`;
                 sendEmail({
                     to: normalizedEmail,
                     subject: 'Welcome back to DailyDesign!',
-                    html: generateWelcomeEmailHtml(archiveUrl, true),
+                    html: generateWelcomeEmailHtml(archiveUrl, redeemUrl, true),
                 }).catch((err) => console.error('Welcome-back email failed:', err));
 
                 return NextResponse.json({
@@ -81,10 +82,11 @@ export async function POST(req: Request) {
         {
             const baseUrl = getBaseUrl();
             const archiveUrl = `${baseUrl}/archive?token=${token}`;
+            const redeemUrl = `${baseUrl}/redeem`;
             sendEmail({
                 to: normalizedEmail,
-                subject: 'Welcome to DailyDesign — your 7-day trial starts now!',
-                html: generateWelcomeEmailHtml(archiveUrl, false),
+                subject: 'Welcome to DailyDesign!',
+                html: generateWelcomeEmailHtml(archiveUrl, redeemUrl, false),
             }).catch((err) => console.error('Welcome email failed:', err));
         }
 
@@ -123,11 +125,11 @@ export async function POST(req: Request) {
     }
 }
 
-function generateWelcomeEmailHtml(archiveUrl: string, isReactivation: boolean): string {
+function generateWelcomeEmailHtml(archiveUrl: string, redeemUrl: string, isReactivation: boolean): string {
     const heading = isReactivation ? 'Welcome back to DailyDesign!' : 'Welcome to DailyDesign!';
     const intro = isReactivation
         ? "Great to have you back! Your subscription is active again."
-        : "Thanks for signing up! You'll receive daily system design interview scenarios for the next 7 days — the same content our paid subscribers get.";
+        : "Thanks for signing up! Your first full scenario is on us. After that, upgrade to premium to keep receiving complete interview breakdowns.";
 
     return `<!DOCTYPE html>
 <html>
@@ -140,7 +142,10 @@ function generateWelcomeEmailHtml(archiveUrl: string, isReactivation: boolean): 
     <div style="text-align: center; margin-bottom: 24px;">
       <a href="${archiveUrl}" style="display: inline-block; padding: 14px 28px; background-color: #0e7490; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600;">Browse the Archive</a>
     </div>
-    <p style="color: #9ca3af; font-size: 13px; text-align: center;">Your first daily scenario arrives tomorrow at 6 AM UTC.</p>
+    <p style="color: #9ca3af; font-size: 13px; text-align: center; margin-bottom: 16px;">Your first daily scenario arrives tomorrow at 6 AM UTC.</p>
+    <div style="border-top: 1px solid #333; padding-top: 16px; text-align: center;">
+      <a href="${redeemUrl}" style="color: #0e7490; font-size: 13px; text-decoration: none;">Have an access code? Redeem it here</a>
+    </div>
   </div>
   <div style="text-align: center; margin-top: 24px;">
     <p style="color: #6b7280; font-size: 12px;">DailyDesign</p>

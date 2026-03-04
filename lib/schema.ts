@@ -42,6 +42,7 @@ export const subscribers = sqliteTable('subscribers', {
     stripeCustomerId: text('stripe_customer_id'),
     // Free access override (grants paid-tier access without Stripe subscription)
     freeAccess: integer('free_access', { mode: 'boolean' }).default(false),
+    freeAccessExpiresAt: integer('free_access_expires_at', { mode: 'timestamp' }),
     // Referral
     referralCode: text('referral_code').unique().$defaultFn(() => generateReferralCode()),
     referredBy: integer('referred_by'), // subscriber ID of referrer

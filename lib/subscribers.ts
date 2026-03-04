@@ -22,16 +22,18 @@ export async function getActiveSubscribersByTier(): Promise<{ paid: Subscriber[]
     .all();
 
   // 3. Partition into paid and free
-  //    Free subscribers in their first 7 days get daily emails (paid bucket)
+  //    Free subscribers get 1 day of full content, then teasers only
   const paid: Subscriber[] = [];
   const free: Subscriber[] = [];
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const now = new Date();
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   for (const sub of allActive) {
-    if (paidSubscriberIds.has(sub.id) || sub.freeAccess) {
+    const hasFreeAccess = sub.freeAccess && (!sub.freeAccessExpiresAt || sub.freeAccessExpiresAt > now);
+    if (paidSubscriberIds.has(sub.id) || hasFreeAccess) {
       paid.push(sub);
-    } else if (sub.joinedAt && sub.joinedAt > sevenDaysAgo) {
-      // Free subscriber still in 7-day daily trial
+    } else if (sub.joinedAt && sub.joinedAt > oneDayAgo) {
+      // Free subscriber on their first day — gets one full scenario
       paid.push(sub);
     } else {
       free.push(sub);

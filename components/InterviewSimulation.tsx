@@ -191,10 +191,10 @@ export default function InterviewSimulation({
                     <Card className="border-2 border-[var(--accent-primary)]">
                         <h3 className="text-2xl font-bold mb-4">Want Daily Simulations Like This?</h3>
                         <p className="text-[var(--text-secondary)] mb-6">
-                            Get a new principal-level interview scenario every day. Start your 7-day free trial.
+                            Get a new principal-level interview scenario every day. Your first full scenario is free.
                         </p>
                         <Button variant="primary" size="lg" href="/#pricing">
-                            Start Free Trial →
+                            Get Started →
                         </Button>
                     </Card>
                 </section>

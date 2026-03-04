@@ -12,6 +12,10 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
     const router = useRouter();
     const [refCode, setRefCode] = useState<string | null>(null);
     const [email, setEmail] = useState('');
+    const [accessCode, setAccessCode] = useState('');
+    const [showCodeField, setShowCodeField] = useState(false);
+    const [redeemStatus, setRedeemStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [redeemMessage, setRedeemMessage] = useState('');
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -20,6 +24,36 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
     }, []);
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
+
+    const handleRedeem = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!email || !accessCode.trim()) return;
+
+        setRedeemStatus('loading');
+        setRedeemMessage('');
+
+        try {
+            const res = await fetch('/api/redeem', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email.trim(), code: accessCode.trim() }),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || 'Failed to redeem code');
+            }
+
+            setRedeemStatus('success');
+            setRedeemMessage(data.message || 'Premium access activated!');
+            if (redirectToOnboarding) {
+                setTimeout(() => router.push('/archive'), 1500);
+            }
+        } catch (error) {
+            setRedeemStatus('error');
+            setRedeemMessage(error instanceof Error ? error.message : 'Something went wrong');
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -112,9 +146,47 @@ export default function NewsletterSignup({ redirectToOnboarding = true, compact 
                     {errorMessage}
                 </p>
             )}
-            <p className="mt-3 text-xs text-theme-muted text-center sm:text-left">
-                Daily scenarios free for 7 days.
-            </p>
+            <div className="mt-3 flex items-center justify-between">
+                <p className="text-xs text-theme-muted">
+                    First full scenario free. Upgrade anytime.
+                </p>
+                {!showCodeField && (
+                    <button
+                        type="button"
+                        onClick={() => setShowCodeField(true)}
+                        className="text-xs text-accent-500 hover:text-accent-400 transition"
+                    >
+                        Have an access code?
+                    </button>
+                )}
+            </div>
+            {showCodeField && (
+                <div className="mt-3">
+                    {redeemStatus === 'success' ? (
+                        <p className="text-xs text-emerald-400">{redeemMessage}</p>
+                    ) : (
+                        <form onSubmit={handleRedeem} className="flex flex-col sm:flex-row gap-2">
+                            <input
+                                type="text"
+                                value={accessCode}
+                                onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
+                                placeholder="DAILY-XXXXXXXXXXXXXXXX"
+                                className="flex-1 px-4 py-2.5 bg-theme-panel border border-theme-border rounded-lg text-theme-text font-mono text-sm placeholder-theme-muted focus:outline-none focus:border-accent-500 transition-colors"
+                            />
+                            <button
+                                type="submit"
+                                disabled={redeemStatus === 'loading' || !email.trim() || !accessCode.trim()}
+                                className="px-5 py-2.5 text-sm font-semibold rounded-lg bg-accent-600 text-white hover:bg-accent-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                            >
+                                {redeemStatus === 'loading' ? 'Redeeming...' : 'Redeem'}
+                            </button>
+                        </form>
+                    )}
+                    {redeemStatus === 'error' && redeemMessage && (
+                        <p className="mt-1.5 text-xs text-red-400">{redeemMessage}</p>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
