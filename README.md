@@ -87,6 +87,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run db:migrate` | Run database migrations |
 | `npm run db:push` | Push schema directly to database (dev only) |
 | `npm run db:studio` | Open Drizzle Studio GUI to browse tables |
+| `npx tsx scripts/generate-codes.ts` | Generate access codes (connects to Turso directly) |
 
 ## Project Structure
 
@@ -97,6 +98,7 @@ app/
   scenarios/[slug]/page.tsx         # Individual scenario viewer
   admin/page.tsx                    # Admin dashboard
   welcome/page.tsx                  # Post-signup welcome
+  redeem/page.tsx                   # Access code redemption page
   checkout/success/page.tsx         # Stripe checkout success
   api/
     auth/magic-link/route.ts        # Magic link email for archive access
@@ -104,6 +106,7 @@ app/
     unsubscribe/route.ts            # One-click unsubscribe
     preferences/route.ts            # User preference updates
     checkout/route.ts               # Stripe checkout session
+    redeem/route.ts                  # Access code redemption
     webhooks/stripe/route.ts        # Stripe webhook handler
     admin/
       tables/route.ts               # Admin data access
@@ -124,6 +127,10 @@ components/
   DesignProblem.tsx                  # Design problem presentation
   NewsletterSignup.tsx               # Email capture form
   PricingButton.tsx                  # Stripe checkout integration
+  ScenarioTeaser.tsx                 # Locked scenario paywall with access code link
+  AccessCodeRedeem.tsx               # Inline access code redemption widget
+scripts/
+  generate-codes.ts                  # Generate access codes locally
 ```
 
 ## Content Strategy
@@ -215,39 +222,54 @@ curl https://your-app.vercel.app/api/admin/free-access \
 
 ## Access Codes
 
-Share a redeemable code instead of running curl commands to grant free premium access. The flow: generate a code → share it → the recipient enters it on the welcome page → they get `freeAccess = true`.
+Share a redeemable code to grant time-limited premium access without a Stripe subscription. No admin API endpoint is exposed — codes are generated locally via a script that connects directly to the Turso database.
 
-### Generate a code
+### How it works
 
-```bash
-curl -X POST https://your-app.vercel.app/api/admin/access-codes \
-  -H "Authorization: Bearer YOUR_CRON_SECRET" \
-  -H "Content-Type: application/json" \
-  -d '{"expiresInDays": 30}'
-```
+- **Redemption window**: Codes expire 2 days after generation (configurable in `scripts/generate-codes.ts`)
+- **Access duration**: Redeemed codes grant 15 days of premium access from the redemption date
+- **After expiry**: The subscriber reverts to free tier (teasers only)
 
-Returns a code like `DAILY-A7F3B2`. The `expiresInDays` field is optional (defaults to 30).
+### Generate codes
 
-### List all codes
+Requires `.env.local` with `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN`:
 
 ```bash
-curl https://your-app.vercel.app/api/admin/access-codes \
-  -H "Authorization: Bearer YOUR_CRON_SECRET"
+npx tsx scripts/generate-codes.ts
 ```
 
-Each code shows its status: `unused`, `redeemed` (with redeemer email), or `expired`.
+This generates 4 codes by default and prints them. Edit `NUM_CODES` and `EXPIRES_IN_DAYS` in the script to customize.
 
-### Redemption
+### Share with recipients
 
-The recipient enters the code on the welcome page (`/welcome?email=their@email.com`). The code can also be redeemed directly via API:
+Send each person a pre-filled link — they only need to enter their email:
+
+```
+https://your-app.vercel.app/redeem?code=DAILY-XXXXXXXXXXXXXXXX
+```
+
+### Where users can redeem
+
+Codes can be entered in multiple places throughout the app:
+
+- **`/redeem?code=...`** — standalone page (pre-filled via URL)
+- **Homepage signup** — "Have an access code?" link below the email field
+- **Homepage pricing section** — "Have an access code?" below pricing cards
+- **Archive gate** — "Have an access code?" on the subscriber-only archive page
+- **Scenario paywall** — "Have an access code?" on locked scenario pages
+- **Welcome email** — "Redeem it here" link at the bottom
+
+### Redemption API
+
+Codes can also be redeemed directly via API:
 
 ```bash
 curl -X POST https://your-app.vercel.app/api/redeem \
   -H "Content-Type: application/json" \
-  -d '{"email": "user@example.com", "code": "DAILY-A7F3B2"}'
+  -d '{"email": "user@example.com", "code": "DAILY-XXXXXXXXXXXXXXXX"}'
 ```
 
-Each code is single-use and tied to one subscriber after redemption.
+Each code is single-use. The endpoint auto-creates a subscriber if one doesn't exist.
 
 ## Subscriber Authentication (Archive Access)
 
@@ -258,8 +280,10 @@ The scenario archive and individual scenario pages are gated to authenticated su
 1. **Email click**: Every link in daily/teaser emails includes a `?token=` parameter. The middleware intercepts it, sets a `subscriber_token` cookie (30-day sliding expiration), and redirects to the clean URL.
 2. **Direct visit**: If a subscriber visits `/archive` without a cookie, they see an "Enter your email" form. Submitting it sends a magic link email via `POST /api/auth/magic-link`. Clicking the link sets the cookie.
 3. **Access tiers**:
-   - **Paid subscriber** (active Stripe subscription or `freeAccess = true`): Full archive and scenario access
-   - **Free subscriber** (no subscription): Sees an upgrade prompt with a link to pricing
+   - **Paid subscriber** (active Stripe subscription or unexpired `freeAccess`): Full archive and scenario access
+   - **Access code holder**: 15 days of full access from redemption date
+   - **Free subscriber (first day)**: One full scenario on signup day, then teasers only
+   - **Free subscriber (after day 1)**: Sees an upgrade prompt with a link to pricing
    - **No cookie / unknown visitor**: Sees the email gate
 
 ### Magic link endpoint
