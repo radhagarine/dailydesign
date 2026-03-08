@@ -809,7 +809,7 @@ ${recentTitlesSection}Important:
                 model: 'gpt-4o',
                 response_format: zodResponseFormat(InterviewScenarioSchema, 'interview_scenario'),
                 temperature: 0.5,
-                max_tokens: 24000,
+                max_tokens: 16000,
             });
 
             const message = completion.choices[0].message;
