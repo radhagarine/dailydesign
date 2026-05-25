@@ -20,48 +20,30 @@ interface SendWithRetryOptions {
 export async function sendEmailWithTracking(options: SendWithRetryOptions): Promise<boolean> {
     const { to, subject, html, emailType, scenarioSlug } = options;
 
-    // Create or get existing log entry
-    let logEntry = await db
+    await db.insert(emailSendLog).values({
+        recipientEmail: to,
+        subject,
+        emailType,
+        scenarioSlug: scenarioSlug || null,
+        sendStatus: 'pending',
+        attempts: 0,
+    }).run();
+
+    const logEntry = await db
         .select()
         .from(emailSendLog)
         .where(
             and(
                 eq(emailSendLog.recipientEmail, to),
-                eq(emailSendLog.subject, subject),
                 eq(emailSendLog.emailType, emailType),
+                scenarioSlug
+                    ? eq(emailSendLog.scenarioSlug, scenarioSlug)
+                    : eq(emailSendLog.subject, subject),
             )
         )
         .get();
 
-    if (!logEntry) {
-        await db.insert(emailSendLog).values({
-            recipientEmail: to,
-            subject,
-            emailType,
-            scenarioSlug: scenarioSlug || null,
-            sendStatus: 'pending',
-            attempts: 0,
-        }).run();
-
-        logEntry = await db
-            .select()
-            .from(emailSendLog)
-            .where(
-                and(
-                    eq(emailSendLog.recipientEmail, to),
-                    eq(emailSendLog.subject, subject),
-                    eq(emailSendLog.emailType, emailType),
-                )
-            )
-            .get();
-    }
-
     if (!logEntry) return false;
-
-    // Already sent or dead-lettered — skip
-    if (logEntry.sendStatus === 'sent' || logEntry.sendStatus === 'dead_letter') {
-        return logEntry.sendStatus === 'sent';
-    }
 
     const result = await sendEmail({ to, subject, html });
 
