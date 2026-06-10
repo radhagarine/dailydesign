@@ -809,7 +809,7 @@ ${recentTitlesSection}Important:
                 model: 'gpt-4o',
                 response_format: zodResponseFormat(InterviewScenarioSchema, 'interview_scenario'),
                 temperature: 0.5,
-                max_tokens: 16000,
+                max_tokens: 24000,
             });
 
             const message = completion.choices[0].message;
@@ -827,6 +827,7 @@ ${recentTitlesSection}Important:
                 error.message.includes('timeout') ||
                 error.message.includes('rate_limit') ||
                 error.message.includes('overloaded') ||
+                error.message.includes('No parsed content') ||
                 error.message.includes('500') ||
                 error.message.includes('502') ||
                 error.message.includes('503') ||

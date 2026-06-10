@@ -1,7 +1,7 @@
 import { db } from '@/lib/db';
 import { emailSendLog } from '@/lib/schema';
 import { sendEmail } from '@/lib/email';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, desc } from 'drizzle-orm';
 
 const MAX_RETRIES = 3;
 
@@ -41,6 +41,7 @@ export async function sendEmailWithTracking(options: SendWithRetryOptions): Prom
                     : eq(emailSendLog.subject, subject),
             )
         )
+        .orderBy(desc(emailSendLog.id))
         .get();
 
     if (!logEntry) return false;
